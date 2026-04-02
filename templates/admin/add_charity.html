@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إضافة جمعية · العطاء</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif;}
+        body{background:linear-gradient(145deg,#eef5f8,#deeef7);min-height:100vh;display:flex;}
+        .sidebar{width:250px;flex-shrink:0;background:white;min-height:100vh;box-shadow:0 0 30px rgba(15,70,90,0.1);display:flex;flex-direction:column;border-left:1px solid #d1e2ef;}
+        .sidebar-brand{padding:1.5rem;display:flex;align-items:center;gap:0.7rem;background:#f0f9fd;border-bottom:1px solid #d1e2ef;}
+        
+        .sidebar-brand span{color:#1a3b5d;font-weight:800;font-size:1.2rem;}
+        .sidebar-nav{flex:1;padding:1.2rem 0;}
+        .sidebar-link{display:flex;align-items:center;gap:0.7rem;padding:0.9rem 1.5rem;color:#36748b;font-weight:600;text-decoration:none;transition:all 0.2s;border-right:3px solid transparent;}
+        .sidebar-link:hover,.sidebar-link.active{background:#f0f9fd;color:#1a3b5d;border-right-color:#2f8f7a;}
+        .sidebar-footer{padding:1.2rem 1.5rem;border-top:1px solid #d1e2ef;}
+        .admin-name{display:block;color:#36748b;font-size:0.9rem;margin-bottom:0.7rem;}
+        .logout-btn{display:block;text-align:center;background:#fde8e8;color:#e53e3e;padding:0.6rem;border-radius:30px;text-decoration:none;font-weight:700;}
+        .main-content{flex:1;padding:2rem;overflow-y:auto;}
+        .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+        .page-title{font-size:1.8rem;font-weight:800;color:#1a3b5d;}
+        .flash{padding:12px 18px;border-radius:12px;font-weight:600;margin-bottom:12px;}
+        .flash-success{background:#d4edda;color:#1a5c2e;border-right:4px solid #2f8f7a;}
+        .flash-danger{background:#fde8e8;color:#7b1c1c;border-right:4px solid #e53e3e;}
+        .form-card{background:white;border-radius:30px;padding:2rem;max-width:700px;box-shadow:0 10px 30px -10px rgba(15,70,90,0.1);border:1px solid #d1e2ef;}
+        .form-group{display:flex;flex-direction:column;gap:7px;margin-bottom:1.3rem;}
+        .form-group label{font-weight:700;color:#1a3b5d;font-size:0.95rem;}
+        .form-group input,.form-group textarea{padding:0.85rem 1.1rem;border:2px solid #d1e2ef;border-radius:20px;font-size:0.95rem;font-family:'Cairo',sans-serif;background:#f8fcff;transition:border-color 0.2s;}
+        .form-group input:focus,.form-group textarea:focus{outline:none;border-color:#2f8f7a;background:white;}
+        .form-group small{color:#36748b;font-size:0.82rem;}
+        .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+        .form-actions{display:flex;gap:1rem;flex-wrap:wrap;margin-top:0.5rem;}
+        .btn-primary{background:linear-gradient(45deg,#1a3b5d,#2f8f7a);color:white;font-weight:700;padding:0.8rem 2rem;border-radius:40px;font-size:0.95rem;border:none;cursor:pointer;font-family:'Cairo',sans-serif;text-decoration:none;transition:all 0.2s;}
+        .btn-primary:hover{transform:scale(1.03);}
+        .btn-secondary{background:#f0f9fd;color:#1a3b5d;font-weight:700;padding:0.8rem 1.8rem;border-radius:40px;font-size:0.95rem;border:2px solid #d1e2ef;text-decoration:none;transition:all 0.2s;display:inline-block;}
+        .btn-secondary:hover{background:#e0f0fa;}
+        .section-divider{border-top:2px dashed #d1e2ef;margin:1.5rem 0;padding-top:1.5rem;}
+        .section-label{font-weight:800;color:#2f8f7a;font-size:1rem;margin-bottom:1rem;}
+
+        /* Upload Box */
+        .upload-box{
+            border:2px dashed #c0d8e8;border-radius:20px;padding:1.5rem;
+            text-align:center;cursor:pointer;background:#f8fcff;
+            transition:all 0.2s;position:relative;overflow:hidden;
+        }
+        .upload-box:hover{border-color:#2f8f7a;background:#f0f9fd;}
+        .upload-box.has-img{border-style:solid;border-color:#2f8f7a;}
+        .upload-icon{font-size:2.5rem;margin-bottom:0.4rem;}
+        .upload-text{color:#1a3b5d;font-weight:700;font-size:1rem;}
+        .upload-hint{color:#36748b;font-size:0.82rem;margin-top:0.3rem;}
+        .img-preview{width:100%;max-height:200px;object-fit:cover;border-radius:14px;margin-top:1rem;display:none;}
+    </style>
+</head>
+<body>
+<aside class="sidebar">
+    <div class="sidebar-brand"><img src="/static/img/logo.jpg" style="width:45px;height:45px;object-fit:contain;" alt="logo"><span>لوحة العطاء</span></div>
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('admin_dashboard') }}" class="sidebar-link">🏠 الرئيسية</a>
+        <a href="{{ url_for('admin_add_charity') }}" class="sidebar-link active">➕ إضافة جمعية</a>
+        <a href="{{ url_for('index') }}" class="sidebar-link" target="_blank">👁️ عرض الموقع</a>
+    </nav>
+    <div class="sidebar-footer">
+        <span class="admin-name">👤 {{ session.admin }}</span>
+        <a href="{{ url_for('admin_logout') }}" class="logout-btn">تسجيل خروج</a>
+    </div>
+</aside>
+
+<div class="main-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+        <div class="flash flash-{{ cat }}">{{ msg }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <div class="page-header">
+        <h1 class="page-title">إضافة جمعية جديدة</h1>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn-secondary">← العودة</a>
+    </div>
+
+    <div class="form-card">
+        <form method="POST" enctype="multipart/form-data">
+
+            <div class="form-group">
+                <label>اسم الجمعية *</label>
+                <input type="text" name="name" placeholder="مثال: جمعية رسالة" required>
+            </div>
+
+            <div class="form-group">
+                <label>صورة الجمعية</label>
+                <div class="upload-box" id="charityUploadBox" onclick="document.getElementById('charityImgInput').click()">
+                    <div class="upload-icon">🖼️</div>
+                    <div class="upload-text">اضغط هنا لرفع الصورة</div>
+                    <div class="upload-hint">JPG · PNG · WEBP — حجم مقترح 400×400 بكسل</div>
+                    <img id="charityImgPreview" class="img-preview" src="" alt="">
+                </div>
+                <input type="file" id="charityImgInput" name="image" accept="image/*" style="display:none"
+                       onchange="previewImg(this, 'charityImgPreview', 'charityUploadBox')">
+            </div>
+
+            <div class="form-group">
+                <label>وصف الجمعية *</label>
+                <textarea name="description" rows="4" placeholder="اكتب وصفاً للجمعية وأهدافها..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>مجالات العمل</label>
+                <input type="text" name="fields" placeholder="تعليم,صحة,إغاثة,أيتام">
+                <small>افصل بين المجالات بفاصلة (,)</small>
+            </div>
+
+            <div class="section-divider">
+                <div class="section-label">📊 الإحصائيات (اختياري)</div>
+                <div class="stats-grid">
+                    <div class="form-group"><label>إحصائية 1 - الرقم</label><input type="text" name="stat1_num" placeholder="١٢٠٠+"></div>
+                    <div class="form-group"><label>إحصائية 1 - التسمية</label><input type="text" name="stat1_label" placeholder="متبرع شهرياً"></div>
+                    <div class="form-group"><label>إحصائية 2 - الرقم</label><input type="text" name="stat2_num" placeholder="٢٢"></div>
+                    <div class="form-group"><label>إحصائية 2 - التسمية</label><input type="text" name="stat2_label" placeholder="فرع"></div>
+                    <div class="form-group"><label>إحصائية 3 - الرقم</label><input type="text" name="stat3_num" placeholder="٣٠٠+"></div>
+                    <div class="form-group"><label>إحصائية 3 - التسمية</label><input type="text" name="stat3_label" placeholder="متطوع"></div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">حفظ الجمعية ✓</button>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn-secondary">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function previewImg(input, previewId, boxId) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        const preview = document.getElementById(previewId);
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        document.getElementById(boxId).classList.add('has-img');
+    };
+    reader.readAsDataURL(file);
+}
+</script>
+</body>
+</html>

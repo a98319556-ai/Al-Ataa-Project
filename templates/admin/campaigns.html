@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حملات {{ charity.name }} · العطاء</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif;}
+        body{background:linear-gradient(145deg,#eef5f8,#deeef7);min-height:100vh;display:flex;}
+        .sidebar{width:250px;flex-shrink:0;background:white;min-height:100vh;box-shadow:0 0 30px rgba(15,70,90,0.1);display:flex;flex-direction:column;border-left:1px solid #d1e2ef;}
+        .sidebar-brand{padding:1.5rem;display:flex;align-items:center;gap:0.7rem;background:#f0f9fd;border-bottom:1px solid #d1e2ef;}
+        
+        .sidebar-brand span{color:#1a3b5d;font-weight:800;font-size:1.2rem;}
+        .sidebar-nav{flex:1;padding:1.2rem 0;}
+        .sidebar-link{display:flex;align-items:center;gap:0.7rem;padding:0.9rem 1.5rem;color:#36748b;font-weight:600;text-decoration:none;transition:all 0.2s;border-right:3px solid transparent;}
+        .sidebar-link:hover,.sidebar-link.active{background:#f0f9fd;color:#1a3b5d;border-right-color:#2f8f7a;}
+        .sidebar-footer{padding:1.2rem 1.5rem;border-top:1px solid #d1e2ef;}
+        .admin-name{display:block;color:#36748b;font-size:0.9rem;margin-bottom:0.7rem;}
+        .logout-btn{display:block;text-align:center;background:#fde8e8;color:#e53e3e;padding:0.6rem;border-radius:30px;text-decoration:none;font-weight:700;}
+        .main-content{flex:1;padding:2rem;overflow-y:auto;}
+        .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+        .page-title{font-size:1.8rem;font-weight:800;color:#1a3b5d;}
+        .breadcrumb{color:#36748b;font-size:0.9rem;}
+        .breadcrumb a{color:#2f8f7a;text-decoration:none;font-weight:600;}
+        .flash{padding:12px 18px;border-radius:12px;font-weight:600;margin-bottom:12px;}
+        .flash-success{background:#d4edda;color:#1a5c2e;border-right:4px solid #2f8f7a;}
+        .flash-danger{background:#fde8e8;color:#7b1c1c;border-right:4px solid #e53e3e;}
+        .table-card{background:white;border-radius:30px;box-shadow:0 10px 30px -10px rgba(15,70,90,0.1);border:1px solid #d1e2ef;overflow:hidden;}
+        .table-card-header{padding:1.2rem 1.5rem;border-bottom:1px solid #d1e2ef;display:flex;align-items:center;justify-content:space-between;}
+        .table-card-header h2{color:#1a3b5d;font-size:1.2rem;font-weight:800;}
+        table{width:100%;border-collapse:collapse;}
+        th,td{padding:12px 16px;text-align:right;font-size:0.92rem;border-bottom:1px solid #f0f5f8;}
+        thead{background:#f0f9fd;}
+        th{font-weight:700;color:#36748b;font-size:0.85rem;}
+        tr:hover{background:#f8fcff;}
+        tr:last-child td{border-bottom:none;}
+        .badge-cat{background:rgba(47,143,122,0.12);color:#2f8f7a;font-size:0.82rem;font-weight:700;padding:4px 12px;border-radius:20px;}
+        .goal-cell{font-weight:700;color:#2f8f7a;}
+        .actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+        .btn-primary{display:inline-block;background:linear-gradient(45deg,#1a3b5d,#2f8f7a);color:white;font-weight:700;padding:0.7rem 1.8rem;border-radius:40px;font-size:0.95rem;border:none;cursor:pointer;text-decoration:none;font-family:'Cairo',sans-serif;transition:all 0.2s;}
+        .btn-primary:hover{transform:scale(1.03);}
+        .btn-secondary{background:#f0f9fd;color:#1a3b5d;font-weight:700;padding:0.7rem 1.5rem;border-radius:40px;font-size:0.92rem;border:2px solid #d1e2ef;text-decoration:none;transition:all 0.2s;display:inline-block;}
+        .btn-secondary:hover{background:#e0f0fa;}
+        .btn-sm{display:inline-block;font-weight:700;padding:5px 14px;border-radius:20px;font-size:0.82rem;border:none;cursor:pointer;font-family:'Cairo',sans-serif;text-decoration:none;transition:opacity 0.2s;}
+        .btn-sm:hover{opacity:0.8;}
+        .btn-gold{background:rgba(200,146,42,0.12);color:#c8922a;}
+        .btn-red{background:rgba(229,62,62,0.12);color:#e53e3e;}
+        .empty-row{text-align:center;padding:40px;color:#36748b;}
+        .empty-row a{color:#2f8f7a;font-weight:700;}
+        .camp-icon{font-size:1.8rem;}
+    </style>
+</head>
+<body>
+<aside class="sidebar">
+    <div class="sidebar-brand"><img src="/static/img/logo.jpg" style="width:45px;height:45px;object-fit:contain;" alt="logo"><span>لوحة العطاء</span></div>
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('admin_dashboard') }}" class="sidebar-link active">🏠 الرئيسية</a>
+        <a href="{{ url_for('admin_add_charity') }}" class="sidebar-link">➕ إضافة جمعية</a>
+        <a href="{{ url_for('index') }}" class="sidebar-link" target="_blank">👁️ عرض الموقع</a>
+    </nav>
+    <div class="sidebar-footer">
+        <span class="admin-name">👤 {{ session.admin }}</span>
+        <a href="{{ url_for('admin_logout') }}" class="logout-btn">تسجيل خروج</a>
+    </div>
+</aside>
+<div class="main-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}<div class="flash flash-{{ cat }}">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+
+    <div class="page-header">
+        <div>
+            <div class="breadcrumb"><a href="{{ url_for('admin_dashboard') }}">لوحة التحكم</a> › حملات {{ charity.name }}</div>
+            <h1 class="page-title">{{ charity.name }}</h1>
+        </div>
+        <a href="{{ url_for('admin_add_campaign', cid=charity.id) }}" class="btn-primary">+ إضافة حملة</a>
+    </div>
+
+    <div class="table-card">
+        <div class="table-card-header">
+            <h2>الحملات ({{ campaigns|length }})</h2>
+        </div>
+        {% if campaigns %}
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>الصورة</th>
+                        <th>عنوان الحملة</th>
+                        <th>الفئة</th>
+                        <th>المبلغ المستهدف</th>
+                        <th>تاريخ الإضافة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for camp in campaigns %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <img src="{{ url_for('static', filename='uploads/' + camp.image) if camp.image and camp.image != 'default.jpg' else url_for('static', filename='img/placeholder.svg') }}"
+                                 style="width:64px;height:46px;object-fit:cover;border-radius:8px;border:2px solid #d1e2ef;"
+                                 alt="{{ camp.title }}"
+                                 onerror="this.src='{{ url_for('static', filename='img/placeholder.svg') }}'">
+                        </td>
+                        <td><strong>{{ camp.title }}</strong></td>
+                        <td><span class="badge-cat">{{ camp.category }}</span></td>
+                        <td class="goal-cell">{{ "{:,.0f}".format(camp.goal_amount) }} ج.م</td>
+                        <td>{{ camp.created_at.strftime('%Y/%m/%d') }}</td>
+                        <td class="actions">
+                            <a href="{{ url_for('admin_edit_campaign', camp_id=camp.id) }}" class="btn-sm btn-gold">تعديل</a>
+                            <form method="POST" action="{{ url_for('admin_delete_campaign', camp_id=camp.id) }}" style="display:inline"
+                                  onsubmit="return confirm('حذف هذه الحملة؟')">
+                                <button type="submit" class="btn-sm btn-red">حذف</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-row">
+            لا توجد حملات. <a href="{{ url_for('admin_add_campaign', cid=charity.id) }}">أضف أول حملة</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>جمعية الأورمان - منصة العطاء</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; background: #f0f4f8; margin: 0; padding: 20px; direction: rtl; }
+        .charity-container { max-width: 1000px; margin: auto; background: white; border-radius: 30px; padding: 30px; }
+        .header { display: flex; align-items: center; gap: 20px; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo-circle { width: 80px; height: 80px; background: #e3f2fd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+        .btn-donate { background: #1976d2; color: white; border: none; padding: 10px 25px; border-radius: 20px; cursor: pointer; width: 100%; margin-top: 15px; }
+        .price-tag { color: #1976d2; font-size: 1.5rem; font-weight: 800; }
+    </style>
+</head>
+<body>
+    <div class="charity-container">
+        <div class="header">
+            <div class="logo-circle">🏥</div>
+            <div>
+                <h1>جمعية الأورمان</h1>
+                <p>من أجل حياة كريمة لكل مصري</p>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 20px;">حملات التدخل الطبي والإنساني:</h3>
+        <div class="campaign-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+            <div class="campaign-card" style="border: 1px solid #eee; border-radius: 20px; padding: 20px; text-align: center;">
+                <h4>عمليات قلب للأطفال</h4>
+                <p>المساهمة في إجراء جراحات دقيقة بالمجان</p>
+                <span class="price-tag">سهم بـ 1000 ج.م</span>
+                <button class="btn-donate">تبرع الآن</button>
+            </div>
+            <div class="campaign-card" style="border: 1px solid #eee; border-radius: 20px; padding: 20px; text-align: center;">
+                <h4>رؤوس ماشية</h4>
+                <p>توفير مصدر رزق دائم للأسر في القرى</p>
+                <span class="price-tag">3000 ج.م / سهم</span>
+                <button class="btn-donate">تبرع الآن</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

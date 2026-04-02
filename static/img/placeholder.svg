@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
+  <rect width="800" height="500" fill="#f0f9fd"/>
+  <rect x="310" y="170" width="180" height="140" rx="18" fill="#c0d8e8"/>
+  <circle cx="360" cy="215" r="22" fill="#90b8d0"/>
+  <polygon points="310,310 400,240 490,310" fill="#90b8d0"/>
+  <polygon points="390,310 460,265 490,310" fill="#7aa8c0"/>
+  <text x="400" y="380" text-anchor="middle" font-family="Cairo,Arial" font-size="22" fill="#36748b" font-weight="600">لا توجد صورة</text>
+</svg>

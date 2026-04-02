@@ -1,0 +1,411 @@
+/* ============================================================
+   منصة العطاء - الستايل الرئيسي
+   ============================================================ */
+
+:root {
+    --green:     #1a7a4c;
+    --green-lt:  #25a468;
+    --gold:      #c8922a;
+    --gold-lt:   #e6ad40;
+    --dark:      #0f1f14;
+    --dark2:     #1b2f20;
+    --light:     #f4f8f5;
+    --white:     #ffffff;
+    --gray:      #6b7c6e;
+    --border:    #d6e4da;
+    --shadow:    0 4px 24px rgba(15,31,20,.10);
+    --radius:    14px;
+    --font:      'Cairo', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: var(--font);
+    background: var(--light);
+    color: var(--dark);
+    direction: rtl;
+    line-height: 1.7;
+}
+
+a { text-decoration: none; color: inherit; }
+img { max-width: 100%; display: block; }
+
+/* ============================================================
+   Navbar
+   ============================================================ */
+.navbar {
+    background: var(--dark);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 16px rgba(0,0,0,.3);
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+}
+
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--white);
+}
+
+.logo-icon { font-size: 1.6rem; }
+
+.nav-links { display: flex; gap: 20px; align-items: center; }
+
+.nav-link {
+    color: #b0c4b5;
+    font-size: .95rem;
+    font-weight: 600;
+    transition: color .2s;
+}
+
+.nav-link:hover { color: var(--gold-lt); }
+
+.nav-admin {
+    background: var(--green);
+    color: var(--white) !important;
+    padding: 7px 18px;
+    border-radius: 8px;
+    transition: background .2s !important;
+}
+
+.nav-admin:hover { background: var(--green-lt) !important; }
+
+/* ============================================================
+   Flash Messages
+   ============================================================ */
+.flash-container { max-width: 1200px; margin: 16px auto; padding: 0 24px; }
+
+.flash {
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.flash-success { background: #d4edda; color: #1a5c2e; border-right: 4px solid var(--green); }
+.flash-danger  { background: #fde8e8; color: #7b1c1c; border-right: 4px solid #e53e3e; }
+
+/* ============================================================
+   Hero Section
+   ============================================================ */
+.hero {
+    background: linear-gradient(135deg, var(--dark) 0%, var(--dark2) 60%, #0b2d15 100%);
+    padding: 90px 24px 80px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(200,146,42,.18) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.hero-content { position: relative; z-index: 1; }
+
+.hero-title {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 900;
+    color: var(--white);
+    letter-spacing: -1px;
+}
+
+.hero-sub {
+    font-size: 1.1rem;
+    color: #9ebda5;
+    margin-top: 12px;
+    font-weight: 400;
+}
+
+.hero-line {
+    width: 70px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-lt));
+    border-radius: 4px;
+    margin: 28px auto 0;
+}
+
+/* ============================================================
+   Charities Grid
+   ============================================================ */
+.charities-section { padding: 60px 0 80px; }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+.charities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 28px;
+}
+
+.charity-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: transform .25s, box-shadow .25s;
+    display: flex;
+    flex-direction: column;
+    border: 1.5px solid var(--border);
+}
+
+.charity-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 40px rgba(15,31,20,.16);
+}
+
+.card-img-wrap {
+    position: relative;
+    height: 210px;
+    overflow: hidden;
+}
+
+.card-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .4s;
+}
+
+.charity-card:hover .card-img-wrap img { transform: scale(1.06); }
+
+.card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(15,31,20,.75) 0%, transparent 60%);
+    display: flex;
+    align-items: flex-end;
+    padding: 18px;
+    opacity: 0;
+    transition: opacity .3s;
+}
+
+.charity-card:hover .card-overlay { opacity: 1; }
+
+.card-overlay span {
+    color: var(--white);
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.card-body { padding: 22px 20px; flex: 1; display: flex; flex-direction: column; }
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 10px;
+}
+
+.card-desc {
+    color: var(--gray);
+    font-size: .93rem;
+    line-height: 1.65;
+    flex: 1;
+}
+
+.card-footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.card-btn {
+    background: linear-gradient(135deg, var(--green), var(--green-lt));
+    color: var(--white);
+    font-weight: 700;
+    padding: 9px 22px;
+    border-radius: 8px;
+    font-size: .9rem;
+    transition: opacity .2s;
+}
+
+.charity-card:hover .card-btn { opacity: .9; }
+
+/* ============================================================
+   Empty State
+   ============================================================ */
+.empty-state {
+    text-align: center;
+    padding: 80px 24px;
+    color: var(--gray);
+}
+
+.empty-icon { font-size: 4rem; margin-bottom: 16px; }
+.empty-state h2 { font-size: 1.5rem; color: var(--dark); margin-bottom: 8px; }
+
+/* ============================================================
+   Charity Detail - Hero
+   ============================================================ */
+.charity-hero {
+    position: relative;
+    height: 360px;
+    overflow: hidden;
+}
+
+.charity-hero-img { position: absolute; inset: 0; }
+.charity-hero-img img { width: 100%; height: 100%; object-fit: cover; }
+
+.charity-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(10,20,12,.9) 0%, rgba(10,20,12,.4) 60%, transparent 100%);
+}
+
+.charity-hero-content {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    padding: 32px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.back-link {
+    color: #9ebda5;
+    font-size: .9rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 10px;
+    transition: color .2s;
+}
+
+.back-link:hover { color: var(--gold-lt); }
+
+.charity-hero-content h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 900;
+    color: var(--white);
+    margin-bottom: 8px;
+}
+
+.charity-hero-content p {
+    color: #c0d4c5;
+    font-size: 1rem;
+    max-width: 650px;
+}
+
+/* ============================================================
+   Campaigns Section
+   ============================================================ */
+.campaigns-section { padding: 60px 0 80px; }
+
+.section-header { text-align: center; margin-bottom: 44px; }
+
+.section-title {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 900;
+    color: var(--dark);
+}
+
+.highlight { color: var(--green); }
+
+.section-sub { color: var(--gray); margin-top: 8px; }
+
+.campaigns-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 28px;
+}
+
+.campaign-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1.5px solid var(--border);
+    overflow: hidden;
+    transition: transform .25s;
+}
+
+.campaign-card:hover { transform: translateY(-4px); }
+
+.camp-img-wrap { height: 190px; overflow: hidden; }
+.camp-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+
+.camp-body { padding: 22px 20px; }
+
+.camp-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 10px;
+}
+
+.camp-desc { color: var(--gray); font-size: .92rem; line-height: 1.65; }
+
+.camp-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.camp-goal { display: flex; flex-direction: column; gap: 2px; }
+.goal-label { font-size: .8rem; color: var(--gray); }
+.goal-amount { font-size: 1rem; font-weight: 800; color: var(--green); }
+
+.donate-btn {
+    background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+    color: var(--white);
+    font-weight: 700;
+    padding: 9px 20px;
+    border-radius: 8px;
+    font-size: .88rem;
+    transition: opacity .2s;
+}
+
+.donate-btn:hover { opacity: .88; }
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.footer {
+    background: var(--dark);
+    padding: 32px 24px;
+    text-align: center;
+    color: #7a9a80;
+}
+
+.footer-logo {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--white);
+    margin-bottom: 8px;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 768px) {
+    .charities-grid, .campaigns-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .charity-hero { height: 300px; }
+    .charity-hero-content { padding: 20px; }
+
+    .nav-admin { padding: 5px 12px; font-size: .85rem; }
+}
