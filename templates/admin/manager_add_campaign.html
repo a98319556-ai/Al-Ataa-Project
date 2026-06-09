@@ -1,0 +1,529 @@
+{% extends "admin/base_manager.html" %}
+{% block title %}إضافة حملة جديدة — {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-page-wrap { max-width: 1060px; margin: 0 auto; }
+
+/* ══ BACK + HEADER ══ */
+.back-link {
+    display: inline-flex; align-items: center; gap: .4rem;
+    color: var(--brand); font-size: .85rem; font-weight: 700;
+    text-decoration: none; margin-bottom: .9rem; transition: gap .15s;
+}
+.back-link:hover { gap: .65rem; }
+.pg-header { text-align: right; margin-bottom: 1.5rem; }
+.pg-header h1 {
+    font-size: 1.9rem; font-weight: 900; color: var(--dark);
+    display: flex; align-items: center; gap: .5rem; justify-content: flex-end;
+}
+.pg-header h1 .plus-icon { color: var(--brand); }
+.pg-breadcrumb { font-size: .8rem; color: var(--text); margin-bottom: .3rem; }
+.pg-breadcrumb a { color: var(--brand); text-decoration: none; font-weight: 700; }
+.pg-sub { font-size: .83rem; color: var(--text); margin-top: .25rem; }
+
+/* ══ CHARITY BADGE ══ */
+.charity-badge {
+    background: #fffbeb; border: 1.5px solid #f5d96a;
+    border-radius: var(--r); padding: 1rem 1.4rem;
+    margin-bottom: 1.2rem;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .7rem;
+}
+.cb-right { display: flex; align-items: center; gap: .6rem; font-size: .88rem; color: #7d6000; font-weight: 700; }
+.cb-left  { display: flex; align-items: center; gap: .6rem; font-size: .95rem; font-weight: 900; color: var(--dark); }
+.cb-logo  {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: #e8f5f0; display: flex; align-items: center;
+    justify-content: center; font-size: 1.2rem; flex-shrink: 0; overflow: hidden;
+}
+.cb-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ══ SECTION ══ */
+.form-section {
+    background: #fff; border-radius: var(--r);
+    border: 1.5px solid var(--border);
+    box-shadow: 0 2px 12px rgba(26,59,93,.05);
+    margin-bottom: 1.1rem; overflow: hidden;
+}
+.section-divider {
+    display: flex; align-items: center; justify-content: flex-end;
+    padding: .7rem 1.5rem; border-bottom: 2px solid var(--border);
+    background: #fafcfe;
+}
+.sdivider-label {
+    font-size: .82rem; font-weight: 800; color: var(--brand);
+    border-right: 3px solid var(--brand); padding-right: .6rem;
+}
+.section-body { padding: 1.3rem 1.5rem; }
+
+/* ══ FIELDS ══ */
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.field-row.full { grid-template-columns: 1fr; }
+.field-group { display: flex; flex-direction: column; gap: .32rem; }
+.field-label { font-size: .85rem; font-weight: 800; color: var(--dark); text-align: right; }
+.req { color: #e53e3e; margin-right: 2px; }
+.field-input {
+    padding: .72rem 1rem; border: 1.5px solid var(--border);
+    border-radius: 12px; font-size: .9rem; font-family: 'Cairo', sans-serif;
+    color: var(--dark); background: #f8fbfd; width: 100%;
+    transition: border-color .2s, box-shadow .2s; text-align: right;
+    direction: rtl;
+}
+.field-input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(47,143,122,.1); background: #fff; }
+.field-input::placeholder { color: #aabfcf; }
+textarea.field-input { resize: vertical; min-height: 120px; }
+.char-count { font-size: .73rem; color: var(--text); text-align: left; margin-top: .15rem; }
+
+/* ══ CATEGORY PILLS ══ */
+.cat-grid {
+    display: flex; flex-wrap: wrap; gap: .5rem; justify-content: flex-end;
+}
+.cat-pill {
+    display: flex; align-items: center; gap: .35rem;
+    padding: .45rem 1rem; border-radius: 25px;
+    border: 1.5px solid var(--border); background: #fff;
+    font-size: .83rem; font-weight: 700; color: var(--text);
+    cursor: pointer; transition: all .15s; user-select: none;
+}
+.cat-pill input[type=radio] { display: none; }
+.cat-pill:hover { border-color: var(--brand); color: var(--brand); }
+.cat-pill.selected {
+    background: var(--dark); color: #fff;
+    border-color: var(--dark);
+}
+
+/* ══ AMOUNT ROW ══ */
+.amount-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.amount-hint { font-size: .74rem; color: var(--text); margin-top: .2rem; text-align: right; }
+
+/* ══ STATUS CARDS ══ */
+.status-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .8rem; }
+.status-card {
+    border: 2px solid var(--border); border-radius: 14px;
+    padding: 1.1rem; text-align: center; cursor: pointer;
+    transition: all .2s; position: relative; background: #fff;
+}
+.status-card input[type=radio] { display: none; }
+.status-card:hover { border-color: var(--brand); }
+.status-card.selected { border-color: var(--brand); background: #f0fbf8; }
+.status-card.selected::before {
+    content: '✓'; position: absolute; top: 8px; right: 10px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--brand); color: #fff;
+    font-size: .72rem; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+}
+.sc-icon { font-size: 1.6rem; margin-bottom: .45rem; }
+.sc-name { font-size: .9rem; font-weight: 800; color: var(--dark); margin-bottom: .2rem; }
+.sc-desc { font-size: .73rem; color: var(--text); }
+
+/* ══ UPLOAD ══ */
+.upload-zone {
+    border: 1.5px dashed #9ecdc4; border-radius: 14px;
+    background: #f5fafd; padding: 2.4rem 1.5rem;
+    text-align: center; cursor: pointer;
+    transition: all .2s; position: relative;
+}
+.upload-zone:hover { border-color: var(--brand-primary); background: #eef8f5; }
+.upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-icon { font-size: 1.9rem; color: var(--brand-text); margin-bottom: .7rem; opacity: .7; }
+.upload-title { font-size: 1rem; font-weight: 800; color: var(--brand-text); }
+.upload-hint { font-size: .78rem; color: var(--brand-text-soft); margin-top: .3rem; }
+.upload-preview { display: none; margin-top: 1rem; }
+.upload-preview img { max-width: 200px; border-radius: 12px; border: 2px solid var(--border); }
+
+/* ══ PREVIEW CARD ══ */
+.preview-section {
+    background: #fff; border-radius: var(--r);
+    border: 1.5px solid var(--border);
+    box-shadow: 0 2px 12px rgba(26,59,93,.05);
+    margin-bottom: 1.1rem; overflow: hidden;
+}
+.preview-head {
+    display: flex; align-items: center; justify-content: flex-end; gap: .5rem;
+    padding: .7rem 1.5rem; border-bottom: 1.5px solid var(--border); background: #fafcfe;
+    font-size: .82rem; font-weight: 800; color: var(--brand);
+}
+.prev-card {
+    border-radius: 14px; overflow: hidden;
+    border: 1px solid var(--brand-border); margin: 1rem;
+    max-width: 380px; margin-left: auto; margin-right: auto;
+    box-shadow: var(--brand-card-shadow);
+}
+.prev-img {
+    height: 130px; background: linear-gradient(135deg,#cce9e1,#a8d8cc);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem; position: relative; overflow: hidden;
+}
+.prev-img img { width: 100%; height: 100%; object-fit: cover; }
+.prev-status-badge {
+    position: absolute; top: 10px; left: 10px;
+    background: #22c55e; color: #fff;
+    font-size: .74rem; font-weight: 700;
+    padding: .28rem .75rem; border-radius: 20px;
+    box-shadow: 0 2px 6px rgba(34,197,94,.3);
+}
+.prev-body { padding: 1rem; }
+.prev-title { font-size: .95rem; font-weight: 900; color: var(--dark); text-align: right; margin-bottom: .3rem; }
+.prev-desc  { font-size: .78rem; color: var(--text); text-align: right; line-height: 1.6; margin-bottom: .8rem; }
+.prev-progress { height: 6px; border-radius: 4px; background: #edf3f8; margin-bottom: .3rem; }
+.prev-bar { height: 100%; border-radius: 4px; background: linear-gradient(90deg,var(--brand),#1a3b5d); width: 0%; }
+.prev-donate {
+    display: block; width: 100%; padding: .75rem;
+    background: linear-gradient(90deg, #1B4F8A, #0f8c72); color: #fff; text-align: center;
+    font-size: .9rem; font-weight: 800; border: none;
+    font-family: 'Cairo', sans-serif; border-radius: 10px; cursor: default; margin-top: .8rem;
+}
+.prev-footer { font-size: .73rem; color: var(--text); text-align: left; margin-top: .5rem; display: flex; align-items: center; gap: .3rem; }
+
+/* ══ ACTIONS ══ */
+.form-actions {
+    background: #fff; border-radius: var(--r);
+    border: 1.5px solid var(--border);
+    padding: 1.2rem 1.5rem;
+    display: flex; align-items: center; gap: .8rem;
+}
+.btn-save {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .75rem 2rem; border-radius: 999px;
+    background: linear-gradient(135deg, #1B4F8A, #155a3a);
+    color: #fff; font-size: .92rem; font-weight: 800;
+    border: none; cursor: pointer; font-family: 'Cairo', sans-serif;
+    transition: opacity .2s, transform .15s;
+    box-shadow: 0 3px 12px rgba(27,79,138,.25);
+}
+.btn-save:hover { opacity: .9; transform: translateY(-1px); }
+.btn-cancel {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .75rem 1.6rem; border-radius: 999px;
+    background: #fff; color: var(--brand-text);
+    font-size: .9rem; font-weight: 700;
+    border: 1.5px solid var(--brand-border-strong); text-decoration: none;
+    font-family: 'Cairo', sans-serif; transition: background .15s;
+}
+.btn-cancel:hover { background: var(--brand-surface-muted); }
+
+@media(max-width:680px){
+    .field-row, .amount-row, .status-grid { grid-template-columns: 1fr; }
+    .status-grid { grid-template-columns: 1fr 1fr 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-page-wrap">
+
+    <!-- رجوع -->
+    <a href="{{ url_for('manager_campaigns') }}" class="back-link">
+        <i class="fa-solid fa-arrow-right"></i> رجوع
+    </a>
+
+    <!-- header -->
+    <div class="pg-header">
+        {% if request.args.get('cid') %}
+            {% for ch in charities %}{% if ch.id == request.args.get('cid')|int %}
+            <div class="pg-breadcrumb">
+                <a href="{{ url_for('manager_charities') }}">{% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %}</a> &lt;
+                <a href="{{ url_for('manager_charity_campaigns', cid=ch.id) }}">{{ ch.name }}</a> &lt;
+                {% if session.get('lang','ar') == 'en' %}Campaigns{% else %}الحملات{% endif %} &lt; إضافة
+            </div>
+            {% endif %}{% endfor %}
+        {% else %}
+            <div class="pg-breadcrumb">
+                <a href="{{ url_for('manager_campaigns') }}">حملات {% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %}</a> &lt; إضافة
+            </div>
+        {% endif %}
+        <h1>
+            إضافة حملة جديدة
+            <span class="plus-icon"><i class="fa-solid fa-plus"></i></span>
+        </h1>
+        <div class="pg-sub">
+            {% if request.args.get('cid') %}
+                {% for ch in charities %}{% if ch.id == request.args.get('cid')|int %}
+                إضافة حملة تابعة لـ {{ ch.name }}
+                {% endif %}{% endfor %}
+            {% else %}
+                إضافة حملة خيرية جديدة لإحدى {% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %} الشريكة
+            {% endif %}
+        </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" id="campForm">
+
+        <!-- badge الجمعية المختارة -->
+        <div class="charity-badge" id="charityBadge"
+             style="{{ 'display:none' if not request.args.get('cid') else '' }}">
+            <div class="cb-right">
+                <i class="fa-solid fa-circle-info"></i>
+                هذه الحملة ستكون تابعة لـ:
+            </div>
+            <div class="cb-left" id="badgeCharityName">
+                <div class="cb-logo" id="badgeLogo">🏥</div>
+                <span id="badgeName">
+                    {% if request.args.get('cid') %}
+                        {% for ch in charities %}{% if ch.id == request.args.get('cid')|int %}{{ ch.name }}{% endif %}{% endfor %}
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- ══ معلومات الحملة الأساسية ══ -->
+        <div class="form-section">
+            <div class="section-divider">
+                <span class="sdivider-label">معلومات الحملة الأساسية</span>
+            </div>
+            <div class="section-body">
+
+                <!-- اختيار الجمعية -->
+                <div class="field-row full" style="margin-bottom:1rem;">
+                    <div class="field-group">
+                        <label class="field-label">الجمعية <span class="req">*</span></label>
+                        <select name="charity_id" class="field-input" required id="charitySelect"
+                                onchange="updateBadge(this)">
+                            <option value="">اختر الجمعية...</option>
+                            {% for c in charities %}
+                            <option value="{{ c.id }}"
+                                    data-name="{{ c.name }}"
+                                    {% if request.args.get('cid')|int == c.id %}selected{% endif %}>
+                                {{ c.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- عنوان الحملة -->
+                <div class="field-row full">
+                    <div class="field-group">
+                        <label class="field-label">عنوان الحملة <span class="req">*</span></label>
+                        <input type="text" name="title" id="titleInput" class="field-input" maxlength="100"
+                               placeholder="مثال: توفير معدات طبية لغرفة العمليات" required
+                               oninput="updatePreview()">
+                        <div class="char-count"><span id="titleCount">0</span>/100</div>
+                    </div>
+                </div>
+
+                <!-- وصف الحملة -->
+                <div class="field-row full">
+                    <div class="field-group">
+                        <label class="field-label">وصف الحملة <span class="req">*</span></label>
+                        <textarea name="description" id="descInput" class="field-input" maxlength="500"
+                                  placeholder="اشرح هدف الحملة، من سيستفيد منها، وكيف سيُستخدم {% if session.get('lang','ar') == 'en' %}Amount{% else %}المبلغ{% endif %} المجمع..." required
+                                  oninput="updatePreview()"></textarea>
+                        <div class="char-count"><span id="descCount">0</span>/500</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ══ التصنيف و{% if session.get('lang','ar') == 'en' %}Amount{% else %}المبلغ{% endif %} ══ -->
+        <div class="form-section">
+            <div class="section-divider">
+                <span class="sdivider-label">التصنيف و{% if session.get('lang','ar') == 'en' %}Amount{% else %}المبلغ{% endif %}</span>
+            </div>
+            <div class="section-body">
+
+                <!-- الفئة -->
+                <div class="field-group" style="margin-bottom:1.2rem;">
+                    <label class="field-label">الفئة <span class="req">*</span></label>
+                    <div class="cat-grid" id="catGrid">
+                        {% set cats = [('صحة','🏥'),('تعليم','📚'),('غذاء','🍽'),('أيتام','🧒'),('ملابس','👕'),('إسكان','🏠'),('طوارئ','🚨'),('عام','🌍')] %}
+                        {% for cat, icon in cats %}
+                        <label class="cat-pill {% if cat=='عام' %}selected{% endif %}">
+                            <input type="radio" name="category" value="{{ cat }}" {% if cat=='عام' %}checked{% endif %}
+                                   onchange="selectCat(this.parentElement)">
+                            {{ icon }} {{ cat }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- المبالغ -->
+                <div class="amount-row">
+                    <div class="field-group">
+                        <label class="field-label">{% if session.get('lang','ar') == 'en' %}Amount{% else %}المبلغ{% endif %} المستهدف ({% if session.get('lang','ar') == 'en' %}EGP{% else %}ج.م{% endif %})</label>
+                        <input type="number" name="goal_amount" class="field-input"
+                               placeholder="{% if session.get('lang','ar') == 'en' %}EGP{% else %}ج.م{% endif %}" min="0" step="100" value="0">
+                        <div class="amount-hint">اتركه 0 إذا لم يكن {% if session.get('lang','ar') == 'en' %}Amount{% else %}المبلغ{% endif %} محدداً</div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">{% if session.get('lang','ar') == 'en' %}Amount{% else %}المبلغ{% endif %} المحصّل حتى الآن ({% if session.get('lang','ar') == 'en' %}EGP{% else %}ج.م{% endif %})</label>
+                        <input type="number" name="collected_amount" class="field-input"
+                               placeholder="0" min="0" step="100" value="0">
+                        <div class="amount-hint">للتحديث عند تعديل الحملة</div>
+                    </div>
+                </div>
+
+                <!-- حالة الحملة -->
+                <div class="field-group" style="margin-top:1.2rem;">
+                    <label class="field-label">حالة الحملة <span class="req">*</span></label>
+                    <div class="status-grid" id="statusGrid">
+                        <label class="status-card selected">
+                            <input type="radio" name="status" value="active" checked onchange="selectStatus(this.closest('.status-card'))">
+                            <div class="sc-icon">🟢</div>
+                            <div class="sc-name">نشطة</div>
+                            <div class="sc-desc">الحملة مفتوحة لل{% if session.get('lang','ar') == 'en' %}Donate Now{% else %}تبرع الآن{% endif %}</div>
+                        </label>
+                        <label class="status-card">
+                            <input type="radio" name="status" value="paused" onchange="selectStatus(this.closest('.status-card'))">
+                            <div class="sc-icon">⏸</div>
+                            <div class="sc-name">موقوفة</div>
+                            <div class="sc-desc">الحملة متوقفة مؤقتاً</div>
+                        </label>
+                        <label class="status-card">
+                            <input type="radio" name="status" value="completed" onchange="selectStatus(this.closest('.status-card'))">
+                            <div class="sc-icon">✅</div>
+                            <div class="sc-name">مكتملة</div>
+                            <div class="sc-desc">تم استيفاء الهدف المطلوب</div>
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ══ صورة الحملة ══ -->
+        <div class="form-section">
+            <div class="section-divider">
+                <span class="sdivider-label">صورة الحملة</span>
+            </div>
+            <div class="section-body">
+                <div class="upload-zone" id="uploadZone">
+                    <input type="file" name="image" accept="image/*" onchange="handleUpload(this)">
+                    <div class="upload-icon"><i class="fa-regular fa-cloud"></i></div>
+                    <div class="upload-title">انقر لرفع صورة الحملة</div>
+                    <div class="upload-hint">أو اسحب الصورة وأقلتها هنا — PNG, JPG, WEBP — الحد الأقصى 5MB</div>
+                </div>
+                <div class="upload-preview" id="uploadPreview">
+                    <img id="previewUploadImg" src="" alt="معاينة">
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ معاينة الحملة ══ -->
+        <div class="preview-section">
+            <div class="preview-head">
+                <i class="fa-solid fa-eye"></i> معاينة الحملة
+            </div>
+            <div style="padding:.5rem 1rem 1rem;">
+                <div class="prev-card">
+                    <div class="prev-img" id="prevImgWrap">
+                        <span id="prevImgEmoji">📷</span>
+                        <img id="prevImg" src="" alt="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+                        <div class="prev-status-badge" id="prevStatusBadge">نشطة</div>
+                    </div>
+                    <div class="prev-body">
+                        <div class="prev-title" id="prevTitle">عنوان الحملة...</div>
+                        <div class="prev-desc" id="prevDesc">وصف الحملة سيظهر هنا...</div>
+                        <div class="prev-progress"><div class="prev-bar"></div></div>
+                        <div class="prev-donate">{% if session.get('lang','ar') == 'en' %}Donate Now{% else %}تبرع الآن{% endif %}</div>
+                        <div class="prev-footer">
+                            <i class="fa-solid fa-building-ngo"></i>
+                            تابع: <span id="prevCharity">
+                                {% if request.args.get('cid') %}
+                                    {% for ch in charities %}{% if ch.id == request.args.get('cid')|int %}{{ ch.name }}{% endif %}{% endfor %}
+                                {% else %}اختر الجمعية{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ أزرار الحفظ ══ -->
+        <div class="form-actions">
+            <button type="submit" class="btn-save">
+                <i class="fa-solid fa-check"></i> حفظ الحملة ✓
+            </button>
+            <a href="{{ url_for('manager_campaigns') }}" class="btn-cancel">إلغاء</a>
+        </div>
+
+    </form>
+</div>
+
+<script>
+// تحديث badge الجمعية
+function updateBadge(sel) {
+    const opt = sel.options[sel.selectedIndex];
+    const badge = document.getElementById('charityBadge');
+    const name  = document.getElementById('badgeName');
+    const prev  = document.getElementById('prevCharity');
+    if (opt.value) {
+        badge.style.display = 'flex';
+        name.textContent = opt.dataset.name;
+        if (prev) prev.textContent = opt.dataset.name;
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+// اختيار الفئة
+function selectCat(el) {
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
+// اختيار {% if session.get('lang','ar') == 'en' %}Status{% else %}الحالة{% endif %}
+function selectStatus(el) {
+    document.querySelectorAll('.status-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    const val = el.querySelector('input').value;
+    const badge = document.getElementById('prevStatusBadge');
+    const labels = { active: 'نشطة', paused: 'موقوفة', completed: 'مكتملة' };
+    const colors = { active: '#d4edda', paused: '#fff8e1', completed: '#28a745' };
+    const textColors = { active: '#1a6b3c', paused: '#7d6000', completed: '#fff' };
+    badge.textContent = labels[val];
+    badge.style.background = colors[val];
+    badge.style.color = textColors[val];
+}
+
+// تحديث عداد الحروف + المعاينة
+function updatePreview() {
+    const t = document.getElementById('titleInput').value;
+    const d = document.getElementById('descInput').value;
+    document.getElementById('titleCount').textContent = t.length;
+    document.getElementById('descCount').textContent  = d.length;
+    document.getElementById('prevTitle').textContent = t || 'عنوان الحملة...';
+    document.getElementById('prevDesc').textContent  = d ? d.substring(0,100) + (d.length>100?'...':'') : 'وصف الحملة سيظهر هنا...';
+}
+
+// رفع الصورة
+function handleUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        document.getElementById('previewUploadImg').src = e.target.result;
+        document.getElementById('uploadPreview').style.display = 'block';
+        document.getElementById('uploadZone').style.borderColor = '#1a6b3c';
+        // المعاينة
+        const pi = document.getElementById('prevImg');
+        pi.src = e.target.result;
+        pi.style.display = 'block';
+        document.getElementById('prevImgEmoji').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+}
+
+// Drag & Drop
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.background='#d4f5ee'; });
+zone.addEventListener('dragleave', () => { zone.style.background='#f0fbf8'; });
+zone.addEventListener('drop', e => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+        const inp = zone.querySelector('input[type=file]');
+        const dt = new DataTransfer(); dt.items.add(file); inp.files = dt.files;
+        handleUpload(inp);
+    }
+});
+
+// init — لو فيه جمعية محددة من URL
+window.addEventListener('load', () => {
+    const sel = document.getElementById('charitySelect');
+    if (sel && sel.value) updateBadge(sel);
+});
+</script>
+{% endblock %}

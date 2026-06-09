@@ -1,0 +1,542 @@
+{% set _theme = session.get('theme','light') %}
+{% set _lang  = session.get('lang','ar') %}
+<!DOCTYPE html>
+<html lang="{% if _lang == 'en' %}en{% else %}ar{% endif %}" dir="{% if _lang == 'en' %}ltr{% else %}rtl{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الاحتياجات — منصة عطاء</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Tajawal',sans-serif;}
+        :root{
+            --blue:#1565C0;
+            --blue-dark:#0D47A1;
+            --blue-light:#1976D2;
+            --white:#ffffff;
+            --gray:#f5f7fa;
+            --text:#1e293b;
+            --text-light:#64748b;
+            --border:#e2e8f0;
+            --r:14px;
+        }
+        html{scroll-behavior:smooth;}
+        body{background:var(--white);color:var(--text);}
+
+        /* ══ NAVBAR ══ */
+        nav{
+            background:var(--white);height:64px;
+            display:flex;align-items:center;justify-content:space-between;
+            padding:0 2.5rem;
+            border-bottom:1px solid var(--border);
+            position:sticky;top:0;z-index:100;
+            box-shadow:0 1px 8px rgba(0,0,0,0.06);
+        }
+        .nav-brand{display:flex;align-items:center;gap:0.6rem;text-decoration:none;flex-shrink:0;}
+        .nav-logo{width:40px;height:40px;border-radius:10px;object-fit:cover;}
+        .nav-logo-fallback{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;font-weight:900;}
+        .nav-brand-name{font-size:1.3rem;font-weight:900;color:var(--blue-dark);display:flex;align-items:center;gap:0.35rem;margin:0;padding:0;}
+        .nav-center{display:flex;gap:0.3rem;align-items:center;}
+        .nav-link{padding:0.45rem 1rem;border-radius:25px;font-size:0.87rem;font-weight:600;text-decoration:none;color:#555;transition:all 0.2s;}
+        .nav-link:hover,.nav-link.active{color:var(--blue);background:#EEF4FF;}
+        .nav-actions{display:flex;gap:0.6rem;align-items:center;}
+        .btn-ctrl{padding:0.42rem 0.9rem;border-radius:25px;border:1.5px solid var(--border);font-size:0.83rem;font-weight:700;color:#555;background:#fff;cursor:pointer;display:flex;align-items:center;gap:0.4rem;transition:all 0.2s;font-family:'Tajawal',sans-serif;}
+        .btn-ctrl:hover{border-color:var(--blue);color:var(--blue);}
+        .btn-icon{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;transition:all 0.2s;color:#555;}
+        .btn-icon:hover{border-color:var(--blue);color:var(--blue);}
+        .btn-login{padding:0.48rem 1.2rem;border-radius:25px;border:2px solid var(--blue);color:var(--blue);font-weight:700;font-size:0.87rem;text-decoration:none;background:#fff;transition:all 0.2s;display:inline-flex;align-items:center;gap:0.4rem;}
+        .btn-login:hover{background:#EEF4FF;}
+        .btn-register{padding:0.48rem 1.3rem;border-radius:25px;background:var(--blue);color:#fff;font-weight:700;font-size:0.87rem;text-decoration:none;border:2px solid var(--blue);transition:all 0.2s;display:inline-flex;align-items:center;gap:0.4rem;}
+        .btn-register:hover{background:var(--blue-dark);border-color:var(--blue-dark);transform:translateY(-1px);}
+        .user-menu{position:relative;}
+        .user-btn{display:flex;align-items:center;gap:0.5rem;padding:0.4rem 1rem;background:#EEF4FF;border:2px solid var(--blue);border-radius:25px;color:var(--blue);font-weight:700;font-size:0.85rem;cursor:pointer;text-decoration:none;transition:all 0.2s;}
+        .user-btn:hover{background:var(--blue);color:#fff;}
+        .u-av{width:28px;height:28px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;}
+        .user-btn:hover .u-av{background:#fff;color:var(--blue);}
+        .u-drop{position:absolute;top:calc(100% + 8px);left:0;background:#fff;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.12);min-width:190px;padding:0.5rem;border:1px solid var(--border);display:none;z-index:600;}
+        .user-menu:hover .u-drop{display:block;}
+        .u-drop a{display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.8rem;border-radius:10px;color:var(--text);text-decoration:none;font-size:0.85rem;font-weight:600;transition:background 0.15s;}
+        .u-drop a:hover{background:#EEF4FF;color:var(--blue);}
+        .u-drop a.logout{color:#dc3545;}
+        .u-drop a.logout:hover{background:#fde8e8;}
+        .u-divider{height:1px;background:var(--border);margin:0.3rem 0;}
+
+        /* ══ HERO ══ */
+        .hero{
+            background:linear-gradient(160deg, #1565C0 0%, #0D47A1 100%);
+            padding:4rem 2.5rem 3.5rem;
+            text-align:center;
+            position:relative;overflow:hidden;
+        }
+        .hero::before{
+            content:'';position:absolute;inset:0;
+            background:
+                radial-gradient(ellipse at 15% 80%, rgba(255,255,255,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 85% 20%, rgba(255,255,255,0.08) 0%, transparent 50%);
+            pointer-events:none;
+        }
+        .hero-inner{max-width:700px;margin:0 auto;position:relative;z-index:1;}
+        .hero-badge{
+            display:inline-flex;align-items:center;gap:0.5rem;
+            background:rgba(255,255,255,0.15);
+            backdrop-filter:blur(8px);
+            border:1px solid rgba(255,255,255,0.25);
+            color:#fff;padding:0.4rem 1.1rem;border-radius:25px;
+            font-size:0.82rem;font-weight:700;
+            margin-bottom:1.3rem;
+        }
+        .hero h1{
+            font-size:2.8rem;font-weight:900;color:#fff;
+            line-height:1.2;margin-bottom:0.9rem;
+        }
+        .hero p{
+            font-size:1rem;color:rgba(255,255,255,0.82);
+            line-height:1.75;max-width:560px;margin:0 auto;
+        }
+
+        /* ══ MAIN ══ */
+        .main{padding:3.5rem 2.5rem;}
+        .inner{max-width:1100px;margin:0 auto;}
+
+        /* Section title */
+        .sec-title{
+            font-size:1.35rem;font-weight:900;color:var(--text);
+            margin-bottom:1.8rem;text-align:center;
+        }
+
+        /* ══ CARDS GRID ══ */
+        .cards-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+            gap:1.8rem;
+            margin-bottom:3.5rem;
+        }
+
+        /* Action Card — same visual structure as charity card */
+        .action-card{
+            background:#fff;
+            border-radius:18px;
+            overflow:hidden;
+            border:1.5px solid var(--border);
+            text-decoration:none;color:inherit;display:block;
+            transition:transform 0.25s,box-shadow 0.25s,border-color 0.25s;
+            animation:cardIn 0.4s ease both;
+        }
+        .action-card:nth-child(1){animation-delay:.03s;}
+        .action-card:nth-child(2){animation-delay:.1s;}
+        .action-card:nth-child(3){animation-delay:.17s;}
+        @keyframes cardIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+        .action-card:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(21,101,192,0.14);border-color:var(--blue);}
+
+        /* Image / colour banner */
+        .card-banner{
+            height:200px;position:relative;overflow:hidden;
+        }
+        /* gradient covers for each card */
+        .banner-new   {background:linear-gradient(135deg,#1565C0 0%,#0D47A1 100%);}
+        .banner-track {background:linear-gradient(135deg,#0D47A1 0%,#1565C0 70%,#1976D2 100%);}
+        .banner-info  {background:linear-gradient(135deg,#0a3a7a 0%,#1565C0 100%);}
+
+        /* big icon box centered — same as charity card */
+        .card-logo-box{
+            position:absolute;
+            top:50%;left:50%;
+            transform:translate(-50%,-50%);
+            width:88px;height:88px;
+            background:#fff;
+            border-radius:18px;
+            display:flex;align-items:center;justify-content:center;
+            box-shadow:0 4px 20px rgba(0,0,0,0.2);
+        }
+        .card-logo-box i{font-size:2.4rem;color:var(--blue);}
+
+        /* badge top-right */
+        .card-badge{
+            position:absolute;top:12px;right:12px;
+            background:var(--blue);color:#fff;
+            font-size:0.75rem;font-weight:700;
+            padding:0.3rem 0.8rem;border-radius:25px;
+            display:flex;align-items:center;gap:0.35rem;
+            box-shadow:0 2px 8px rgba(0,0,0,0.15);
+        }
+        .card-badge.orange{background:#e65c00;}
+        .card-badge.teal{background:#0d7377;}
+
+        /* Card body */
+        .card-body{padding:1.4rem 1.4rem 1rem;}
+        .card-title{font-size:1.15rem;font-weight:900;color:var(--text);margin-bottom:0.5rem;}
+        .card-desc{font-size:0.85rem;color:var(--text-light);line-height:1.65;margin-bottom:0.9rem;}
+
+        /* Steps mini-list inside card */
+        .card-steps{
+            display:flex;flex-direction:column;gap:0.5rem;
+            margin-bottom:0.5rem;
+        }
+        .card-step{
+            display:flex;align-items:flex-start;gap:0.7rem;
+            font-size:0.82rem;color:var(--text-light);line-height:1.5;
+        }
+        .card-step-num{
+            width:22px;height:22px;flex-shrink:0;
+            background:#EEF4FF;color:var(--blue);
+            border-radius:50%;display:flex;align-items:center;justify-content:center;
+            font-size:0.72rem;font-weight:900;border:1px solid #c7d7f5;
+        }
+
+        /* Stats row — same as charity card */
+        .card-stats{
+            display:flex;
+            border-top:1.5px solid var(--border);
+            padding:1rem 1.4rem 1.2rem;
+            gap:0;
+        }
+        .c-stat{flex:1;text-align:center;padding:0 0.5rem;}
+        .c-stat:not(:last-child){border-left:1px solid var(--border);}
+        .c-stat-num{font-size:1.5rem;font-weight:900;color:var(--blue);line-height:1;margin-bottom:0.3rem;}
+        .c-stat-lbl{font-size:0.74rem;color:var(--text-light);font-weight:600;}
+
+        /* ══ INFO SECTION ══ */
+        .info-sec{
+            background:var(--gray);
+            border-radius:18px;
+            padding:2.5rem;
+            border:1.5px solid var(--border);
+        }
+        .info-sec-title{
+            font-size:1.05rem;font-weight:900;color:var(--text);
+            margin-bottom:1.6rem;text-align:center;
+        }
+        .process-steps{
+            display:grid;
+            grid-template-columns:repeat(4,1fr);
+            gap:1.5rem;
+            position:relative;
+        }
+        .process-steps::before{
+            content:'';
+            position:absolute;
+            top:28px;right:12.5%;left:12.5%;
+            height:2px;
+            background:linear-gradient(to left,#c7d7f5,var(--blue),#c7d7f5);
+            z-index:0;
+        }
+        .p-step{
+            display:flex;flex-direction:column;align-items:center;
+            text-align:center;gap:0.6rem;position:relative;z-index:1;
+        }
+        .p-step-circle{
+            width:56px;height:56px;border-radius:50%;
+            background:#fff;border:2px solid var(--blue);
+            display:flex;align-items:center;justify-content:center;
+            font-size:1.3rem;
+            box-shadow:0 3px 12px rgba(21,101,192,0.15);
+        }
+        .p-step-num{
+            width:22px;height:22px;border-radius:50%;
+            background:var(--blue);color:#fff;
+            font-size:0.72rem;font-weight:900;
+            display:flex;align-items:center;justify-content:center;
+            margin-top:-10px;
+            border:2px solid #fff;
+            box-shadow:0 2px 6px rgba(21,101,192,0.3);
+        }
+        .p-step-lbl{font-size:0.8rem;font-weight:700;color:var(--text);line-height:1.4;}
+
+        /* ══ FOOTER ══ */
+        footer{background:#0D2B55;padding:2.5rem 2rem;margin-top:4rem;}
+        .footer-inner{max-width:1160px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;}
+        .footer-brand{display:flex;align-items:center;gap:0.7rem;}
+        .footer-brand img{width:36px;height:36px;border-radius:9px;object-fit:cover;}
+        .footer-brand-text{color:#fff;font-size:1rem;font-weight:900;}
+        .footer-links{display:flex;gap:0.5rem 1.5rem;flex-wrap:wrap;}
+        .footer-links a{color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.83rem;font-weight:600;transition:color 0.2s;}
+        .footer-links a:hover{color:#fff;}
+        .footer-copy{color:rgba(255,255,255,0.3);font-size:0.78rem;}
+
+        /* ══ RESPONSIVE ══ */
+        @media(max-width:768px){.nav-center{display:none;}}
+        @media(max-width:900px){
+            .process-steps{grid-template-columns:1fr 1fr;gap:1.2rem;}
+            .process-steps::before{display:none;}
+        }
+        @media(max-width:600px){
+            nav{padding:0 1rem;}
+            .hero{padding:3rem 1.5rem 2.5rem;}
+            .hero h1{font-size:1.9rem;}
+            .main{padding:2.5rem 1.2rem;}
+            .cards-grid{grid-template-columns:1fr;}
+            .info-sec{padding:1.5rem 1rem;}
+            .footer-inner{flex-direction:column;text-align:center;}
+        }
+    </style>
+    <style>
+        /* ══ TOGGLE BAR ══ */
+        .toggle-bar{position:fixed;bottom:1.2rem;left:1.2rem;z-index:9000;display:flex;align-items:center;gap:0.45rem;background:rgba(255,255,255,0.92);border:1px solid #e2e8f0;border-radius:50px;padding:0.3rem 0.55rem;box-shadow:0 4px 20px rgba(0,0,0,0.12);backdrop-filter:blur(12px);}
+        .tgl-btn{display:inline-flex;align-items:center;gap:0.28rem;background:none;border:none;cursor:pointer;font-family:inherit;font-size:0.82rem;font-weight:700;color:#64748b;padding:0.3rem 0.55rem;border-radius:40px;transition:background 0.18s,color 0.18s;}
+        .tgl-btn:hover{background:#f0f3f8;}
+        .tgl-active{color:#1565C0;font-weight:900;}
+        .tgl-dim{color:#94a3b8;}
+        .tgl-sep{color:#e2e8f0;font-size:0.75rem;margin:0 0.05rem;}
+        body.dark-mode{background:#0f172a !important;color:#e2e8f0 !important;}
+        body.dark-mode .toggle-bar{background:rgba(30,41,59,0.95) !important;border-color:#334155 !important;}
+        body.dark-mode .tgl-btn{color:#e2e8f0;}
+        body.dark-mode .tgl-btn:hover{background:#334155;}
+
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{% if _theme == 'dark' %}dark-mode{% endif %}">
+
+<!-- ══ NAVBAR ══ -->
+<nav>
+    <a href="{{ url_for('landing') }}" class="nav-brand">
+        <img src="{{ url_for('static', filename='uploads/logo.jpeg') }}" alt="عطاء" class="nav-logo"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div class="nav-logo-fallback" style="display:none;">ع</div>
+        <h3 class="nav-brand-name">
+{% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}
+        </div>
+    </a>
+
+    <div class="nav-center">
+        <a href="{{ url_for('public_charities') }}" class="nav-link">{% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %}</a>
+        <a href="{{ url_for('beneficiary_landing') }}" class="nav-link active">الاحتياجات</a>
+        <a href="{{ url_for('how_it_works') }}" class="nav-link">{% if session.get('lang','ar') == 'en' %}How It Works{% else %}كيف يعمل{% endif %}</a>
+    </div>
+
+    <div class="nav-actions">
+        {% if current_user.is_authenticated %}
+        <div class="user-menu">
+            <a href="{{ url_for('donor_home') }}" class="user-btn">
+                <div class="u-av">{{ current_user.username[0]|upper }}</div>
+                {{ current_user.username }}
+                <i class="fa-solid fa-chevron-down" style="font-size:0.65rem;opacity:0.6;"></i>
+            </a>
+            <div class="u-drop">
+                <a href="{{ url_for('donor_home') }}"><i class="fa-solid fa-gauge"></i> {% if session.get('lang','ar') == 'en' %}My Dashboard{% else %}لوحتي{% endif %}</a>
+                <a href="{{ url_for('donor_donate') }}"><i class="fa-solid fa-hand-holding-dollar"></i> {% if session.get('lang','ar') == 'en' %}New Donation{% else %}{% if session.get('lang','ar') == 'en' %}New Donation{% else %}تبرع جديد{% endif %}{% endif %}</a>
+                <a href="{{ url_for('donor_my_donations') }}"><i class="fa-solid fa-list"></i> {% if session.get('lang','ar') == 'en' %}My Donations{% else %}تبرعاتي{% endif %}</a>
+                <a href="{{ url_for('donor_settings') }}"><i class="fa-solid fa-gear"></i> {% if session.get('lang','ar') == 'en' %}Settings{% else %}الإعدادات{% endif %}</a>
+                <div class="u-divider"></div>
+                <a href="{{ url_for('logout') }}" class="logout"><i class="fa-solid fa-right-from-bracket"></i> {% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %} ال{% if session.get('lang','ar') == 'en' %}Logout{% else %}خروج{% endif %}</a>
+            </div>
+        </div>
+        {% elif 'admin' in session %}
+        <div class="user-menu">
+            <a href="{{ url_for('admin_dashboard') }}" class="user-btn">
+                <div class="u-av">م</div>
+                {{ session.get('admin','المشرف') }}
+            </a>
+            <div class="u-drop">
+                <a href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-gauge"></i> {% if session.get('lang','ar') == 'en' %}Dashboard{% else %}لوحة التحكم{% endif %}</a>
+                <div class="u-divider"></div>
+                <a href="{{ url_for('logout') }}" class="logout"><i class="fa-solid fa-right-from-bracket"></i> {% if session.get('lang','ar') == 'en' %}Logout{% else %}خروج{% endif %}</a>
+            </div>
+        </div>
+        {% else %}
+        <button class="btn-icon"><i class="fa-regular fa-moon"></i></button>
+        <button class="btn-ctrl"><i class="fa-solid fa-earth-americas"></i> عربي</button>
+        <a href="{{ url_for('unified_login') }}" class="btn-login">Sign in</a>
+        <a href="{{ url_for('signup') }}" class="btn-register">Sign up</a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+    <div class="hero-inner">
+        <div class="hero-badge">
+            <i class="fa-solid fa-hand-holding-heart"></i> Beneficiary services
+        </div>
+        <h1>Needs & Assistance</h1>
+        <p>Submit a request for help or track your existing request — we connect those in need with donors directly</p>
+    </div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+    <div class="inner">
+
+        <div class="sec-title">What would you like to do?</div>
+
+        <!-- ══ CARDS ══ -->
+        <div class="cards-grid">
+
+            <!-- Card 1: New request -->
+            <a href="{{ url_for('beneficiary_register') }}" class="action-card">
+                <div class="card-banner banner-new">
+                    <div class="card-logo-box">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </div>
+                    <div class="card-badge">
+                        <i class="fa-solid fa-plus"></i> New
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">{% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %} طلب جديد</div>
+                    <div class="card-desc">قدّم طلب مساعدة عينية مثل ثلاجة، غسالة، تجهيز عروسة أو أي احتياج آخر</div>
+                    <div class="card-steps">
+                        <div class="card-step">
+                            <div class="card-step-num">1</div>
+                            <span>املأ البيانات الشخصية والاحتياج المطلوب</span>
+                        </div>
+                        <div class="card-step">
+                            <div class="card-step-num">2</div>
+                            <span>أرفق المستندات المطلوبة إن وجدت</span>
+                        </div>
+                        <div class="card-step">
+                            <div class="card-step-num">3</div>
+                            <span>احتفظ ب{% if session.get('lang','ar') == 'en' %}Request Number{% else %}رقم الطلب{% endif %} للمتابعة لاحقاً</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-stats">
+                    <div class="c-stat">
+                        <div class="c-stat-num">مجاني</div>
+                        <div class="c-stat-lbl">بدون رسوم</div>
+                    </div>
+                    <div class="c-stat">
+                        <div class="c-stat-num">دقائق</div>
+                        <div class="c-stat-lbl">وقت ال{% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %}</div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 2: Track request -->
+            <a href="{{ url_for('beneficiary_track') }}" class="action-card">
+                <div class="card-banner banner-track">
+                    <div class="card-logo-box">
+                        <i class="fa-solid fa-magnifying-glass-location"></i>
+                    </div>
+                    <div class="card-badge orange">
+                        <i class="fa-solid fa-location-dot"></i> Track
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">متابعة حالة الطلب</div>
+                    <div class="card-desc">تابع حالة طلبك الحالي واعرف آخر التحديثات عبر رقم هاتفك أو {% if session.get('lang','ar') == 'en' %}Request Number{% else %}رقم الطلب{% endif %}</div>
+                    <div class="card-steps">
+                        <div class="card-step">
+                            <div class="card-step-num">1</div>
+                            <span>أدخل رقم هاتفك المسجّل</span>
+                        </div>
+                        <div class="card-step">
+                            <div class="card-step-num">2</div>
+                            <span>شاهد حالة طلبك ومراحل المعالجة</span>
+                        </div>
+                        <div class="card-step">
+                            <div class="card-step-num">3</div>
+                            <span>تلقى إشعاراً عند أي تحديث</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-stats">
+                    <div class="c-stat">
+                        <div class="c-stat-num">فوري</div>
+                        <div class="c-stat-lbl">نتيجة ال{% if session.get('lang','ar') == 'en' %}Search{% else %}بحث{% endif %}</div>
+                    </div>
+                    <div class="c-stat">
+                        <div class="c-stat-num">24/7</div>
+                        <div class="c-stat-lbl">متاح دائماً</div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 3: How it works -->
+            <a href="{{ url_for('how_it_works') }}" class="action-card">
+                <div class="card-banner banner-info">
+                    <div class="card-logo-box">
+                        <i class="fa-solid fa-circle-question"></i>
+                    </div>
+                    <div class="card-badge teal">
+                        <i class="fa-solid fa-info"></i> Info
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">كيف تسير العملية؟</div>
+                    <div class="card-desc">تعرّف على خطوات معالجة الطلب منذ التقديم وحتى الاستلام بالتفصيل</div>
+                    <div class="card-steps">
+                        <div class="card-step">
+                            <div class="card-step-num">1</div>
+                            <span>تقديم الطلب والمستندات</span>
+                        </div>
+                        <div class="card-step">
+                            <div class="card-step-num">2</div>
+                            <span>مراجعة الفريق والموافقة</span>
+                        </div>
+                        <div class="card-step">
+                            <div class="card-step-num">3</div>
+                            <span>ترتيب التسليم والاستلام</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-stats">
+                    <div class="c-stat">
+                        <div class="c-stat-num">4</div>
+                        <div class="c-stat-lbl">مراحل فقط</div>
+                    </div>
+                    <div class="c-stat">
+                        <div class="c-stat-num">شفافية</div>
+                        <div class="c-stat-lbl">كاملة</div>
+                    </div>
+                </div>
+            </a>
+
+        </div><!-- /cards-grid -->
+
+        <!-- ══ PROCESS STRIP ══ -->
+        <div class="info-sec">
+            <div class="info-sec-title">
+                <i class="fa-solid fa-route" style="color:var(--blue);margin-left:6px;"></i>
+                مراحل معالجة الطلب
+            </div>
+            <div class="process-steps">
+                <div class="p-step">
+                    <div class="p-step-circle">📋</div>
+                    <div class="p-step-num">1</div>
+                    <div class="p-step-lbl">تقديم الطلب والمستندات</div>
+                </div>
+                <div class="p-step">
+                    <div class="p-step-circle">🔍</div>
+                    <div class="p-step-num">2</div>
+                    <div class="p-step-lbl">مراجعة الفريق</div>
+                </div>
+                <div class="p-step">
+                    <div class="p-step-circle">✅</div>
+                    <div class="p-step-num">3</div>
+                    <div class="p-step-lbl">الموافقة والترتيب</div>
+                </div>
+                <div class="p-step">
+                    <div class="p-step-circle">🤝</div>
+                    <div class="p-step-num">4</div>
+                    <div class="p-step-lbl">التسليم لك</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <img src="{{ url_for('static', filename='uploads/logo.jpeg') }}" alt="عطاء"
+                 onerror="this.style.display='none';">
+            <span class="footer-brand-text">منصة عطاء</span>
+        </div>
+        <div class="footer-links">
+            <a href="{{ url_for('landing') }}">{% if session.get('lang','ar') == 'en' %}Home{% else %}الرئيسية{% endif %}</a>
+            <a href="{{ url_for('platform_campaigns_public') }}">حملات المنصة</a>
+            <a href="{{ url_for('public_charities') }}">{% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %}</a>
+            <a href="{{ url_for('unified_login') }}">{% if session.get('lang','ar') == 'en' %}Login{% else %}{% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %} ال{% if session.get('lang','ar') == 'en' %}Sign In{% else %}دخول{% endif %}{% endif %}</a>
+            <a href="{{ url_for('signup') }}">{% if session.get('lang','ar') == 'en' %}Create Account{% else %}إنشاء حساب{% endif %}</a>
+            <a href="{{ url_for('beneficiary_landing') }}">خدمات المستفيد</a>
+        </div>
+        <div class="footer-copy">منصة عطاء © 2024</div>
+    </div>
+</footer>
+
+</body>
+</html>

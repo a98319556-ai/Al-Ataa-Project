@@ -1,0 +1,496 @@
+{% set _theme = session.get('theme','light') %}
+{% set _lang  = session.get('lang','ar') %}
+<!DOCTYPE html>
+{% set _lang2 = session.get("lang","ar") %}<html lang="{{ _lang2 }}" dir="{{ "ltr" if _lang2 == "en" else "rtl" }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}لوحة المدير — {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+/* ══ DESIGN TOKENS (from joy-ui-toolkit) ══ */
+:root {
+  --brand-bg:              #F5F8FC;
+  --brand-surface:         #FFFFFF;
+  --brand-surface-muted:   #F5F8FC;
+  --brand-active-bg:       #F1F6FB;
+  --brand-icon-bg:         #EEF4FB;
+  --brand-border:          #E5EDF5;
+  --brand-border-soft:     #F0F4F9;
+  --brand-border-strong:   #D8E2EE;
+  --brand-danger-border:   #F0D4D4;
+  --brand-text:            #0F2A4A;
+  --brand-text-muted:      #516B82;
+  --brand-text-soft:       #6B7F95;
+  --brand-text-softer:     #7B91A6;
+  --brand-text-faint:      #8093A8;
+  --brand-primary:         #1B4F8A;
+  --brand-primary-fg:      #FFFFFF;
+  --brand-danger:          #B23A3A;
+  --brand-status-info-bg:      #E8F1FA;
+  --brand-status-info-text:    #1B4F8A;
+  --brand-status-success-bg:   #E6F4EA;
+  --brand-status-success-text: #1F6B3A;
+  --brand-status-warning-bg:   #FFF4E0;
+  --brand-status-warning-text: #8A5A00;
+  --brand-status-teal-bg:      #E6F2F4;
+  --brand-status-teal-text:    #0F6B7A;
+  --brand-card-shadow:     0 1px 2px rgba(15,42,74,0.04);
+  --brand-radius:          8px;
+
+  /* شورت‌هاند للـ base_manager */
+  --r:      var(--brand-radius);
+  --dark:   var(--brand-text);
+  --brand:  var(--brand-primary);
+  --text:   var(--brand-text-soft);
+  --border: var(--brand-border);
+}
+
+/* ══ RESET ══ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Cairo', sans-serif;
+  background: var(--brand-bg);
+  color: var(--brand-text);
+  direction: rtl;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ══ LAYOUT SHELL ══ */
+.shell { display: flex; height: 100vh; overflow: hidden; }
+
+/* ══ TOPBAR ══ */
+.topbar {
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 1.5rem;
+  background: var(--brand-surface);
+  border-bottom: 1px solid var(--brand-border);
+  flex-shrink: 0;
+}
+.topbar-brand {
+  display: flex; align-items: center; gap: .75rem;
+  text-decoration: none;
+}
+.topbar-brand-icon {
+  width: 38px; height: 38px;
+  background: var(--brand-primary);
+  border-radius: var(--r);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 1rem; flex-shrink: 0;
+  overflow: hidden;
+}
+.topbar-brand-icon img { width: 100%; height: 100%; object-fit: cover; }
+.topbar-brand-name { font-size: .93rem; font-weight: 700; color: var(--brand-text); line-height: 1.2; margin:0;padding:0; }
+.topbar-brand-sub  { font-size: .7rem; color: var(--brand-text-softer); }
+.topbar-search {
+  display: flex; align-items: center; gap: .5rem;
+  padding: 0 .75rem; height: 38px; width: 280px;
+  background: var(--brand-surface-muted);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--r);
+}
+.topbar-search i { color: var(--brand-text-faint); font-size: .85rem; }
+.topbar-search input {
+  flex: 1; background: transparent; border: none; outline: none;
+  font-family: 'Cairo', sans-serif; font-size: .84rem;
+  color: var(--brand-text); direction: rtl;
+}
+.topbar-search input::placeholder { color: var(--brand-text-faint); }
+.topbar-right { display: flex; align-items: center; gap: .75rem; }
+.tb-chip {
+  display: flex; align-items: center; gap: .4rem;
+  height: 36px; padding: 0 .75rem;
+  background: var(--brand-surface);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--r);
+  font-family: 'Cairo', sans-serif;
+  font-size: .78rem; font-weight: 600;
+  color: var(--brand-text); cursor: pointer;
+  text-decoration: none; transition: background .15s;
+}
+.tb-chip:hover { background: var(--brand-surface-muted); }
+.tb-chip i { color: var(--brand-primary); font-size: .82rem; }
+.tb-icon-btn {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--brand-surface);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--r); cursor: pointer;
+  color: var(--brand-text-muted); font-size: .88rem;
+  transition: background .15s;
+}
+.tb-icon-btn:hover { background: var(--brand-surface-muted); }
+.tb-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--brand-primary);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: .88rem; font-weight: 700; flex-shrink: 0;
+}
+.tb-user-info { line-height: 1.25; }
+.tb-user-name { font-size: .84rem; font-weight: 700; color: var(--brand-text); }
+.tb-user-email { font-size: .7rem; color: var(--brand-text-softer); }
+
+/* ══ SIDEBAR ══ */
+.sidebar {
+  width: 248px; flex-shrink: 0;
+  background: var(--brand-surface);
+  border-inline-start: 1px solid var(--brand-border);
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+.sb-nav { flex: 1; padding: 1.2rem .75rem; display: flex; flex-direction: column; gap: 1.4rem; }
+.sb-group-label {
+  font-size: .67rem; font-weight: 700; letter-spacing: .1em;
+  color: var(--brand-text-faint); text-transform: uppercase;
+  padding: 0 .75rem; margin-bottom: .4rem;
+}
+.sb-links { display: flex; flex-direction: column; gap: 2px; }
+.sb-link {
+  display: flex; align-items: center; gap: .75rem;
+  height: 40px; padding: 0 .75rem;
+  border-radius: var(--r);
+  font-size: .84rem; font-weight: 500;
+  color: var(--brand-text-muted);
+  text-decoration: none; transition: background .15s, color .15s;
+  position: relative; white-space: nowrap;
+}
+.sb-link i { width: 18px; text-align: center; font-size: .9rem; color: var(--brand-text-softer); flex-shrink: 0; }
+.sb-link:hover { background: var(--brand-surface-muted); color: var(--brand-text); }
+.sb-link.active {
+  background: var(--brand-active-bg);
+  color: var(--brand-primary); font-weight: 600;
+}
+.sb-link.active i { color: var(--brand-primary); }
+.sb-link.active::before {
+  content: ''; position: absolute;
+  inset-inline-end: 0; top: 20%; bottom: 20%;
+  width: 3px; border-radius: 2px 0 0 2px;
+  background: var(--brand-primary);
+}
+.sb-footer {
+  padding: .75rem;
+  border-top: 1px solid var(--brand-border);
+}
+.sb-user {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .5rem .75rem; margin-bottom: .4rem;
+}
+.sb-user-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--brand-icon-bg);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--brand-primary); font-size: .88rem; flex-shrink: 0;
+}
+.sb-user-name { font-size: .84rem; font-weight: 700; color: var(--brand-text); }
+.sb-user-role { font-size: .7rem; color: var(--brand-text-softer); }
+.sb-logout {
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
+  width: 100%; height: 36px;
+  background: var(--brand-surface);
+  border: 1px solid var(--brand-danger-border);
+  border-radius: var(--r);
+  color: var(--brand-danger);
+  font-size: .82rem; font-weight: 500;
+  font-family: 'Cairo', sans-serif; cursor: pointer;
+  text-decoration: none; transition: background .15s;
+}
+.sb-logout:hover { background: #fff0f0; }
+
+/* ══ MAIN CONTENT ══ */
+.main-wrap { display: flex; flex-direction: column; flex: 1; min-width: 0; overflow: hidden; }
+.main-content {
+  flex: 1; overflow-y: auto;
+  padding: 1.5rem;
+  background: var(--brand-bg);
+}
+
+/* ══ SHARED TABLE ══ */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+thead tr { background: var(--brand-surface-muted); }
+th {
+  padding: .75rem 1rem; text-align: right;
+  font-size: .74rem; font-weight: 600;
+  color: var(--brand-text-soft);
+  border-bottom: 1px solid var(--brand-border);
+  white-space: nowrap;
+}
+td {
+  padding: .75rem 1rem; text-align: right;
+  color: var(--brand-text-muted);
+  border-top: 1px solid var(--brand-border-soft);
+}
+td strong { color: var(--brand-text); font-weight: 700; }
+tbody tr:hover { background: var(--brand-surface-muted); }
+
+/* ══ FLASH MESSAGES ══ */
+.flash-list { margin-bottom: 1rem; }
+.flash-msg {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .75rem 1rem; border-radius: var(--r);
+  font-size: .85rem; font-weight: 600; margin-bottom: .5rem;
+}
+.flash-success { background: var(--brand-status-success-bg); color: var(--brand-status-success-text); border: 1px solid #b8dfc4; }
+.flash-danger  { background: #fde8e8; color: var(--brand-danger); border: 1px solid var(--brand-danger-border); }
+.flash-warning { background: var(--brand-status-warning-bg); color: var(--brand-status-warning-text); border: 1px solid #f5d96a; }
+.flash-info    { background: var(--brand-status-info-bg); color: var(--brand-status-info-text); border: 1px solid #bdd5ef; }
+
+/* ══ SHARED BTNS ══ */
+.btn { display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1.1rem;border-radius:var(--r);font-size:.84rem;font-weight:600;font-family:'Cairo',sans-serif;cursor:pointer;border:none;text-decoration:none;transition:all .15s; }
+.btn-primary { background:var(--brand-primary);color:#fff; }
+.btn-primary:hover { opacity:.88; }
+.btn-outline { background:var(--brand-surface);color:var(--brand-primary);border:1px solid var(--brand-border-strong); }
+.btn-outline:hover { background:var(--brand-surface-muted); }
+.btn-danger  { background:#fde8e8;color:var(--brand-danger);border:1px solid var(--brand-danger-border); }
+.btn-danger:hover { background:#f5b7b1; }
+.btn-icon { width:32px;height:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--r);border:1px solid var(--brand-border-strong);background:var(--brand-surface);color:var(--brand-text-muted);cursor:pointer;transition:background .15s; }
+.btn-icon:hover { background:var(--brand-surface-muted); }
+.btn-icon-danger { border-color:var(--brand-danger-border);color:var(--brand-danger); }
+.btn-icon-danger:hover { background:#fff0f0; }
+
+/* ══ EMPTY STATE ══ */
+.empty-state { text-align:center;padding:3rem 1rem;color:var(--brand-text-soft); }
+.empty-state .empty-icon { font-size:2.5rem;opacity:.2;display:block;margin-bottom:.75rem; }
+
+@media(max-width:900px){
+  .sidebar { position:fixed;right:-260px;top:0;bottom:0;z-index:200;transition:right .25s;box-shadow:none; }
+  .sidebar.open { right:0;box-shadow:-4px 0 20px rgba(0,0,0,.15); }
+  .topbar-search { display:none; }
+}
+
+/* ══ TOPBAR TOGGLE BTNS ══ */
+        .tb-tgl-btn{
+            display:inline-flex;align-items:center;gap:0.3rem;
+            background:var(--brand-surface-muted);border:1.5px solid var(--brand-border);
+            border-radius:20px;padding:0.3rem 0.7rem;
+            font-family:'Cairo',sans-serif;font-size:0.78rem;font-weight:700;
+            color:var(--brand-primary);cursor:pointer;transition:background 0.15s;
+        }
+        .tb-tgl-btn:hover{background:var(--brand-active-bg);border-color:var(--brand-primary);}
+        .tb-tgl-icon{
+            display:inline-flex;align-items:center;justify-content:center;
+            width:2rem;height:2rem;
+            background:var(--brand-surface-muted);border:1.5px solid var(--brand-border);
+            border-radius:50%;font-size:0.88rem;color:var(--brand-primary);cursor:pointer;
+            transition:background 0.15s;
+        }
+        .tb-tgl-icon:hover{background:var(--brand-active-bg);border-color:var(--brand-primary);}
+        body.dark-mode .tb-tgl-btn,body.dark-mode .tb-tgl-icon{background:#334155;border-color:#475569;color:#e2e8f0;}
+        body.dark-mode .tb-tgl-btn:hover,body.dark-mode .tb-tgl-icon:hover{background:#475569;}
+        /* ══ TOGGLE BAR ══ */
+.toggle-bar{
+    position:fixed;bottom:1.2rem;left:1.2rem;z-index:9000;
+    display:flex;align-items:center;gap:0.45rem;
+    background:rgba(255,255,255,0.92);
+    border:1px solid var(--brand-border);
+    border-radius:50px;
+    padding:0.3rem 0.55rem;
+    box-shadow:0 4px 20px rgba(0,0,0,0.12);
+    backdrop-filter:blur(12px);
+}
+.tgl-btn{
+    display:inline-flex;align-items:center;gap:0.28rem;
+    background:none;border:none;cursor:pointer;
+    font-family:'Cairo',sans-serif;font-size:0.82rem;font-weight:700;
+    color:var(--brand-text-soft);
+    padding:0.3rem 0.55rem;border-radius:40px;
+    transition:background 0.18s,color 0.18s;
+}
+.tgl-btn:hover{background:var(--brand-surface-muted);}
+.tgl-active{color:var(--brand-primary);font-weight:900;}
+.tgl-dim{color:var(--brand-text-faint);}
+.tgl-sep{color:var(--brand-border);font-size:0.75rem;margin:0 0.05rem;}
+.tgl-theme i{font-size:0.95rem;}
+
+/* ══ DARK MODE ══ */
+body.dark-mode{
+    --brand-bg:#0f172a;--brand-surface:#1e293b;--brand-surface-muted:#1e293b;
+    --brand-text:#e2e8f0;--brand-text-soft:#94a3b8;--brand-text-softer:#64748b;
+    --brand-text-faint:#475569;--brand-border:#334155;--brand-border-soft:#334155;
+    --brand-border-strong:#475569;
+}
+body.dark-mode .topbar{background:#1e293b;border-color:#334155;}
+body.dark-mode .sidebar{background:#1e293b;border-color:#334155;}
+body.dark-mode .nav-link:hover{background:#334155;}
+body.dark-mode .nav-link.active{background:#1e3a5f;}
+body.dark-mode .toggle-bar{background:rgba(30,41,59,0.95);border-color:#334155;}
+body.dark-mode .tgl-btn{color:#e2e8f0;}
+body.dark-mode .tgl-btn:hover{background:#334155;}
+</style>
+{% block extra_css %}{% endblock %}
+</head>
+{% set _theme = session.get('theme','light') %}
+{% set _lang  = session.get('lang','ar') %}
+<body class="{% if _theme == 'dark' %}dark-mode{% endif %}">
+
+<!-- ══ TOPBAR ══ -->
+<header class="topbar">
+  <!-- Brand -->
+  <a href="{{ url_for('manager_dashboard') }}" class="topbar-brand">
+    <div class="topbar-brand-icon">
+      {% if True %}
+        <img src="/static/uploads/logo.jpeg" alt="logo"
+             onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\'fa-solid fa-shield-halved\'></i>'">
+      {% endif %}
+    </div>
+    <div>
+      <h3 class="topbar-brand-name">{% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}</h3>
+      <div class="topbar-brand-sub">{% if session.get('lang','ar') == 'en' %}Admin Panel{% else %}لوحة الإدارة{% endif %}</div>
+    </div>
+  </a>
+
+  <!-- Search -->
+  <div class="topbar-search">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" placeholder="{% if session.get('lang','ar') == 'en' %}Search...{% else %}{% if session.get('lang','ar') == 'en' %}Search{% else %}بحث{% endif %}...{% endif %}">
+  </div>
+
+  <!-- Right cluster -->
+  <div class="topbar-right">
+    <!-- Theme toggle (decorative) -->
+    {% set _theme = session.get('theme','light') %}
+    {% set _lang  = session.get('lang','ar') %}
+    <!-- زر اللغة -->
+    <form method="POST" action="/set_lang" style="display:inline;">
+      <button type="submit" class="tb-tgl-btn">
+        {% if _lang == 'ar' %}EN{% else %}عر{% endif %}
+        <i class="fa-solid fa-language"></i>
+      </button>
+    </form>
+    <!-- زر الثيم -->
+    <form method="POST" action="/set_theme" style="display:inline;">
+      <button type="submit" class="tb-tgl-icon">
+        {% if _theme == 'dark' %}<i class="fa-solid fa-sun"></i>{% else %}<i class="fa-regular fa-moon"></i>{% endif %}
+      </button>
+    </form>
+    <!-- Bell -->
+    <div class="tb-icon-btn"><i class="fa-regular fa-bell"></i></div>
+    <!-- Role badge -->
+    <div class="tb-chip">
+      <i class="fa-solid fa-shield-halved"></i>
+      <span>{% if session.get('lang','ar') == 'en' %}System Manager{% else %}مدير النظام{% endif %}</span>
+    </div>
+    <!-- User -->
+    <div class="tb-avatar">م</div>
+    <div class="tb-user-info">
+      <div class="tb-user-name">{{ session.get('admin', 'المدير') }}</div>
+      <div class="tb-user-email">admin@platform.com</div>
+    </div>
+  </div>
+</header>
+
+<!-- ══ SHELL ══ -->
+<div class="shell">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar" id="sidebar">
+    <nav class="sb-nav">
+
+      <!-- {% if session.get('lang','ar') == 'en' %}Home{% else %}الرئيسية{% endif %} -->
+      <div>
+        <div class="sb-group-label">{% if session.get('lang','ar') == 'en' %}Home{% else %}الرئيسية{% endif %}</div>
+        <div class="sb-links">
+          <a href="{{ url_for('manager_dashboard') }}"
+             class="sb-link {% if request.endpoint == 'manager_dashboard' %}active{% endif %}">
+            <i class="fa-solid fa-table-columns"></i> {% if session.get('lang','ar') == 'en' %}Dashboard{% else %}لوحة التحكم{% endif %}
+          </a>
+        </div>
+      </div>
+
+      <!-- {% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %} الشريكة -->
+      <div>
+        <div class="sb-group-label">{% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %} الشريكة</div>
+        <div class="sb-links">
+          <a href="{{ url_for('manager_charities') }}"
+             class="sb-link {% if request.endpoint in ['manager_charities'] %}active{% endif %}">
+            <i class="fa-solid fa-building-ngo"></i> {% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %}
+          </a>
+          <a href="{{ url_for('manager_add_charity') }}"
+             class="sb-link {% if request.endpoint == 'manager_add_charity' %}active{% endif %}">
+            <i class="fa-solid fa-plus-circle"></i> إضافة جمعية
+          </a>
+          <a href="{{ url_for('manager_campaigns') }}"
+             class="sb-link {% if request.endpoint in ['manager_campaigns','manager_charity_campaigns','manager_add_campaign','manager_edit_campaign'] %}active{% endif %}">
+            <i class="fa-solid fa-list-check"></i> حملات {% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %}
+          </a>
+        </div>
+      </div>
+
+      <!-- حملات المنصة -->
+      <div>
+        <div class="sb-group-label">حملات المنصة</div>
+        <div class="sb-links">
+          <a href="{{ url_for('manager_platform_campaigns') }}"
+             class="sb-link {% if request.endpoint == 'manager_platform_campaigns' %}active{% endif %}">
+            <i class="fa-solid fa-bullhorn"></i> {% if session.get('lang','ar') == 'en' %}Campaigns{% else %}الحملات{% endif %}
+          </a>
+          <a href="{{ url_for('manager_add_platform_campaign') }}"
+             class="sb-link {% if request.endpoint == 'manager_add_platform_campaign' %}active{% endif %}">
+            <i class="fa-regular fa-star"></i> إضافة حملة
+          </a>
+          <a href="{{ url_for('manager_donors') }}"
+             class="sb-link {% if request.endpoint == 'manager_donors' %}active{% endif %}">
+            <i class="fa-solid fa-users"></i> الم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ون
+          </a>
+          <a href="{{ url_for('manager_donations_log') }}"
+             class="sb-link {% if request.endpoint == 'manager_donations_log' %}active{% endif %}">
+            <i class="fa-solid fa-receipt"></i> {% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %} التبرعات
+          </a>
+        </div>
+      </div>
+
+    </nav>
+
+    <!-- User + Logout -->
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-user-avatar"><i class="fa-solid fa-user"></i></div>
+        <div>
+          <div class="sb-user-name">{{ session.get('admin', 'المدير') }}</div>
+          <div class="sb-user-role">{% if session.get('lang','ar') == 'en' %}System Manager{% else %}مدير النظام{% endif %}</div>
+        </div>
+      </div>
+      <a href="{{ url_for('logout') }}" class="sb-logout">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        {% if session.get('lang','ar') == 'en' %}Logout{% else %}تسجيل الخروج{% endif %}
+      </a>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ══ -->
+  <div class="main-wrap">
+    <main class="main-content">
+
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="flash-list">
+        {% for cat, msg in messages %}
+        <div class="flash-msg flash-{{ cat }}">
+          <i class="fa-solid fa-{% if cat=='success' %}circle-check{% elif cat=='danger' %}circle-xmark{% elif cat=='warning' %}triangle-exclamation{% else %}circle-info{% endif %}"></i>
+          {{ msg }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+</div>
+
+<script>
+// Mobile sidebar toggle
+const sidebar = document.getElementById('sidebar');
+document.addEventListener('keydown', e => { if (e.key === 'Escape') sidebar.classList.remove('open'); });
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

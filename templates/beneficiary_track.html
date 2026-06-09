@@ -1,0 +1,633 @@
+{% set _theme = session.get('theme','light') %}
+{% set _lang  = session.get('lang','ar') %}
+<!DOCTYPE html>
+<html lang="{% if _lang == 'en' %}en{% else %}ar{% endif %}" dir="{% if _lang == 'en' %}ltr{% else %}rtl{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متابعة حالة الطلب — منصة عطاء</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Tajawal',sans-serif;}
+        :root{
+            --blue:#1565C0;
+            --blue-dark:#0D47A1;
+            --white:#ffffff;
+            --gray:#f5f7fa;
+            --text:#1e293b;
+            --text-light:#64748b;
+            --border:#e2e8f0;
+            --r:14px;
+        }
+        html{scroll-behavior:smooth;}
+        body{background:var(--white);color:var(--text);min-height:100vh;}
+
+        /* ══ NAVBAR ══ */
+        nav{
+            background:var(--white);height:64px;
+            display:flex;align-items:center;justify-content:space-between;
+            padding:0 2.5rem;
+            border-bottom:1px solid var(--border);
+            position:sticky;top:0;z-index:100;
+            box-shadow:0 1px 8px rgba(0,0,0,0.06);
+        }
+        .nav-brand{display:flex;align-items:center;gap:0.6rem;text-decoration:none;flex-shrink:0;}
+        .nav-logo{width:40px;height:40px;border-radius:10px;object-fit:cover;}
+        .nav-logo-fallback{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;font-weight:900;}
+        .nav-brand-name{font-size:1.3rem;font-weight:900;color:var(--blue-dark);display:flex;align-items:center;gap:0.35rem;margin:0;padding:0;}
+        .nav-center{display:flex;gap:0.3rem;align-items:center;}
+        .nav-link{padding:0.45rem 1rem;border-radius:25px;font-size:0.87rem;font-weight:600;text-decoration:none;color:#555;transition:all 0.2s;}
+        .nav-link:hover,.nav-link.active{color:var(--blue);background:#EEF4FF;}
+        .nav-actions{display:flex;gap:0.6rem;align-items:center;}
+        .btn-ctrl{padding:0.42rem 0.9rem;border-radius:25px;border:1.5px solid var(--border);font-size:0.83rem;font-weight:700;color:#555;background:#fff;cursor:pointer;display:flex;align-items:center;gap:0.4rem;transition:all 0.2s;font-family:'Tajawal',sans-serif;}
+        .btn-ctrl:hover{border-color:var(--blue);color:var(--blue);}
+        .btn-icon{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;transition:all 0.2s;color:#555;}
+        .btn-icon:hover{border-color:var(--blue);color:var(--blue);}
+        .btn-login{padding:0.48rem 1.2rem;border-radius:25px;border:2px solid var(--blue);color:var(--blue);font-weight:700;font-size:0.87rem;text-decoration:none;background:#fff;transition:all 0.2s;display:inline-flex;align-items:center;gap:0.4rem;}
+        .btn-login:hover{background:#EEF4FF;}
+        .btn-register{padding:0.48rem 1.3rem;border-radius:25px;background:var(--blue);color:#fff;font-weight:700;font-size:0.87rem;text-decoration:none;border:2px solid var(--blue);transition:all 0.2s;display:inline-flex;align-items:center;gap:0.4rem;}
+        .btn-register:hover{background:var(--blue-dark);transform:translateY(-1px);}
+        .user-menu{position:relative;}
+        .user-btn{display:flex;align-items:center;gap:0.5rem;padding:0.4rem 1rem;background:#EEF4FF;border:2px solid var(--blue);border-radius:25px;color:var(--blue);font-weight:700;font-size:0.85rem;cursor:pointer;text-decoration:none;transition:all 0.2s;}
+        .user-btn:hover{background:var(--blue);color:#fff;}
+        .u-av{width:28px;height:28px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;}
+        .user-btn:hover .u-av{background:#fff;color:var(--blue);}
+        .u-drop{position:absolute;top:calc(100% + 8px);left:0;background:#fff;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.12);min-width:190px;padding:0.5rem;border:1px solid var(--border);display:none;z-index:600;}
+        .user-menu:hover .u-drop{display:block;}
+        .u-drop a{display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.8rem;border-radius:10px;color:var(--text);text-decoration:none;font-size:0.85rem;font-weight:600;transition:background 0.15s;}
+        .u-drop a:hover{background:#EEF4FF;color:var(--blue);}
+        .u-drop a.logout{color:#dc3545;}
+        .u-drop a.logout:hover{background:#fde8e8;}
+        .u-divider{height:1px;background:var(--border);margin:0.3rem 0;}
+
+        /* ══ PAGE BODY ══ */
+        .page-body{
+            max-width:760px;
+            margin:0 auto;
+            padding:2.5rem 2rem 5rem;
+        }
+
+        /* Back link */
+        .back-row{
+            display:flex;justify-content:flex-start;
+            margin-bottom:2rem;
+        }
+        .back-link{
+            display:inline-flex;align-items:center;gap:0.45rem;
+            color:var(--text-light);font-size:0.9rem;font-weight:700;
+            text-decoration:none;transition:color 0.2s;
+        }
+        .back-link:hover{color:var(--blue);}
+        .back-link i{font-size:0.8rem;}
+
+        /* ══ SEARCH CARD ══ */
+        .search-card{
+            background:#fff;
+            border:1.5px solid var(--border);
+            border-radius:20px;
+            padding:2.5rem 2.5rem 2rem;
+            box-shadow:0 4px 24px rgba(0,0,0,0.06);
+            margin-bottom:2rem;
+        }
+        .search-card-title{
+            font-size:1.9rem;font-weight:900;
+            color:var(--text);
+            text-align:right;
+            margin-bottom:0.45rem;
+        }
+        .search-card-sub{
+            font-size:0.92rem;color:var(--text-light);
+            text-align:right;
+            margin-bottom:1.8rem;
+            line-height:1.6;
+        }
+
+        /* Input row */
+        .input-row{
+            display:flex;align-items:center;gap:0.8rem;
+        }
+        .search-btn{
+            flex-shrink:0;
+            padding:0.82rem 1.8rem;
+            background:var(--blue);color:#fff;
+            border:none;border-radius:12px;
+            font-family:'Tajawal',sans-serif;
+            font-size:0.95rem;font-weight:800;
+            cursor:pointer;
+            display:flex;align-items:center;gap:0.5rem;
+            transition:all 0.2s;
+            white-space:nowrap;
+        }
+        .search-btn:hover{background:var(--blue-dark);transform:translateY(-1px);}
+        .phone-wrap{
+            flex:1;position:relative;
+        }
+        .phone-icon{
+            position:absolute;left:1rem;top:50%;
+            transform:translateY(-50%);
+            color:#94a3b8;font-size:1rem;
+        }
+        .phone-input{
+            width:100%;
+            padding:0.82rem 1rem 0.82rem 2.8rem;
+            border:1.5px solid var(--border);
+            border-radius:12px;
+            font-family:'Tajawal',sans-serif;
+            font-size:1rem;color:var(--text);
+            background:#fff;outline:none;
+            transition:border-color 0.2s,box-shadow 0.2s;
+            text-align:right;
+            direction:ltr;
+        }
+        .phone-input::placeholder{color:#94a3b8;direction:rtl;text-align:right;}
+        .phone-input:focus{
+            border-color:var(--blue);
+            box-shadow:0 0 0 3px rgba(21,101,192,0.1);
+        }
+
+        /* flash */
+        .flash{padding:0.85rem 1.2rem;border-radius:10px;margin-bottom:1.2rem;font-weight:600;font-size:0.9rem;}
+        .flash-danger{background:#fde8e8;color:#dc3545;border-right:3px solid #dc3545;}
+        .flash-success{background:#d4edda;color:#145a32;border-right:3px solid #28a745;}
+
+        /* ══ RESULTS ══ */
+        .results-title{
+            font-size:1rem;font-weight:800;color:var(--text);
+            margin-bottom:1.2rem;
+            display:flex;align-items:center;gap:0.5rem;
+        }
+        .results-title span{
+            background:#EEF4FF;color:var(--blue);
+            padding:0.2rem 0.65rem;border-radius:12px;
+            font-size:0.8rem;font-weight:900;
+        }
+
+        /* Request card */
+        .req-card{
+            background:#fff;
+            border:1.5px solid var(--border);
+            border-radius:18px;
+            padding:1.8rem;
+            margin-bottom:1.3rem;
+            box-shadow:0 3px 16px rgba(0,0,0,0.05);
+            transition:box-shadow 0.2s;
+        }
+        .req-card:hover{box-shadow:0 6px 24px rgba(21,101,192,0.1);}
+
+        /* req header */
+        .req-head{
+            display:flex;align-items:flex-start;justify-content:space-between;
+            gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;
+        }
+        .req-name{font-size:1.1rem;font-weight:900;color:var(--text);}
+        .req-date{font-size:0.8rem;color:var(--text-light);margin-top:0.25rem;display:flex;align-items:center;gap:0.35rem;}
+
+        /* status pill */
+        .status-pill{
+            padding:0.35rem 1rem;border-radius:20px;
+            font-size:0.8rem;font-weight:800;
+            white-space:nowrap;flex-shrink:0;
+        }
+        .s-pending   {background:#fff3cd;color:#856404;}
+        .s-approved  {background:#d4edda;color:#145a32;}
+        .s-on_the_way{background:#d1ecf1;color:#0c5460;}
+        .s-rejected  {background:#fff0d6;color:#7a4800;}
+        .s-final_rejected{background:#fde8e8;color:#dc3545;}
+
+        /* ══ TIMELINE ══ */
+        .timeline{
+            position:relative;
+            padding-right:2.4rem;
+        }
+        .timeline::before{
+            content:'';
+            position:absolute;right:14px;
+            top:12px;bottom:12px;
+            width:2px;
+            background:var(--border);
+            z-index:0;
+        }
+        .tl-item{
+            position:relative;
+            margin-bottom:1.4rem;
+            display:flex;
+            align-items:flex-start;
+            gap:0;
+        }
+        .tl-item:last-child{margin-bottom:0;}
+
+        .tl-dot{
+            position:absolute;
+            right:-2.4rem;
+            width:28px;height:28px;
+            border-radius:50%;
+            display:flex;align-items:center;justify-content:center;
+            font-size:0.7rem;
+            border:2.5px solid #fff;
+            z-index:1;
+        }
+        .tl-dot.done    {background:var(--blue);color:#fff;box-shadow:0 0 0 3px #dbeafe;}
+        .tl-dot.active  {background:#f59e0b;color:#fff;box-shadow:0 0 0 3px #fef3c7;animation:pulse 1.5s infinite;}
+        .tl-dot.waiting {background:#e2e8f0;color:#94a3b8;}
+        .tl-dot.bad     {background:#dc3545;color:#fff;box-shadow:0 0 0 3px #fde8e8;}
+        @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.18);}}
+
+        .tl-body{padding-right:0.3rem;}
+        .tl-label{font-size:0.9rem;font-weight:800;color:var(--text);line-height:1.3;}
+        .tl-label.muted{color:var(--text-light);}
+        .tl-label.active-lbl{color:#f59e0b;}
+        .tl-label.good-lbl{color:var(--blue);}
+        .tl-label.bad-lbl{color:#dc3545;}
+        .tl-sub{font-size:0.8rem;color:var(--text-light);margin-top:0.2rem;line-height:1.5;}
+
+        /* note box */
+        .note-box{
+            background:#fff8e1;
+            border-right:3px solid #f59e0b;
+            border-radius:10px;
+            padding:0.85rem 1rem;
+            margin-top:1.2rem;
+            font-size:0.86rem;
+            color:#713f12;
+            line-height:1.6;
+        }
+        .note-box strong{display:block;margin-bottom:0.2rem;}
+
+        /* empty state */
+        .empty-box{
+            text-align:center;padding:3rem 1.5rem;
+            color:var(--text-light);
+        }
+        .empty-box i{font-size:3rem;color:#cbd5e1;margin-bottom:0.9rem;display:block;}
+        .empty-box p{font-size:0.95rem;font-weight:600;margin-bottom:1.5rem;}
+        .empty-btn{
+            display:inline-flex;align-items:center;gap:0.5rem;
+            background:var(--blue);color:#fff;
+            padding:0.75rem 1.8rem;border-radius:25px;
+            font-size:0.9rem;font-weight:800;text-decoration:none;
+            transition:all 0.2s;
+        }
+        .empty-btn:hover{background:var(--blue-dark);transform:translateY(-1px);}
+
+        /* ══ FOOTER ══ */
+        footer{background:#0D2B55;padding:2.5rem 2rem;margin-top:4rem;}
+        .footer-inner{max-width:1160px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;}
+        .footer-brand{display:flex;align-items:center;gap:0.7rem;}
+        .footer-brand img{width:36px;height:36px;border-radius:9px;object-fit:cover;}
+        .footer-brand-text{color:#fff;font-size:1rem;font-weight:900;}
+        .footer-links{display:flex;gap:0.5rem 1.5rem;flex-wrap:wrap;}
+        .footer-links a{color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.83rem;font-weight:600;transition:color 0.2s;}
+        .footer-links a:hover{color:#fff;}
+        .footer-copy{color:rgba(255,255,255,0.3);font-size:0.78rem;}
+
+        /* ══ RESPONSIVE ══ */
+        @media(max-width:768px){.nav-center{display:none;}}
+        @media(max-width:600px){
+            nav{padding:0 1rem;}
+            .page-body{padding:1.8rem 1.2rem 4rem;}
+            .search-card{padding:1.8rem 1.2rem 1.5rem;}
+            .search-card-title{font-size:1.55rem;}
+            .input-row{flex-direction:column-reverse;align-items:stretch;}
+            .search-btn{justify-content:center;}
+            .footer-inner{flex-direction:column;text-align:center;}
+        }
+    </style>
+    <style>
+        /* ══ TOGGLE BAR ══ */
+        .toggle-bar{position:fixed;bottom:1.2rem;left:1.2rem;z-index:9000;display:flex;align-items:center;gap:0.45rem;background:rgba(255,255,255,0.92);border:1px solid #e2e8f0;border-radius:50px;padding:0.3rem 0.55rem;box-shadow:0 4px 20px rgba(0,0,0,0.12);backdrop-filter:blur(12px);}
+        .tgl-btn{display:inline-flex;align-items:center;gap:0.28rem;background:none;border:none;cursor:pointer;font-family:inherit;font-size:0.82rem;font-weight:700;color:#64748b;padding:0.3rem 0.55rem;border-radius:40px;transition:background 0.18s,color 0.18s;}
+        .tgl-btn:hover{background:#f0f3f8;}
+        .tgl-active{color:#1565C0;font-weight:900;}
+        .tgl-dim{color:#94a3b8;}
+        .tgl-sep{color:#e2e8f0;font-size:0.75rem;margin:0 0.05rem;}
+        body.dark-mode{background:#0f172a !important;color:#e2e8f0 !important;}
+        body.dark-mode .toggle-bar{background:rgba(30,41,59,0.95) !important;border-color:#334155 !important;}
+        body.dark-mode .tgl-btn{color:#e2e8f0;}
+        body.dark-mode .tgl-btn:hover{background:#334155;}
+
+    
+        /* ══ DARK MODE ══ */
+        body.dark-mode .search-card  { background: #1e293b !important; border-color: #334155 !important; box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important; }
+        body.dark-mode .search-card-title { color: #f1f5f9 !important; }
+        body.dark-mode .search-card-sub   { color: #94a3b8 !important; }
+        body.dark-mode .phone-wrap  { background: #0f172a !important; border-color: #334155 !important; }
+        body.dark-mode .phone-icon  { color: #475569 !important; }
+        body.dark-mode .phone-input { background: #0f172a !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+        body.dark-mode .search-btn  { background: #1d4ed8 !important; }
+        body.dark-mode .empty-box   { background: #1e293b !important; border-color: #334155 !important; }
+        body.dark-mode .empty-box i { color: #334155 !important; }
+        body.dark-mode .empty-box p { color: #94a3b8 !important; }
+        body.dark-mode .req-card-wrapper,
+        body.dark-mode .req-result-card { background: #1e293b !important; border-color: #334155 !important; }
+        body.dark-mode .tl-connector { border-color: #334155 !important; }
+
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{% if _theme == 'dark' %}dark-mode{% endif %}">
+
+<!-- ══ NAVBAR ══ -->
+<nav>
+    <a href="{{ url_for('landing') }}" class="nav-brand">
+        <img src="{{ url_for('static', filename='uploads/logo.jpeg') }}" alt="عطاء" class="nav-logo"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div class="nav-logo-fallback" style="display:none;">ع</div>
+        <h3 class="nav-brand-name">
+{% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}
+        </div>
+    </a>
+
+    <div class="nav-center">
+        <a href="{{ url_for('public_charities') }}" class="nav-link">{% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %}</a>
+        <a href="{{ url_for('beneficiary_landing') }}" class="nav-link active">الاحتياجات</a>
+        <a href="{{ url_for('how_it_works') }}" class="nav-link">{% if session.get('lang','ar') == 'en' %}How It Works{% else %}كيف يعمل{% endif %}</a>
+    </div>
+
+    <div class="nav-actions">
+        {% if current_user.is_authenticated %}
+        <div class="user-menu">
+            <a href="{{ url_for('donor_home') }}" class="user-btn">
+                <div class="u-av">{{ current_user.username[0]|upper }}</div>
+                {{ current_user.username }}
+                <i class="fa-solid fa-chevron-down" style="font-size:0.65rem;opacity:0.6;"></i>
+            </a>
+            <div class="u-drop">
+                <a href="{{ url_for('donor_home') }}"><i class="fa-solid fa-gauge"></i> {% if session.get('lang','ar') == 'en' %}My Dashboard{% else %}لوحتي{% endif %}</a>
+                <a href="{{ url_for('donor_donate') }}"><i class="fa-solid fa-hand-holding-dollar"></i> {% if session.get('lang','ar') == 'en' %}New Donation{% else %}{% if session.get('lang','ar') == 'en' %}New Donation{% else %}تبرع جديد{% endif %}{% endif %}</a>
+                <a href="{{ url_for('donor_my_donations') }}"><i class="fa-solid fa-list"></i> {% if session.get('lang','ar') == 'en' %}My Donations{% else %}تبرعاتي{% endif %}</a>
+                <a href="{{ url_for('donor_settings') }}"><i class="fa-solid fa-gear"></i> {% if session.get('lang','ar') == 'en' %}Settings{% else %}الإعدادات{% endif %}</a>
+                <div class="u-divider"></div>
+                <a href="{{ url_for('logout') }}" class="logout"><i class="fa-solid fa-right-from-bracket"></i> {% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %} ال{% if session.get('lang','ar') == 'en' %}Logout{% else %}خروج{% endif %}</a>
+            </div>
+        </div>
+        {% elif 'admin' in session %}
+        <div class="user-menu">
+            <a href="{{ url_for('admin_dashboard') }}" class="user-btn">
+                <div class="u-av">م</div>
+                {{ session.get('admin','المشرف') }}
+            </a>
+            <div class="u-drop">
+                <a href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-gauge"></i> {% if session.get('lang','ar') == 'en' %}Dashboard{% else %}لوحة التحكم{% endif %}</a>
+                <div class="u-divider"></div>
+                <a href="{{ url_for('logout') }}" class="logout"><i class="fa-solid fa-right-from-bracket"></i> {% if session.get('lang','ar') == 'en' %}Logout{% else %}خروج{% endif %}</a>
+            </div>
+        </div>
+        {% else %}
+        <button class="btn-icon"><i class="fa-regular fa-moon"></i></button>
+        <button class="btn-ctrl"><i class="fa-solid fa-earth-americas"></i> EN</button>
+        <a href="{{ url_for('unified_login') }}" class="btn-login">{% if session.get('lang','ar') == 'en' %}Login{% else %}{% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %} ال{% if session.get('lang','ar') == 'en' %}Sign In{% else %}دخول{% endif %}{% endif %}</a>
+        <a href="{{ url_for('signup') }}" class="btn-register">{% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %} الآن</a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- ══ PAGE BODY ══ -->
+<div class="page-body">
+
+    <!-- Back link -->
+    <div class="back-row">
+        <a href="{{ url_for('beneficiary_landing') }}" class="back-link">
+            العودة <i class="fa-solid fa-arrow-left"></i>
+        </a>
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for cat, msg in messages %}
+            <div class="flash flash-{{ cat }}">{{ msg }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- ══ SEARCH CARD ══ -->
+    <div class="search-card">
+        <div class="search-card-title">متابعة حالة الطلب</div>
+        <div class="search-card-sub">{% if session.get('lang','ar') == 'en' %}Enter your phone number to view all your requests and their status{% else %}أدخل رقم هاتفك لعرض جميع طلباتك وحالتها{% endif %}</div>
+
+        <form method="GET" action="{{ url_for('beneficiary_track') }}">
+            <div class="input-row">
+                <button type="submit" class="search-btn">
+                    <i class="fa-solid fa-magnifying-glass"></i> {% if session.get('lang','ar') == 'en' %}Search{% else %}بحث{% endif %}
+                </button>
+                <div class="phone-wrap">
+                    <i class="fa-solid fa-phone phone-icon"></i>
+                    <input
+                        type="tel"
+                        name="phone"
+                        class="phone-input"
+                        placeholder="01XXXXXXXXX"
+                        value="{{ search_phone or '' }}"
+                        required
+                        autocomplete="tel"
+                    >
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- ══ RESULTS ══ -->
+    {% if requests is defined %}
+        {% if requests %}
+
+        <div class="results-title">
+            <i class="fa-solid fa-list-check" style="color:var(--blue);"></i>
+            نتائج ال{% if session.get('lang','ar') == 'en' %}Search{% else %}بحث{% endif %}
+            <span>{{ requests|length }}</span>
+        </div>
+
+        {% for req in requests %}
+        <div class="req-card">
+
+            <!-- Request header -->
+            <div class="req-head">
+                <div>
+                    <div class="req-name">
+                        {% if req.is_urgent %}<span class="urgent-tag"><i class="fa-solid fa-triangle-exclamation"></i> حالة عاجلة</span>{% endif %}
+                        {{ req.item_requested }}
+                    </div>
+                    <div class="req-date">
+                        <i class="fa-regular fa-calendar"></i>
+                        {{ req.created_at | fmt_date }}
+                    </div>
+                </div>
+                <span class="status-pill s-{{ req.status }}">
+                    {% if req.status == 'pending'        %}⏳ قيد المراجعة
+                    {% elif req.status == 'approved'     %}✅ موافق عليه
+                    {% elif req.status == 'on_the_way'   %}🚚 في الطريق
+                    {% elif req.status == 'received'     %}🎉 تم الاستلام
+                    {% elif req.status == 'rejected'     %}🔄 يحتاج تعديل
+                    {% elif req.status == 'final_rejected'%}❌ مرفوض
+                    {% endif %}
+                </span>
+            </div>
+
+            <!-- Timeline -->
+            <div class="timeline">
+
+                <!-- Step 1: Received -->
+                <div class="tl-item">
+                    <div class="tl-dot done"><i class="fa-solid fa-check"></i></div>
+                    <div class="tl-body">
+                        <div class="tl-label">تم استلام الطلب</div>
+                        <div class="tl-sub">{{ req.created_at | fmt_date }}</div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Under review / result -->
+                <div class="tl-item">
+                    {% if req.status == 'pending' %}
+                    <div class="tl-dot active"><i class="fa-solid fa-hourglass-half"></i></div>
+                    <div class="tl-body">
+                        <div class="tl-label active-lbl">جاري المراجعة</div>
+                        <div class="tl-sub">الفريق يراجع طلبك وسيتم الرد قريباً</div>
+                    </div>
+                    {% elif req.status in ['approved','on_the_way'] %}
+                    <div class="tl-dot done"><i class="fa-solid fa-check"></i></div>
+                    <div class="tl-body">
+                        <div class="tl-label">تمت المراجعة</div>
+                        <div class="tl-sub">تمت مراجعة الطلب والمستندات</div>
+                    </div>
+                    {% elif req.status == 'rejected' %}
+                    <div class="tl-dot bad"><i class="fa-solid fa-rotate-left"></i></div>
+                    <div class="tl-body">
+                        <div class="tl-label bad-lbl">يحتاج تعديل</div>
+                        <div class="tl-sub">راجع الملاحظة أدناه وأعد التقديم</div>
+                    </div>
+                    {% elif req.status == 'final_rejected' %}
+                    <div class="tl-dot bad"><i class="fa-solid fa-ban"></i></div>
+                    <div class="tl-body">
+                        <div class="tl-label bad-lbl">تم الرفض</div>
+                        <div class="tl-sub">للاستفسار تواصل مع المنصة</div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if req.status not in ['rejected','final_rejected'] %}
+                <!-- Step 3: Approved -->
+                <div class="tl-item">
+                    {% if req.status == 'approved' %}
+                    <div class="tl-dot active"><i class="fa-solid fa-check-double"></i></div>
+                    <div class="tl-body">
+                        <div class="tl-label good-lbl">موافق على الطلب</div>
+                        <div class="tl-sub">تمت الموافقة وجاري التجهيز</div>
+                    </div>
+                    {% elif req.status == 'on_the_way' %}
+                    <div class="tl-dot done"><i class="fa-solid fa-check"></i></div>
+                    <div class="tl-body">
+                        <div class="tl-label">تمت الموافقة</div>
+                        <div class="tl-sub">تمت الموافقة وبدأ التجهيز</div>
+                    </div>
+                    {% else %}
+                    <div class="tl-dot waiting"><i class="fa-solid fa-check-double"></i></div>
+                    <div class="tl-body">
+                        <div class="tl-label muted">في انتظار الموافقة</div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Step 4: On the way -->
+                <div class="tl-item">
+                    {% if req.status == 'on_the_way' %}
+                    <div class="tl-dot active"><i class="fa-solid fa-truck"></i></div>
+                    <div class="tl-body">
+                        <div class="tl-label active-lbl">في الطريق إليك!</div>
+                        <div class="tl-sub">تم شحن طلبك وهو في طريقه</div>
+                    </div>
+                    {% else %}
+                    <div class="tl-dot waiting"><i class="fa-solid fa-truck"></i></div>
+                    <div class="tl-body">
+                        <div class="tl-label muted">الشحن والتوصيل</div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Step 5: Received -->
+                <div class="tl-item">
+                    {% if req.status == 'received' %}
+                    <div class="tl-dot done" style="background:#38a169;"><i class="fa-solid fa-box-open"></i></div>
+                    <div class="tl-body">
+                        <div class="tl-label" style="color:#276749;font-weight:800;">🎉 تم الاستلام!</div>
+                        <div class="tl-sub">تم تأكيد استلام الطلب بنجاح</div>
+                    </div>
+                    {% else %}
+                    <div class="tl-dot waiting"><i class="fa-solid fa-box-open"></i></div>
+                    <div class="tl-body">
+                        <div class="tl-label muted">تأكيد الاستلام</div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% endif %}
+
+            </div><!-- /timeline -->
+
+            <!-- زر تأكيد الاستلام — يظهر فقط when on_the_way -->
+            {% if req.status == 'on_the_way' %}
+            <div class="confirm-received-box">
+                <div class="confirm-title">
+                    <i class="fa-solid fa-box-open"></i>
+                    هل استلمت طلبك؟
+                </div>
+                <p class="confirm-desc">أدخل رقم هاتفك المسجّل لتأكيد الاستلام وإغلاق الطلب</p>
+                <form method="POST" action="{{ url_for('beneficiary_confirm_received') }}" class="confirm-form">
+                    <input type="hidden" name="request_id" value="{{ req.id }}">
+                    <input type="tel" name="phone" class="confirm-phone"
+                           placeholder="01xxxxxxxxx" required dir="ltr">
+                    <button type="submit" class="confirm-btn">
+                        <i class="fa-solid fa-circle-check"></i>
+                        تم الاستلام
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+            {% if req.admin_note %}
+            <div class="note-box">
+                <strong><i class="fa-solid fa-comment-dots"></i> ملاحظة من الإدارة:</strong>
+                {{ req.admin_note }}
+            </div>
+            {% endif %}
+
+        </div><!-- /req-card -->
+        {% endfor %}
+
+        {% else %}
+        <!-- Empty state -->
+        <div class="search-card">
+            <div class="empty-box">
+                <i class="fa-solid fa-inbox"></i>
+                <p>لم يتم العثور على طلبات برقم الهاتف هذا</p>
+                <a href="{{ url_for('beneficiary_register') }}" class="empty-btn">
+                    <i class="fa-solid fa-plus"></i> تقديم طلب جديد
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+
+</div><!-- /page-body -->
+
+<!-- ══ FOOTER ══ -->
+<footer>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <img src="{{ url_for('static', filename='uploads/logo.jpeg') }}" alt="عطاء"
+                 onerror="this.style.display='none';">
+            <span class="footer-brand-text">منصة عطاء</span>
+        </div>
+        <div class="footer-links">
+            <a href="{{ url_for('landing') }}">{% if session.get('lang','ar') == 'en' %}Home{% else %}الرئيسية{% endif %}</a>
+            <a href="{{ url_for('platform_campaigns_public') }}">حملات المنصة</a>
+            <a href="{{ url_for('public_charities') }}">{% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %}</a>
+            <a href="{{ url_for('unified_login') }}">{% if session.get('lang','ar') == 'en' %}Login{% else %}{% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %} ال{% if session.get('lang','ar') == 'en' %}Sign In{% else %}دخول{% endif %}{% endif %}</a>
+            <a href="{{ url_for('signup') }}">{% if session.get('lang','ar') == 'en' %}Create Account{% else %}إنشاء حساب{% endif %}</a>
+            <a href="{{ url_for('beneficiary_register') }}">تقديم طلب</a>
+        </div>
+        <div class="footer-copy">منصة عطاء © 2024</div>
+    </div>
+</footer>
+
+</body>
+</html>

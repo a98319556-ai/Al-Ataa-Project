@@ -1,0 +1,135 @@
+{% extends "admin/base_manager.html" %}
+{% block title %}تأكيد حذف الحملة{% endblock %}
+{% block extra_css %}
+<style>
+.confirm-wrap {
+    min-height: 70vh; display: flex; align-items: center; justify-content: center;
+}
+.confirm-card {
+    background: var(--brand-surface); border-radius: 16px;
+    border: 1px solid var(--brand-border); box-shadow: 0 8px 32px rgba(15,42,74,.1);
+    padding: 2.4rem 2rem; max-width: 480px; width: 100%; text-align: center;
+    position: relative;
+}
+.close-btn {
+    position: absolute; top: 1rem; right: 1rem;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--brand-surface-muted); border: 1px solid var(--brand-border);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--brand-text-soft); text-decoration: none; font-size: .85rem;
+    transition: background .15s;
+}
+.close-btn:hover { background: var(--brand-border); }
+.trash-circle {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: #fde8e8; border: 2px solid #f5b7b1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; margin: 0 auto 1.2rem;
+}
+.confirm-title { font-size: 1.35rem; font-weight: 900; color: var(--brand-text); margin-bottom: .35rem; }
+.confirm-warning { font-size: .85rem; color: #b23a3a; font-weight: 700; margin-bottom: 1.3rem; }
+.camp-preview {
+    background: var(--brand-surface-muted); border-radius: 10px;
+    border: 1px solid var(--brand-border);
+    padding: .85rem 1rem; margin-bottom: 1.3rem;
+    display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+}
+.camp-preview-img {
+    width: 44px; height: 44px; border-radius: 8px;
+    background: linear-gradient(135deg,#cce9e1,#a8d8cc);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; flex-shrink: 0; overflow: hidden;
+}
+.camp-preview-img img { width: 100%; height: 100%; object-fit: cover; }
+.camp-preview-name { font-size: .92rem; font-weight: 800; color: var(--brand-text); text-align: right; }
+.camp-preview-charity { font-size: .76rem; color: var(--brand-text-soft); text-align: right; margin-top: .15rem; }
+.s-active    { background: #d4edda; color: #1a6b3c; }
+.s-completed { background: #dbeafe; color: #1e40af; }
+.s-paused    { background: #fff8e1; color: #7d6000; }
+.badge-sm { font-size: .72rem; font-weight: 700; padding: .2rem .6rem; border-radius: 15px; white-space: nowrap; }
+.consequences {
+    text-align: right; margin-bottom: 1.5rem;
+    background: var(--brand-surface-muted); border-radius: 10px;
+    padding: .85rem 1rem; border: 1px solid var(--brand-border);
+}
+.consequences li {
+    font-size: .83rem; color: var(--brand-text-soft);
+    margin-bottom: .4rem; padding-right: .5rem;
+    list-style: disc; margin-right: 1rem;
+}
+.btn-confirm-delete {
+    display: flex; align-items: center; justify-content: center; gap: .5rem;
+    width: 100%; padding: .85rem;
+    background: #e53e3e; color: #fff;
+    font-size: .95rem; font-weight: 800;
+    border: none; border-radius: 10px; cursor: pointer;
+    font-family: 'Cairo', sans-serif; margin-bottom: .75rem;
+    transition: background .15s;
+}
+.btn-confirm-delete:hover { background: #c53030; }
+.btn-keep {
+    display: block; text-align: center;
+    font-size: .85rem; color: var(--brand-text-soft);
+    text-decoration: none; font-weight: 600;
+    transition: color .15s;
+}
+.btn-keep:hover { color: var(--brand-text); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confirm-wrap">
+  <div class="confirm-card">
+
+    <!-- زر الإغلاق -->
+    <a href="javascript:history.back()" class="close-btn">✕</a>
+
+    <!-- أيقونة سلة -->
+    <div class="trash-circle">🗑️</div>
+
+    <div class="confirm-title">تأكيد حذف الحملة</div>
+    <div class="confirm-warning">هذا {% if session.get('lang','ar') == 'en' %}Action{% else %}الإجراء{% endif %} لا يمكن التراجع عنه</div>
+
+    <!-- معاينة الحملة -->
+    <div class="camp-preview">
+      <div style="flex:1;min-width:0;">
+        <div class="camp-preview-name">{{ campaign.title }}</div>
+        <div class="camp-preview-charity">
+          {% if camp_type == 'charity' %}
+            {{ campaign.charity_name or 'جمعية شريكة' }}
+          {% else %}
+            {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}
+          {% endif %}
+        </div>
+      </div>
+      <span class="badge-sm s-{{ campaign.get('status','active') }}">
+        {% set st = campaign.get('status','active') %}
+        {% if st == 'active' %}نشطة{% elif st == 'completed' %}مكتملة{% else %}موقوفة{% endif %}
+      </span>
+      <div class="camp-preview-img">
+        {% if campaign.image and campaign.image != 'default.jpg' %}
+          <img src="/static/uploads/{{ campaign.image }}" alt="">
+        {% else %}📷{% endif %}
+      </div>
+    </div>
+
+    <!-- عواقب الحذف -->
+    <div class="consequences">
+      <ul>
+        <li>سيتم حذف الحملة نهائياً من قاعدة البيانات</li>
+        <li>لن يتمكن الم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ون من رؤية هذه الحملة</li>
+        <li>{% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %} التبرعات المرتبط بها سيبقى محفوظاً</li>
+      </ul>
+    </div>
+
+    <!-- أزرار -->
+    <form method="POST">
+      <button type="submit" class="btn-confirm-delete">
+        🗑️ تأكيد الحذف نهائياً
+      </button>
+    </form>
+    <a href="javascript:history.back()" class="btn-keep">إلغاء — احتفظ بالحملة</a>
+
+  </div>
+</div>
+{% endblock %}

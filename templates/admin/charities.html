@@ -1,0 +1,80 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}حملات المنصة - {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="fa-solid fa-bullhorn"></i> حملات {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}</h1>
+        <p class="page-sub">إدارة {% if session.get('lang','ar') == 'en' %}Campaigns{% else %}الحملات{% endif %} الخيرية للمنصة</p>
+    </div>
+    <a href="{{ url_for('admin_add_charity') }}" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> إضافة حملة
+    </a>
+</div>
+
+{% if charities %}
+<div class="card">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>الجمعية</th>
+                    <th>{% if session.get('lang','ar') == 'en' %}Campaigns{% else %}الحملات{% endif %}</th>
+                    <th>مجالات العمل</th>
+                    <th>{% if session.get('lang','ar') == 'en' %}Action{% else %}الإجراء{% endif %}ات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in charities %}
+                <tr>
+                    <td>{{ c.id }}</td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:0.8rem;">
+                            {% if c.image and c.image != 'default.jpg' %}
+                            <img src="{{ url_for('static', filename='uploads/' + c.image) }}" alt="" class="item-img" onerror="this.style.display='none'">
+                            {% else %}
+                            <div class="item-img-placeholder"><i class="fa-solid fa-building-ngo"></i></div>
+                            {% endif %}
+                            <div>
+                                <strong>{{ c.name }}</strong><br>
+                                <small style="color:#4f7e95;">{{ c.description[:60] }}...</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge badge-info">{{ c.campaign_count }} حملة</span>
+                        <a href="{{ url_for('admin_campaigns', cid=c.id) }}" class="btn btn-sm" style="margin-right:5px;font-size:0.75rem;padding:3px 8px;background:#f4f9fc;color:var(--brand);">{% if session.get('lang','ar') == 'en' %}View{% else %}عرض{% endif %}</a>
+                    </td>
+                    <td style="font-size:0.83rem;color:#4f7e95;max-width:200px;">
+                        {{ c.fields[:80] if c.fields else '—' }}{% if c.fields and c.fields|length > 80 %}...{% endif %}
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+                            <a href="{{ url_for('admin_add_campaign', cid=c.id) }}" class="btn btn-success btn-sm">
+                                <i class="fa-solid fa-plus"></i> حملة
+                            </a>
+                            <a href="{{ url_for('admin_edit_charity', cid=c.id) }}" class="btn btn-warning btn-sm">
+                                <i class="fa-solid fa-edit"></i>
+                            </a>
+                            <form method="post" action="{{ url_for('admin_delete_charity', cid=c.id) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('حذف جمعية {{ c.name }} وجميع حملاتها؟')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card" style="text-align:center;padding:3rem;color:#4f7e95;">
+    <i class="fa-solid fa-building-ngo" style="font-size:3rem;margin-bottom:1rem;color:#d1e2ef;"></i>
+    <p>لا توجد جمعيات مسجلة بعد</p>
+    <a href="{{ url_for('admin_add_charity') }}" class="btn btn-primary" style="margin-top:1rem;">إضافة أول جمعية</a>
+</div>
+{% endif %}
+{% endblock %}

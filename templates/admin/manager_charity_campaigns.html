@@ -1,0 +1,582 @@
+{% extends "admin/base_manager.html" %}
+{% block title %}حملات {{ charity.name }} — {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}
+<div id="deleteModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,42,74,.45);align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(15,42,74,.2);padding:2rem 1.6rem;max-width:420px;width:100%;text-align:center;position:relative;">
+    <button onclick="closeDeleteModal()" style="position:absolute;top:.9rem;right:.9rem;width:28px;height:28px;border-radius:50%;background:#f0f4f8;border:1px solid #e5edf5;cursor:pointer;font-size:.85rem;color:#6b7f95;">✕</button>
+    <div style="width:68px;height:68px;border-radius:50%;background:#fde8e8;border:2px solid #f5b7b1;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem;">🗑️</div>
+    <div style="font-size:1.25rem;font-weight:900;color:#0f2a4a;margin-bottom:.3rem;">تأكيد حذف الحملة</div>
+    <div style="font-size:.84rem;color:#b23a3a;font-weight:700;margin-bottom:1.2rem;">هذا {% if session.get('lang','ar') == 'en' %}Action{% else %}الإجراء{% endif %} لا يمكن التراجع عنه</div>
+    <div style="background:#f5f8fc;border-radius:10px;border:1px solid #e5edf5;padding:.85rem 1rem;margin-bottom:1.1rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;">
+      <div style="flex:1;min-width:0;text-align:right;">
+        <div id="modal-camp-name" style="font-size:.92rem;font-weight:800;color:#0f2a4a;"></div>
+        <div style="margin-top:.25rem;display:flex;align-items:center;gap:.4rem;justify-content:flex-end;">
+          <span id="modal-camp-charity" style="font-size:.75rem;color:#6b7f95;"></span>
+          <span id="modal-camp-badge" style="font-size:.71rem;font-weight:700;padding:.18rem .55rem;border-radius:15px;"></span>
+        </div>
+      </div>
+      <div id="modal-camp-img" style="width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#cce9e1,#a8d8cc);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;overflow:hidden;">📷</div>
+    </div>
+    <ul style="text-align:right;margin-bottom:1.3rem;background:#f5f8fc;border-radius:10px;border:1px solid #e5edf5;padding:.85rem 1rem .85rem 1.5rem;">
+      <li style="font-size:.82rem;color:#516b82;margin-bottom:.35rem;">سيتم حذف الحملة نهائياً من قاعدة البيانات</li>
+      <li style="font-size:.82rem;color:#516b82;margin-bottom:.35rem;">لن يتمكن الم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ون من رؤية هذه الحملة</li>
+      <li style="font-size:.82rem;color:#516b82;">{% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %} التبرعات المرتبط بها سيبقى محفوظاً</li>
+    </ul>
+    <form id="deleteForm" method="POST">
+      <button type="submit" style="width:100%;padding:.85rem;background:#e53e3e;color:#fff;font-size:.95rem;font-weight:800;border:none;border-radius:10px;cursor:pointer;font-family:'Cairo',sans-serif;margin-bottom:.7rem;" onmouseover="this.style.background='#c53030'" onmouseout="this.style.background='#e53e3e'">🗑️ تأكيد الحذف نهائياً</button>
+    </form>
+    <a href="#" onclick="closeDeleteModal();return false;" style="font-size:.84rem;color:#6b7f95;text-decoration:none;font-weight:600;">إلغاء — احتفظ بالحملة</a>
+  </div>
+</div>
+<script>
+function openDeleteModal(url,name,status,charity,img){
+    document.getElementById('deleteForm').action=url;
+    document.getElementById('modal-camp-name').textContent=name;
+    document.getElementById('modal-camp-charity').textContent=charity;
+    const badge=document.getElementById('modal-camp-badge');
+    const labels={active:'نشطة',completed:'مكتملة',paused:'موقوفة'};
+    const bg={active:'#d4edda',completed:'#dbeafe',paused:'#fff8e1'};
+    const tx={active:'#1a6b3c',completed:'#1e40af',paused:'#7d6000'};
+    badge.textContent=labels[status]||status;
+    badge.style.background=bg[status]||'#eee';
+    badge.style.color=tx[status]||'#333';
+    const imgEl=document.getElementById('modal-camp-img');
+    imgEl.innerHTML=img&&img!=='default.jpg'?`<img src="/static/uploads/${img}" style="width:100%;height:100%;object-fit:cover;">`:'📷';
+    const m=document.getElementById('deleteModal');
+    m.style.display='flex';document.body.style.overflow='hidden';
+}
+function closeDeleteModal(){
+    document.getElementById('deleteModal').style.display='none';
+    document.body.style.overflow='';
+}
+document.getElementById('deleteModal').addEventListener('click',function(e){if(e.target===this)closeDeleteModal();});
+</script>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.page-wrap { max-width: 1100px; margin: 0 auto; }
+
+/* ══ HEADER ══ */
+.pg-breadcrumb {
+    font-size: 0.82rem; color: var(--text); text-align: right;
+    margin-bottom: 0.5rem;
+}
+.pg-breadcrumb a { color: var(--brand); text-decoration: none; font-weight: 700; }
+.pg-breadcrumb a:hover { text-decoration: underline; }
+.pg-top {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem; margin-bottom: 1.4rem;
+}
+.pg-title { font-size: 1.75rem; font-weight: 900; color: var(--dark); }
+.pg-sub  { font-size: 0.83rem; color: var(--text); margin-top: 0.2rem; }
+.btn-add {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.65rem 1.4rem; border-radius: 10px;
+    background: var(--dark); color: #fff;
+    font-size: 0.9rem; font-weight: 800;
+    text-decoration: none; white-space: nowrap;
+    border: none; font-family: 'Cairo', sans-serif;
+    transition: opacity .2s, transform .15s;
+}
+.btn-add:hover { opacity: .88; transform: translateY(-1px); }
+.btn-back {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.65rem 1.2rem; border-radius: 10px;
+    background: #fff; color: var(--dark);
+    font-size: 0.88rem; font-weight: 700;
+    text-decoration: none; border: 1.5px solid var(--border);
+    font-family: 'Cairo', sans-serif; transition: background .15s;
+}
+.btn-back:hover { background: #f4f9fc; }
+
+/* ══ CHARITY INFO CARD ══ */
+.info-card {
+    background: #fff; border-radius: var(--r);
+    border: 1.5px solid var(--border);
+    box-shadow: 0 2px 12px rgba(26,59,93,.05);
+    padding: 1.4rem 1.6rem; margin-bottom: 1.2rem;
+}
+.info-top {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    margin-bottom: 1rem;
+}
+.info-right { display: flex; align-items: center; gap: 1rem; }
+.charity-logo {
+    width: 62px; height: 62px; border-radius: 14px;
+    background: #e8f0fe; display: flex; align-items: center;
+    justify-content: center; font-size: 1.8rem; flex-shrink: 0;
+    overflow: hidden;
+}
+.charity-logo img { width: 100%; height: 100%; object-fit: cover; }
+.charity-title { font-size: 1.2rem; font-weight: 900; color: var(--dark); }
+.charity-tags { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .35rem; }
+.ctag {
+    font-size: 0.74rem; font-weight: 700;
+    background: #e8f5f0; color: var(--brand);
+    padding: .22rem .7rem; border-radius: 20px;
+    border: 1px solid #c3e8d8;
+}
+.info-stats { display: flex; gap: 2rem; align-items: center; }
+.istat { text-align: center; }
+.istat-num { font-size: 1.5rem; font-weight: 900; color: var(--brand); line-height: 1; }
+.istat-lbl { font-size: 0.74rem; color: var(--text); margin-top: .15rem; }
+.info-desc {
+    background: #f8fdf9; border-radius: 10px;
+    padding: .75rem 1rem; font-size: .85rem;
+    color: var(--dark); line-height: 1.7; text-align: right;
+    border-right: 3px solid var(--brand);
+}
+
+/* ══ FILTER BAR ══ */
+.filter-bar {
+    background: #fff; border-radius: var(--r);
+    border: 1.5px solid var(--border);
+    box-shadow: 0 2px 12px rgba(26,59,93,.05);
+    padding: 1rem 1.4rem; margin-bottom: 1.2rem;
+    display: flex; align-items: center; gap: .7rem; flex-wrap: wrap;
+}
+.ftab {
+    padding: .38rem 1rem; border-radius: 25px;
+    font-size: .83rem; font-weight: 700;
+    cursor: pointer; border: 1.5px solid var(--border);
+    background: #fff; color: var(--text);
+    transition: all .15s; white-space: nowrap;
+}
+.ftab.active, .ftab:hover {
+    background: var(--dark); color: #fff; border-color: var(--dark);
+}
+.ftab .cnt {
+    display: inline-block; background: rgba(255,255,255,.25);
+    border-radius: 10px; padding: 0 5px; font-size: .75rem;
+    margin-right: 2px;
+}
+.ftab:not(.active) .cnt { background: #edf3f8; color: var(--text); }
+.filter-search {
+    flex: 1; min-width: 180px;
+    padding: .5rem 1rem; border-radius: 25px;
+    border: 1.5px solid var(--border); font-family: 'Cairo', sans-serif;
+    font-size: .85rem; color: var(--dark); background: #f8fbfd;
+    direction: rtl;
+}
+.filter-search:focus { outline: none; border-color: var(--brand); }
+.sort-select {
+    padding: .48rem .9rem; border-radius: 25px;
+    border: 1.5px solid var(--border); font-family: 'Cairo', sans-serif;
+    font-size: .82rem; color: var(--dark); background: #fff;
+    cursor: pointer;
+}
+
+/* ══ CARDS GRID ══ */
+.camps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.1rem;
+}
+.camp-card {
+    background: #fff; border-radius: var(--r);
+    border: 1.5px solid var(--border);
+    box-shadow: 0 2px 12px rgba(26,59,93,.05);
+    overflow: hidden; transition: transform .2s, box-shadow .2s;
+    display: flex; flex-direction: column;
+}
+.camp-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(26,59,93,.1); }
+
+/* صورة الكارت */
+.camp-img {
+    position: relative; height: 150px;
+    background: linear-gradient(135deg, #cce9e1, #a8d8cc);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem; overflow: hidden;
+}
+.camp-img img { width: 100%; height: 100%; object-fit: cover; }
+.badge-cat {
+    position: absolute; top: 10px; right: 10px;
+    font-size: .72rem; font-weight: 700;
+    background: #fff; color: var(--dark);
+    padding: .22rem .65rem; border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+}
+.badge-status {
+    position: absolute; top: 10px; left: 10px;
+    font-size: .72rem; font-weight: 700;
+    padding: .22rem .65rem; border-radius: 20px;
+}
+.s-active   { background: #d4edda; color: #1a6b3c; }
+.s-completed{ background: #28a745; color: #fff; }
+.s-paused   { background: #ffc107; color: #7d4000; }
+
+/* محتوى الكارت */
+.camp-body { padding: 1rem 1.1rem; flex: 1; display: flex; flex-direction: column; }
+.camp-name {
+    font-size: .95rem; font-weight: 900; color: var(--dark);
+    text-align: right; margin-bottom: .4rem; line-height: 1.4;
+}
+.camp-desc {
+    font-size: .78rem; color: var(--text); text-align: right;
+    line-height: 1.6; margin-bottom: .8rem; flex: 1;
+    display: -webkit-box; -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical; overflow: hidden;
+}
+.camp-amounts {
+    display: flex; justify-content: space-between;
+    font-size: .78rem; margin-bottom: .3rem;
+}
+.amt-collected { font-weight: 800; color: var(--brand); }
+.amt-goal      { color: var(--text); }
+.prog-bar { height: 6px; border-radius: 4px; background: #edf3f8; overflow: hidden; margin-bottom: .3rem; }
+.prog-fill {
+    height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, var(--brand), #1a3b5d);
+    transition: width .6s ease;
+}
+.camp-pct { font-size: .78rem; font-weight: 800; color: var(--brand); }
+.camp-date {
+    font-size: .75rem; color: var(--text);
+    display: flex; align-items: center; gap: .35rem;
+    margin-top: .6rem; text-align: right;
+}
+
+/* أزرار {% if session.get('lang','ar') == 'en' %}Action{% else %}الإجراء{% endif %}ات */
+.camp-actions {
+    display: flex; gap: .5rem; padding: .85rem 1.1rem;
+    border-top: 1.5px solid #f0f4f8; background: #fafcfe;
+}
+.ac-btn {
+    flex: 1; display: inline-flex; align-items: center;
+    justify-content: center; gap: .35rem;
+    padding: .45rem .5rem; border-radius: 20px;
+    font-size: .78rem; font-weight: 700;
+    text-decoration: none; border: 1.5px solid transparent;
+    cursor: pointer; font-family: 'Cairo', sans-serif;
+    transition: all .15s;
+}
+.ac-edit   { background: #fff8e1; color: #7d6000; border-color: #f5d96a; }
+.ac-edit:hover { background: #f5d96a; }
+.ac-delete { background: #fde8e8; color: #c0392b; border-color: #f5b7b1; }
+.ac-delete:hover { background: #f5b7b1; }
+.ac-view   { background: #e8f5f0; color: var(--brand); border-color: #a8dcc8; }
+.ac-view:hover { background: #a8dcc8; }
+
+/* فاضي */
+.empty-state {
+    text-align: center; padding: 4rem 2rem;
+    background: #fff; border-radius: var(--r);
+    border: 1.5px solid var(--border);
+}
+.empty-state .icon { font-size: 3rem; opacity: .2; margin-bottom: 1rem; }
+.empty-state h3 { font-size: 1.1rem; font-weight: 800; color: var(--dark); margin-bottom: .4rem; }
+.empty-state p  { font-size: .85rem; color: var(--text); }
+
+@media(max-width:1000px){ .camps-grid{ grid-template-columns: repeat(2,1fr); } }
+@media(max-width:640px) { .camps-grid{ grid-template-columns: 1fr; } .info-stats{ gap:1rem; } }
+</style>
+
+<div id="deleteModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,42,74,.45);align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(15,42,74,.2);padding:2rem 1.6rem;max-width:420px;width:100%;text-align:center;position:relative;">
+    <button onclick="closeDeleteModal()" style="position:absolute;top:.9rem;right:.9rem;width:28px;height:28px;border-radius:50%;background:#f0f4f8;border:1px solid #e5edf5;cursor:pointer;font-size:.85rem;color:#6b7f95;">✕</button>
+    <div style="width:68px;height:68px;border-radius:50%;background:#fde8e8;border:2px solid #f5b7b1;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem;">🗑️</div>
+    <div style="font-size:1.25rem;font-weight:900;color:#0f2a4a;margin-bottom:.3rem;">تأكيد حذف الحملة</div>
+    <div style="font-size:.84rem;color:#b23a3a;font-weight:700;margin-bottom:1.2rem;">هذا {% if session.get('lang','ar') == 'en' %}Action{% else %}الإجراء{% endif %} لا يمكن التراجع عنه</div>
+    <div style="background:#f5f8fc;border-radius:10px;border:1px solid #e5edf5;padding:.85rem 1rem;margin-bottom:1.1rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;">
+      <div style="flex:1;min-width:0;text-align:right;">
+        <div id="modal-camp-name" style="font-size:.92rem;font-weight:800;color:#0f2a4a;"></div>
+        <div style="margin-top:.25rem;display:flex;align-items:center;gap:.4rem;justify-content:flex-end;">
+          <span id="modal-camp-charity" style="font-size:.75rem;color:#6b7f95;"></span>
+          <span id="modal-camp-badge" style="font-size:.71rem;font-weight:700;padding:.18rem .55rem;border-radius:15px;"></span>
+        </div>
+      </div>
+      <div id="modal-camp-img" style="width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#cce9e1,#a8d8cc);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;overflow:hidden;">📷</div>
+    </div>
+    <ul style="text-align:right;margin-bottom:1.3rem;background:#f5f8fc;border-radius:10px;border:1px solid #e5edf5;padding:.85rem 1rem .85rem 1.5rem;">
+      <li style="font-size:.82rem;color:#516b82;margin-bottom:.35rem;">سيتم حذف الحملة نهائياً من قاعدة البيانات</li>
+      <li style="font-size:.82rem;color:#516b82;margin-bottom:.35rem;">لن يتمكن الم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ون من رؤية هذه الحملة</li>
+      <li style="font-size:.82rem;color:#516b82;">{% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %} التبرعات المرتبط بها سيبقى محفوظاً</li>
+    </ul>
+    <form id="deleteForm" method="POST">
+      <button type="submit" style="width:100%;padding:.85rem;background:#e53e3e;color:#fff;font-size:.95rem;font-weight:800;border:none;border-radius:10px;cursor:pointer;font-family:'Cairo',sans-serif;margin-bottom:.7rem;" onmouseover="this.style.background='#c53030'" onmouseout="this.style.background='#e53e3e'">🗑️ تأكيد الحذف نهائياً</button>
+    </form>
+    <a href="#" onclick="closeDeleteModal();return false;" style="font-size:.84rem;color:#6b7f95;text-decoration:none;font-weight:600;">إلغاء — احتفظ بالحملة</a>
+  </div>
+</div>
+<script>
+function openDeleteModal(url,name,status,charity,img){
+    document.getElementById('deleteForm').action=url;
+    document.getElementById('modal-camp-name').textContent=name;
+    document.getElementById('modal-camp-charity').textContent=charity;
+    const badge=document.getElementById('modal-camp-badge');
+    const labels={active:'نشطة',completed:'مكتملة',paused:'موقوفة'};
+    const bg={active:'#d4edda',completed:'#dbeafe',paused:'#fff8e1'};
+    const tx={active:'#1a6b3c',completed:'#1e40af',paused:'#7d6000'};
+    badge.textContent=labels[status]||status;
+    badge.style.background=bg[status]||'#eee';
+    badge.style.color=tx[status]||'#333';
+    const imgEl=document.getElementById('modal-camp-img');
+    imgEl.innerHTML=img&&img!=='default.jpg'?`<img src="/static/uploads/${img}" style="width:100%;height:100%;object-fit:cover;">`:'📷';
+    const m=document.getElementById('deleteModal');
+    m.style.display='flex';document.body.style.overflow='hidden';
+}
+function closeDeleteModal(){
+    document.getElementById('deleteModal').style.display='none';
+    document.body.style.overflow='';
+}
+document.getElementById('deleteModal').addEventListener('click',function(e){if(e.target===this)closeDeleteModal();});
+</script>
+
+{% endblock %}
+
+{% block content %}
+{% if charity %}
+<div class="page-wrap">
+
+    <!-- breadcrumb -->
+    <div class="pg-breadcrumb">
+        <a href="{{ url_for('manager_charities') }}">{% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %}</a> &lt;
+        {{ charity.name }} &lt; {% if session.get('lang','ar') == 'en' %}Campaigns{% else %}الحملات{% endif %}
+    </div>
+
+    <!-- عنوان + أزرار -->
+    <div class="pg-top">
+        <div>
+            <div class="pg-title">
+                <i class="fa-solid fa-list-check" style="color:var(--brand);font-size:1.4rem;"></i>
+                حملات {{ charity.name }}
+            </div>
+            <div class="pg-sub">إدارة جميع {% if session.get('lang','ar') == 'en' %}Campaigns{% else %}الحملات{% endif %} التابعة لهذه الجمعية</div>
+        </div>
+        <div style="display:flex;gap:.7rem;flex-wrap:wrap;align-items:center;">
+            <a href="{{ url_for('manager_dashboard') }}" class="btn-back">
+                <i class="fa-solid fa-arrow-right"></i> رجوع ل{% if session.get('lang','ar') == 'en' %}Dashboard{% else %}لوحة التحكم{% endif %}
+            </a>
+            <a href="{{ url_for('manager_add_campaign') }}?cid={{ charity.id }}" class="btn-add">
+                <i class="fa-solid fa-plus"></i> إضافة حملة جديدة
+            </a>
+        </div>
+    </div>
+
+    <!-- بطاقة معلومات الجمعية -->
+    <div class="info-card">
+        <div class="info-top">
+            <div class="info-right">
+                <div class="charity-logo">
+                    {% if charity.image and charity.image != 'default.jpg' %}
+                        <img src="/static/uploads/{{ charity.image }}" alt="{{ charity.name }}">
+                    {% else %}
+                        🏥
+                    {% endif %}
+                </div>
+                <div>
+                    <div class="charity-title">{{ charity.name }}</div>
+                    <div class="charity-tags">
+                        {% if charity.fields %}
+                            {% for tag in charity.fields.split(',') %}
+                                <span class="ctag">{{ tag.strip() }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="info-stats">
+                <div class="istat">
+                    <div class="istat-num">{{ total }}</div>
+                    <div class="istat-lbl">حملة {% if session.get('lang','ar') == 'en' %}Total{% else %}إجمالي{% endif %}</div>
+                </div>
+                <div class="istat">
+                    <div class="istat-num" style="color:#1a6b3c;">{{ active }}</div>
+                    <div class="istat-lbl">نشطة</div>
+                </div>
+                <div class="istat">
+                    <div class="istat-num" style="color:#1e40af;">{{ completed }}</div>
+                    <div class="istat-lbl">مكتملة</div>
+                </div>
+            </div>
+        </div>
+        {% if charity.description %}
+        <div class="info-desc">
+            <strong>وصف الجمعية:</strong> {{ charity.description[:180] }}{% if charity.description|length > 180 %}...{% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- فلاتر -->
+    <div class="filter-bar">
+        <span class="ftab active" data-filter="all" onclick="filterCards(this,'all')">
+            الكل <span class="cnt">{{ total }}</span>
+        </span>
+        <span class="ftab" data-filter="active" onclick="filterCards(this,'active')">
+            نشطة <span class="cnt">{{ active }}</span>
+        </span>
+        <span class="ftab" data-filter="completed" onclick="filterCards(this,'completed')">
+            مكتملة <span class="cnt">{{ completed }}</span>
+        </span>
+        <span class="ftab" data-filter="paused" onclick="filterCards(this,'paused')">
+            موقوفة <span class="cnt">{{ paused }}</span>
+        </span>
+        <input type="text" class="filter-search" id="searchInput"
+               placeholder="ا{% if session.get('lang','ar') == 'en' %}Search{% else %}بحث{% endif %} في حملات الجمعية..."
+               oninput="searchCards(this.value)">
+        <select class="sort-select" onchange="sortCards(this.value)">
+            <option value="newest">ترتيب حسب: الأحدث</option>
+            <option value="oldest">الأقدم</option>
+            <option value="goal">الهدف الأكبر</option>
+        </select>
+    </div>
+
+    <!-- الكروت -->
+    {% if campaigns %}
+    <div class="camps-grid" id="campsGrid">
+        {% for camp in campaigns %}
+        {% set pct = ((camp.collected_amount / camp.goal_amount * 100) | int) if camp.get('goal_amount') and camp.get('goal_amount') > 0 else 0 %}
+        <div class="camp-card" data-status="{{ camp.get('status','active') }}" data-title="{{ camp.title }}" data-goal="{{ camp.get('goal_amount', 0) or 0 }}" data-date="{{ camp.created_at }}">
+            <!-- صورة -->
+            <div class="camp-img">
+                {% if camp.image and camp.image != 'default.jpg' %}
+                    <img src="/static/uploads/{{ camp.image }}" alt="{{ camp.title }}">
+                {% else %}
+                    📷
+                {% endif %}
+                <span class="badge-cat">{{ camp.category or 'عام' }}</span>
+                <span class="badge-status s-{{ camp.get('status','active') }}">
+                    {% if camp.status == 'active' %}نشطة
+                    {% elif camp.status == 'completed' %}مكتملة
+                    {% else %}موقوفة{% endif %}
+                </span>
+            </div>
+            <!-- محتوى -->
+            <div class="camp-body">
+                <div class="camp-name">{{ camp.title }}</div>
+                {% if camp.description %}
+                <div class="camp-desc">{{ camp.description }}</div>
+                {% endif %}
+                <div class="camp-amounts">
+                    <span class="amt-goal">{{ '{:,.0f}'.format(camp.get('goal_amount', 0) or 0) }}</span>
+                    <span class="amt-collected">{{ '{:,.0f}'.format(camp.get('collected_amount', 0) or 0) }}</span>
+                </div>
+                <div class="prog-bar">
+                    <div class="prog-fill" style="width:{{ [pct,100]|min }}%;"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div class="camp-pct">{{ pct }}%</div>
+                    <div class="camp-date">
+                        <i class="fa-regular fa-calendar"></i>
+                        {% if camp.created_at %}
+                            منذ {{ camp.created_at.strftime('%d %b') if camp.created_at else '' }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <!-- أزرار -->
+            <div class="camp-actions">
+                <a href="{{ url_for('manager_edit_campaign', camp_id=camp.id) }}" class="ac-btn ac-edit">
+                    <i class="fa-solid fa-pen"></i> تعديل
+                </a>
+                <button type="button" class="ac-btn ac-delete"
+                    onclick="openDeleteModal('{{ url_for('manager_delete_campaign', camp_id=camp.id) }}','{{ camp.title }}','{{ camp.get('status','active') }}','{{ camp.charity_name or charity.name }}','{{ camp.image or 'default.jpg' }}')">
+                    <i class="fa-solid fa-trash"></i> حذف
+                </button>
+                <a href="{{ url_for('manager_charity_campaigns', cid=charity.id) }}" class="ac-btn ac-view">
+                    <i class="fa-solid fa-eye"></i> {% if session.get('lang','ar') == 'en' %}View{% else %}عرض{% endif %}
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+        <div class="icon">📋</div>
+        <h3>لا توجد حملات بعد</h3>
+        <p>أضف أول حملة لهذه الجمعية</p>
+        <a href="{{ url_for('manager_add_campaign') }}?cid={{ charity.id }}"
+           class="btn-add" style="display:inline-flex;margin-top:1.2rem;">
+            <i class="fa-solid fa-plus"></i> إضافة حملة
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endif %}
+
+<script>
+function filterCards(el, filter) {
+    document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.camp-card').forEach(card => {
+        card.style.display = (filter === 'all' || card.dataset.status === filter) ? '' : 'none';
+    });
+}
+function searchCards(q) {
+    const lq = q.toLowerCase();
+    document.querySelectorAll('.camp-card').forEach(card => {
+        card.style.display = card.dataset.title.toLowerCase().includes(lq) ? '' : 'none';
+    });
+    if (!q) {
+        const active = document.querySelector('.ftab.active');
+        if (active) filterCards(active, active.dataset.filter);
+    }
+}
+function sortCards(val) {
+    const grid = document.getElementById('campsGrid');
+    const cards = [...grid.querySelectorAll('.camp-card')];
+    cards.sort((a, b) => {
+        if (val === 'goal')   return parseFloat(b.dataset.goal) - parseFloat(a.dataset.goal);
+        if (val === 'oldest') return a.dataset.date > b.dataset.date ? 1 : -1;
+        return a.dataset.date < b.dataset.date ? 1 : -1; // newest
+    });
+    cards.forEach(c => grid.appendChild(c));
+}
+</script>
+
+<div id="deleteModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,42,74,.45);align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(15,42,74,.2);padding:2rem 1.6rem;max-width:420px;width:100%;text-align:center;position:relative;">
+    <button onclick="closeDeleteModal()" style="position:absolute;top:.9rem;right:.9rem;width:28px;height:28px;border-radius:50%;background:#f0f4f8;border:1px solid #e5edf5;cursor:pointer;font-size:.85rem;color:#6b7f95;">✕</button>
+    <div style="width:68px;height:68px;border-radius:50%;background:#fde8e8;border:2px solid #f5b7b1;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem;">🗑️</div>
+    <div style="font-size:1.25rem;font-weight:900;color:#0f2a4a;margin-bottom:.3rem;">تأكيد حذف الحملة</div>
+    <div style="font-size:.84rem;color:#b23a3a;font-weight:700;margin-bottom:1.2rem;">هذا {% if session.get('lang','ar') == 'en' %}Action{% else %}الإجراء{% endif %} لا يمكن التراجع عنه</div>
+    <div style="background:#f5f8fc;border-radius:10px;border:1px solid #e5edf5;padding:.85rem 1rem;margin-bottom:1.1rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;">
+      <div style="flex:1;min-width:0;text-align:right;">
+        <div id="modal-camp-name" style="font-size:.92rem;font-weight:800;color:#0f2a4a;"></div>
+        <div style="margin-top:.25rem;display:flex;align-items:center;gap:.4rem;justify-content:flex-end;">
+          <span id="modal-camp-charity" style="font-size:.75rem;color:#6b7f95;"></span>
+          <span id="modal-camp-badge" style="font-size:.71rem;font-weight:700;padding:.18rem .55rem;border-radius:15px;"></span>
+        </div>
+      </div>
+      <div id="modal-camp-img" style="width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#cce9e1,#a8d8cc);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;overflow:hidden;">📷</div>
+    </div>
+    <ul style="text-align:right;margin-bottom:1.3rem;background:#f5f8fc;border-radius:10px;border:1px solid #e5edf5;padding:.85rem 1rem .85rem 1.5rem;">
+      <li style="font-size:.82rem;color:#516b82;margin-bottom:.35rem;">سيتم حذف الحملة نهائياً من قاعدة البيانات</li>
+      <li style="font-size:.82rem;color:#516b82;margin-bottom:.35rem;">لن يتمكن الم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ون من رؤية هذه الحملة</li>
+      <li style="font-size:.82rem;color:#516b82;">{% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %} التبرعات المرتبط بها سيبقى محفوظاً</li>
+    </ul>
+    <form id="deleteForm" method="POST">
+      <button type="submit" style="width:100%;padding:.85rem;background:#e53e3e;color:#fff;font-size:.95rem;font-weight:800;border:none;border-radius:10px;cursor:pointer;font-family:'Cairo',sans-serif;margin-bottom:.7rem;" onmouseover="this.style.background='#c53030'" onmouseout="this.style.background='#e53e3e'">🗑️ تأكيد الحذف نهائياً</button>
+    </form>
+    <a href="#" onclick="closeDeleteModal();return false;" style="font-size:.84rem;color:#6b7f95;text-decoration:none;font-weight:600;">إلغاء — احتفظ بالحملة</a>
+  </div>
+</div>
+<script>
+function openDeleteModal(url,name,status,charity,img){
+    document.getElementById('deleteForm').action=url;
+    document.getElementById('modal-camp-name').textContent=name;
+    document.getElementById('modal-camp-charity').textContent=charity;
+    const badge=document.getElementById('modal-camp-badge');
+    const labels={active:'نشطة',completed:'مكتملة',paused:'موقوفة'};
+    const bg={active:'#d4edda',completed:'#dbeafe',paused:'#fff8e1'};
+    const tx={active:'#1a6b3c',completed:'#1e40af',paused:'#7d6000'};
+    badge.textContent=labels[status]||status;
+    badge.style.background=bg[status]||'#eee';
+    badge.style.color=tx[status]||'#333';
+    const imgEl=document.getElementById('modal-camp-img');
+    imgEl.innerHTML=img&&img!=='default.jpg'?`<img src="/static/uploads/${img}" style="width:100%;height:100%;object-fit:cover;">`:'📷';
+    const m=document.getElementById('deleteModal');
+    m.style.display='flex';document.body.style.overflow='hidden';
+}
+function closeDeleteModal(){
+    document.getElementById('deleteModal').style.display='none';
+    document.body.style.overflow='';
+}
+document.getElementById('deleteModal').addEventListener('click',function(e){if(e.target===this)closeDeleteModal();});
+</script>
+
+{% endblock %}

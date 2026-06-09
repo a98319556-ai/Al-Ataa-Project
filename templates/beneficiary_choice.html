@@ -1,0 +1,82 @@
+{% set _theme = session.get('theme','light') %}
+{% set _lang  = session.get('lang','ar') %}
+<!DOCTYPE html>
+<html lang="{% if _lang=='en' %}en{% else %}ar{% endif %}" dir="{% if _lang=='en' %}ltr{% else %}rtl{% endif %}">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{% if _lang=='en' %}Help Requests{% else %}طلبات المساعدة{% endif %} — منصة العطاء</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body{background:#F5F7FA;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;font-family:'Tajawal',sans-serif;}
+        .page-title{font-size:clamp(1.5rem,3vw,2.2rem);font-weight:900;color:#111827;margin-bottom:.6rem;text-align:center;}
+        .page-sub{color:#6B7280;font-size:.97rem;text-align:center;max-width:460px;line-height:1.7;margin-bottom:3rem;}
+        .choices{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:600px;width:100%;}
+        .choice-card{background:#fff;border:1.5px solid #E5E9F0;border-radius:20px;padding:2.5rem 2rem;text-decoration:none;color:inherit;display:flex;flex-direction:column;align-items:center;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,0.06);transition:transform .25s,box-shadow .25s,border-color .25s;}
+        .choice-card:hover{transform:translateY(-7px);box-shadow:0 18px 40px rgba(21,101,192,.13);border-color:#BFDBFE;}
+        .choice-icon{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;margin-bottom:1.3rem;}
+        .icon-new{background:#EFF6FF;color:#1565C0;}
+        .icon-track{background:#f0fdf4;color:#16a34a;}
+        .choice-title{font-size:1.1rem;font-weight:900;color:#111827;margin-bottom:.6rem;}
+        .choice-desc{font-size:.85rem;color:#6B7280;line-height:1.75;margin-bottom:1.2rem;flex:1;}
+        .choice-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem 1.4rem;border-radius:50px;font-size:.85rem;font-weight:700;font-family:'Tajawal',sans-serif;}
+        .btn-blue{background:#1565C0;color:#fff;}
+        .btn-green{background:#16a34a;color:#fff;}
+        .back-link{margin-top:2rem;color:#6B7280;text-decoration:none;font-size:.85rem;display:flex;align-items:center;gap:.4rem;}
+        .back-link:hover{color:#1565C0;}
+        @media(max-width:540px){.choices{grid-template-columns:1fr;}}
+        body.dark-mode{background:#080d18;}
+        body.dark-mode .choice-card{background:#1e293b;border-color:#334155;}
+        body.dark-mode .choice-title{color:#f1f5f9;}
+        body.dark-mode .choice-desc{color:#94a3b8;}
+        body.dark-mode .page-title{color:#f1f5f9;}
+        body.dark-mode .page-sub{color:#94a3b8;}
+        body.dark-mode .icon-new{background:#1e3a5f;color:#60a5fa;}
+        body.dark-mode .icon-track{background:#14532d;color:#86efac;}
+    </style>
+</head>
+<body class="{% if _theme=='dark' %}dark-mode{% endif %}">
+    <h1 class="page-title">
+        <i class="fa-solid fa-hand-holding-heart" style="color:#1565C0;font-size:1.8rem;display:block;margin-bottom:.5rem;"></i>
+        {% if _lang=='en' %}How Can We Help?{% else %}كيف يمكننا مساعدتك؟{% endif %}
+    </h1>
+    <p class="page-sub">
+        {% if _lang=='en' %}Choose an option below to register a new request or track an existing one.
+        {% else %}اختر من الخيارين أدناه لتسجيل طلب جديد أو متابعة طلب موجود.{% endif %}
+    </p>
+
+    <div class="choices">
+        <!-- تسجيل طلب جديد -->
+        <a href="{{ url_for('beneficiary_register') }}" class="choice-card">
+            <div class="choice-icon icon-new">
+                <i class="fa-solid fa-plus"></i>
+            </div>
+            <div class="choice-title">{% if _lang=='en' %}New Request{% else %}تسجيل طلب جديد{% endif %}</div>
+            <p class="choice-desc">{% if _lang=='en' %}Submit a new help request and our team will review it promptly.{% else %}قدّم طلب مساعدة جديد وسيراجعه فريقنا في أقرب وقت.{% endif %}</p>
+            <span class="choice-btn btn-blue">
+                <i class="fa-solid fa-file-pen"></i>
+                {% if _lang=='en' %}Register Now{% else %}سجّل الآن{% endif %}
+            </span>
+        </a>
+
+        <!-- تتبع طلب -->
+        <a href="{{ url_for('beneficiary_track') }}" class="choice-card">
+            <div class="choice-icon icon-track">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <div class="choice-title">{% if _lang=='en' %}Track My Request{% else %}تتبع طلبي{% endif %}</div>
+            <p class="choice-desc">{% if _lang=='en' %}Follow up on your existing request and see the latest updates.{% else %}تابع طلبك الموجود واعرف آخر التحديثات والحالة.{% endif %}</p>
+            <span class="choice-btn btn-green">
+                <i class="fa-solid fa-location-dot"></i>
+                {% if _lang=='en' %}Track Now{% else %}تتبع الآن{% endif %}
+            </span>
+        </a>
+    </div>
+
+    <a href="{{ url_for('landing') }}" class="back-link">
+        <i class="fa-solid fa-arrow-right"></i>
+        {% if _lang=='en' %}Back to Home{% else %}العودة للرئيسية{% endif %}
+    </a>
+</body>
+</html>

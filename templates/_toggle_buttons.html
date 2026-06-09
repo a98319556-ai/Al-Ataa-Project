@@ -1,0 +1,15 @@
+{# ══ Theme & Language Toggle Bar ══ #}
+{% set _theme = session.get('theme','light') %}
+{% set _lang  = session.get('lang','ar') %}
+<div class="toggle-bar" id="toggle-bar">
+    <form method="POST" action="/set_lang" style="display:inline;">
+        <button type="submit" class="tgl-btn tgl-lang" title="تغيير اللغة / Change Language">
+            {% if _lang == 'ar' %}<span class="tgl-active">عر</span><span class="tgl-sep">|</span><span class="tgl-dim">EN</span>{% else %}<span class="tgl-dim">عر</span><span class="tgl-sep">|</span><span class="tgl-active">EN</span>{% endif %}
+        </button>
+    </form>
+    <form method="POST" action="/set_theme" style="display:inline;">
+        <button type="submit" class="tgl-btn tgl-theme" title="تغيير المظهر / Toggle Theme">
+            {% if _theme == 'dark' %}<i class="fa-solid fa-sun"></i>{% else %}<i class="fa-regular fa-moon"></i>{% endif %}
+        </button>
+    </form>
+</div>

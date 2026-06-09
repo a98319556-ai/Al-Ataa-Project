@@ -1,0 +1,11 @@
+{% set _theme = session.get('theme','light') %}
+{% set _lang  = session.get('lang','ar') %}
+<!DOCTYPE html>
+<html lang="{% if _lang == 'en' %}en{% else %}ar{% endif %}" dir="{% if _lang == 'en' %}ltr{% else %}rtl{% endif %}">
+<head><meta charset="UTF-8"><title>404 - {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}</title>
+<style>body{background:#f4f9fc;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Tajawal,sans-serif;}
+.box{text-align:center;}.num{font-size:6rem;font-weight:900;color:#28a745a;}
+a{background:#28a745a;color:white;padding:12px 30px;border-radius:30px;text-decoration:none;font-weight:700;}</style>
+</head>
+<body class="{% if _theme == \'dark\' %}dark-mode{% endif %}"><div class="box"><div class="num">404</div><p style="color:#4f7e95;margin:1rem 0;">الصفحة غير موجودة</p><a href="/">{% if session.get('lang','ar') == 'en' %}Back to Home{% else %}العودة للرئيسية{% endif %}</a></div></body>
+</html>

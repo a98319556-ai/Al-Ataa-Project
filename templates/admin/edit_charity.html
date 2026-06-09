@@ -1,0 +1,50 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}تعديل جمعية - {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="fa-solid fa-edit"></i> تعديل جمعية: {{ charity.name }}</h1>
+    </div>
+    <a href="{{ url_for('admin_charities') }}" class="btn btn-dark"><i class="fa-solid fa-arrow-right"></i> العودة</a>
+</div>
+<div class="card" style="max-width:750px;">
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-grid">
+            <div class="form-group" style="grid-column:1/-1;">
+                <label>اسم الجمعية *</label>
+                <input type="text" name="name" class="form-control" value="{{ charity.name }}" required>
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+                <label>وصف الجمعية *</label>
+                <textarea name="description" class="form-control" rows="4" required>{{ charity.description }}</textarea>
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+                <label>مجالات العمل <small style="color:#7fa0b8;font-weight:500;">(افصل بفاصلة)</small></label>
+                <input type="text" name="fields" class="form-control" value="{{ charity.fields or '' }}">
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+                <label>صورة جديدة (اتركه فارغاً للإبقاء على الحالية)</label>
+                {% if charity.image and charity.image != 'default.jpg' %}
+                <img src="{{ url_for('static', filename='uploads/' + charity.image) }}" style="max-width:150px;border-radius:10px;margin-bottom:8px;display:block;">
+                {% endif %}
+                <input type="file" name="image" class="form-control" accept="image/*">
+            </div>
+        </div>
+        <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+            <h4 style="color:var(--primary-dark);font-weight:800;margin-bottom:1rem;">📊 الإحصائيات</h4>
+            <div class="form-grid">
+                <div class="form-group"><label>رقم 1</label><input type="text" name="stat1_num" class="form-control" value="{{ charity.stat1_num or '' }}"></div>
+                <div class="form-group"><label>تسمية 1</label><input type="text" name="stat1_label" class="form-control" value="{{ charity.stat1_label or '' }}"></div>
+                <div class="form-group"><label>رقم 2</label><input type="text" name="stat2_num" class="form-control" value="{{ charity.stat2_num or '' }}"></div>
+                <div class="form-group"><label>تسمية 2</label><input type="text" name="stat2_label" class="form-control" value="{{ charity.stat2_label or '' }}"></div>
+                <div class="form-group"><label>رقم 3</label><input type="text" name="stat3_num" class="form-control" value="{{ charity.stat3_num or '' }}"></div>
+                <div class="form-group"><label>تسمية 3</label><input type="text" name="stat3_label" class="form-control" value="{{ charity.stat3_label or '' }}"></div>
+            </div>
+        </div>
+        <div style="margin-top:1.5rem;display:flex;gap:1rem;">
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> حفظ التعديلات</button>
+            <a href="{{ url_for('admin_charities') }}" class="btn btn-dark">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

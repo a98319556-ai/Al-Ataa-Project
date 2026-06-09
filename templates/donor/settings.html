@@ -1,0 +1,201 @@
+{% extends "donor/base_donor.html" %}
+{% block title %}{% if session.get('lang','ar') == 'en' %}Settings{% else %}الإعدادات{% endif %} - {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+
+{% block content %}
+<style>
+    .settings-container {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 25px;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    
+    .settings-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: 30px;
+        box-shadow: var(--shadow);
+        margin-bottom: 25px;
+    }
+    
+    .settings-header {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+        color: var(--brand);
+    }
+    
+    .settings-header h3 { margin: 0; font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+    
+    /* تصميم الحقول */
+    .form-group label {
+        color: var(--text-muted); font-size: 14px; font-weight: bold;
+    }
+    .form-control {
+        width: 100%; padding: 12px 15px; border: 1px solid #ddd;
+        border-radius: var(--radius-sm); font-family: 'Tajawal'; outline: none; transition: 0.3s;
+    }
+    .form-control:focus { border-color: var(--brand); background: #f8fcfb; }
+    
+    .btn-save {
+        background: var(--brand); color: white; border: none;
+        padding: 12px 25px; border-radius: var(--radius-sm); cursor: pointer;
+        font-family: 'Tajawal'; font-weight: bold; transition: 0.3s;
+    }
+    .btn-save:hover { background: #1a3b5d; }
+
+    /* تصميم الإشعارات (مفاتيح التشغيل) */
+    .toggle-switch {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 15px 0; border-bottom: 1px solid #f9f9f9;
+    }
+    .toggle-info strong { display: block; color: var(--text-dark); margin-bottom: 5px; }
+    .toggle-info span { font-size: 13px; color: var(--text-muted); }
+    
+    /* شكل مفتاح التشغيل (Switch) CSS فقط */
+    .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+        position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #d1e2ef; transition: .4s; border-radius: 34px;
+    }
+    .slider:before {
+        position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px;
+        background-color: white; transition: .4s; border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--brand); }
+    input:checked + .slider:before { transform: translateX(24px); }
+    
+    @media (max-width: 768px) { .settings-container { grid-template-columns: 1fr; } }
+
+    /* Dark Mode */
+    body.dark-mode .settings-card     { background: #1e293b !important; border-color: #334155 !important; }
+    body.dark-mode .settings-card h3  { color: #f1f5f9 !important; border-color: #334155 !important; }
+    body.dark-mode .profile-card      { background: #1e293b !important; border-color: #334155 !important; }
+    body.dark-mode .profile-name      { color: #f1f5f9 !important; }
+    body.dark-mode .profile-email,
+    body.dark-mode .profile-role      { color: #94a3b8 !important; }
+    body.dark-mode .profile-avatar    { background: linear-gradient(135deg,#1d4ed8,#1e40af) !important; }
+    body.dark-mode .toggle-item       { border-color: #334155 !important; }
+    body.dark-mode .toggle-info strong { color: #e2e8f0 !important; }
+    body.dark-mode .toggle-info p     { color: #94a3b8 !important; }
+    body.dark-mode .f-group label     { color: #cbd5e1 !important; }
+    body.dark-mode .f-group input     { background: #0f172a !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+    body.dark-mode .f-group input::placeholder { color: #475569 !important; }
+    body.dark-mode .save-btn          { background: linear-gradient(135deg,#1d4ed8,#1e40af) !important; }
+    body.dark-mode .section-divider   { color: #94a3b8 !important; border-color: #334155 !important; }
+    body.dark-mode .slider            { background: #334155 !important; }
+</style>
+
+<div class="dashboard-layout">
+    
+    <!-- {% if session.get('lang','ar') == 'en' %}Menu{% else %}القائمة{% endif %} الجانبية -->
+    <aside class="sidebar">
+        <div class="sidebar-title"><i class="fa-solid fa-bars"></i> {% if session.get('lang','ar') == 'en' %}Menu{% else %}القائمة{% endif %} {% if session.get('lang','ar') == 'en' %}Home{% else %}الرئيسية{% endif %}</div>
+<ul class="nav-links">
+            <li class="{% if request.endpoint == 'donor_home' %}active{% endif %}">
+                <a href="{{ url_for('donor_home') }}"><i class="fa-solid fa-chart-pie"></i> {% if session.get('lang','ar') == 'en' %}Donations Dashboard{% else %}لوحة التبرعات{% endif %}</a>
+            </li>
+            
+            <!-- هذا هو الرابط الجديد الذي تم إضافته -->
+            <li class="{% if request.endpoint == 'donor_my_donations' %}active{% endif %}">
+                <a href="{{ url_for('donor_my_donations') }}"><i class="fa-solid fa-hand-holding-heart"></i> {% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %} {% if session.get('lang','ar') == 'en' %}My Donations{% else %}تبرعاتي{% endif %}</a>
+            </li>
+            
+            <li class="{% if request.endpoint == 'donor_donate' %}active{% endif %}">
+                <a href="{{ url_for('donor_donate') }}"><i class="fa-solid fa-hand-holding-dollar"></i> {% if session.get('lang','ar') == 'en' %}New Donation{% else %}{% if session.get('lang','ar') == 'en' %}New Donation{% else %}تبرع جديد{% endif %}{% endif %}</a>
+            </li>
+                                    <!-- الرابط الجديد -->
+            <li class="{% if request.endpoint == 'charities' %}active{% endif %}">
+            <li class="{% if request.endpoint == 'donor_settings' %}active{% endif %}">
+                <a href="{{ url_for('donor_settings') }}"><i class="fa-solid fa-gear"></i> {% if session.get('lang','ar') == 'en' %}Settings{% else %}الإعدادات{% endif %}</a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-header" style="margin-bottom: 20px;">
+            <div class="logo-area">
+                <span class="icon-star"><i class="fa-solid fa-sliders"></i></span>
+                <h1>إعدادات الحساب</h1>
+            </div>
+            <div class="user-profile">
+                <a href="{{ url_for('logout') }}" class="user-btn"><i class="fa-solid fa-user"></i> {% if session.get('lang','ar') == 'en' %}Donor Account{% else %}حساب المتبرع{% endif %} ({{ username }})</a>
+            </div>
+        </header>
+
+        <div class="settings-container">
+            
+            <!-- العمود الأيمن: {% if session.get('lang','ar') == 'en' %}Menu{% else %}القائمة{% endif %} السريعة -->
+            <div class="settings-sidebar">
+                <div class="settings-card" style="text-align: center;">
+                    <div style="width: 80px; height: 80px; background: var(--brand); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; margin: 0 auto 15px;">
+                        <i class="fa-regular fa-user"></i>
+                    </div>
+                    <h3 style="margin-bottom: 5px;">{{ username }}</h3>
+                    <span style="color: var(--text-muted); font-size: 14px;">{% if session.get('lang','ar') == 'en' %}Active Donor{% else %}متبرع نشط{% endif %}</span>
+                </div>
+            </div>
+
+            <!-- العمود الأيسر: تفاصيل {% if session.get('lang','ar') == 'en' %}Settings{% else %}الإعدادات{% endif %} -->
+            <div class="settings-forms">
+                
+                <!-- إعدادات الأمان -->
+                <div class="settings-card">
+                    <div class="settings-header">
+                        <h3><i class="fa-solid fa-shield-halved"></i> {% if session.get('lang','ar') == 'en' %}Security & Password{% else %}الأمان وكلمة المرور{% endif %}</h3>
+                    </div>
+                    <form method="POST" action="{{ url_for('donor_settings') }}">
+                        <div class="form-group">
+                            <label>{% if session.get('lang','ar') == 'en' %}Username{% else %}اسم المستخدم{% endif %} (لا يمكن تغييره حالياً)</label>
+                            <input type="text" class="form-control" value="{{ username }}" disabled style="background: #f1f1f1;">
+                        </div>
+                        <div class="form-group">
+                            <label>{% if session.get('lang','ar') == 'en' %}New Password{% else %}كلمة المرور الجديدة{% endif %}</label>
+                            <input type="password" name="new_password" class="form-control" placeholder="اترك الحقل فارغاً إذا لم ترد التغيير">
+                        </div>
+                        <div class="form-group">
+                            <label>{% if session.get('lang','ar') == 'en' %}Confirm Password{% else %}تأكيد كلمة المرور{% endif %}</label>
+                            <input type="password" name="confirm_password" class="form-control" placeholder="{% if session.get('lang','ar') == 'en' %}Re-enter password{% else %}أعد إدخال كلمة المرور{% endif %}">
+                        </div>
+                        <button type="submit" class="btn-save"><i class="fa-solid fa-floppy-disk"></i> حفظ التعديلات</button>
+                    </form>
+                </div>
+
+                <!-- إعدادات الإشعارات (شكلية) -->
+                <div class="settings-card">
+                    <div class="settings-header">
+                        <h3><i class="fa-solid fa-bell"></i> تفضيلات الإشعارات</h3>
+                    </div>
+                    
+                    <div class="toggle-switch">
+                        <div class="toggle-info">
+                            <strong>{% if session.get('lang','ar') == 'en' %}Donation Delivery Alerts{% else %}إشعارات وصول التبرع{% endif %}</strong>
+                            <span>أرسل لي رسالة عند تسليم مساهمتي للمستفيد</span>
+                        </div>
+                        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                    </div>
+                    
+                    <div class="toggle-switch">
+                        <div class="toggle-info">
+                            <strong>{% if session.get('lang','ar') == 'en' %}Campaigns{% else %}الحملات{% endif %} العاجلة</strong>
+                            <span>تنبيهي عند وجود حالات إنسانية طارئة (غارمين، عمليات)</span>
+                        </div>
+                        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                    </div>
+                    
+                    <div class="toggle-switch" style="border: none;">
+                        <div class="toggle-info">
+                            <strong>التقارير الشهرية</strong>
+                            <span>استلام تقرير الشفافية الشهري عبر {% if session.get('lang','ar') == 'en' %}Email{% else %}البريد الإلكتروني{% endif %}</span>
+                        </div>
+                        <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

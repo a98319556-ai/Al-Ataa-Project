@@ -1,0 +1,49 @@
+{% set _theme = session.get('theme','light') %}
+{% set _lang  = session.get('lang','ar') %}
+<!DOCTYPE html>
+<html lang="{% if _lang == 'en' %}en{% else %}ar{% endif %}" dir="{% if _lang == 'en' %}ltr{% else %}rtl{% endif %}">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if session.get('lang','ar') == 'en' %}Sign In{% else %}دخول{% endif %} المشرفين - {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif;}
+        body{background:linear-gradient(135deg,#1a3b5d,#0f2a455);min-height:100vh;display:flex;align-items:center;justify-content:center;}
+        .box{background:white;border-radius:25px;padding:2.5rem;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+        .head{text-align:center;margin-bottom:2rem;}
+        .icon{width:70px;height:70px;background:linear-gradient(135deg,#1a3b5d,#28a745a);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:2rem;color:white;margin:0 auto 1rem;}
+        h2{color:#1a3b5d;font-weight:900;font-size:1.5rem;}
+        .sub{color:#4f7e95;font-size:0.9rem;}
+        .flash{padding:10px 15px;border-radius:10px;margin-bottom:1rem;font-weight:600;font-size:0.9rem;background:#fde8e8;color:#dc3545;}
+        label{display:block;font-weight:700;color:#1a3b5d;margin-bottom:0.4rem;font-size:0.9rem;}
+        input{width:100%;padding:12px 15px;border:2px solid #d1e2ef;border-radius:12px;font-size:0.95rem;margin-bottom:1rem;transition:border-color 0.2s;}
+        input:focus{outline:none;border-color:#28a745a;}
+        .btn{width:100%;padding:13px;background:linear-gradient(135deg,#1a3b5d,#28a745a);color:white;border:none;border-radius:12px;font-size:1rem;font-weight:800;cursor:pointer;transition:opacity 0.2s;}
+        .btn:hover{opacity:0.9;}
+        .back{display:block;text-align:center;margin-top:1rem;color:#4f7e95;font-size:0.9rem;text-decoration:none;}
+        .back:hover{color:#28a745a;}
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{% if _theme == \'dark\' %}dark-mode{% endif %}">
+<div class="box">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for c,m in messages %}<div class="flash">⚠️ {{m}}</div>{% endfor %}{% endif %}
+    {% endwith %}
+    <div class="head">
+        <div class="icon">🛡️</div>
+        <h2>لوحة الإدارة</h2>
+        <p class="sub">{% if session.get('lang','ar') == 'en' %}Sign In{% else %}دخول{% endif %} المشرفين فقط</p>
+    </div>
+    <form method="POST">
+        <label>{% if session.get('lang','ar') == 'en' %}Username{% else %}اسم المستخدم{% endif %}</label>
+        <input type="text" name="username" required placeholder="admin">
+        <label>{% if session.get('lang','ar') == 'en' %}Password{% else %}كلمة المرور{% endif %}</label>
+        <input type="password" name="password" required placeholder="••••••••">
+        <button type="submit" class="btn"><i class="fa-solid fa-lock"></i> {% if session.get('lang','ar') == 'en' %}Sign In{% else %}دخول{% endif %}</button>
+    </form>
+    <a href="{{ url_for('landing') }}" class="back">← العودة للصفحة {% if session.get('lang','ar') == 'en' %}Home{% else %}الرئيسية{% endif %}</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,295 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{% if session.get('lang','ar') == 'en' %}Donation Requests{% else %}طلبات ال{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}{% endif %} - {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+.req-tabs{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem;}
+.req-tab{padding:0.5rem 1.2rem;border-radius:30px;font-weight:700;font-size:0.88rem;text-decoration:none;background:#d1e2ef;color:#4f7e95;transition:all 0.2s;cursor:pointer;border:none;}
+.req-tab.active{background:var(--brand);color:white;}
+.req-tab:hover:not(.active){background:#d0dfe8;}
+.req-count{display:inline-block;background:rgba(0,0,0,0.12);padding:1px 7px;border-radius:20px;font-size:0.78rem;margin-right:4px;}
+.req-card{background:white;border-radius:18px;box-shadow:0 3px 15px rgba(15,70,90,0.07);border:1.5px solid #d1e2ef;margin-bottom:1.2rem;overflow:hidden;transition:box-shadow 0.2s;}
+.req-card:hover{box-shadow:0 6px 25px rgba(15,70,90,0.12);}
+.req-card-header{display:flex;align-items:flex-start;justify-content:space-between;padding:1.2rem 1.4rem 0.8rem;flex-wrap:wrap;gap:0.5rem;}
+.req-type-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
+.req-title-block{flex:1;}
+.req-title{font-size:1.05rem;font-weight:900;color:var(--primary-dark);}
+.req-meta{font-size:0.82rem;color:#4f7e95;margin-top:3px;}
+.req-status-badge{padding:0.35rem 1rem;border-radius:20px;font-size:0.82rem;font-weight:800;white-space:nowrap;}
+.status-pending{background:#fff3cd;color:#7d6000;}
+.status-approved{background:#d4edda;color:#145a32;}
+.status-rejected{background:#fde8e8;color:#dc3545;}
+.status-final_rejected{background:#f8d7da;color:#7b1c1c;}
+.status-on_the_way{background:#d1ecf1;color:#0c5460;}
+.req-card-body{padding:0 1.4rem 1rem;}
+.req-info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.6rem;margin-bottom:0.8rem;}
+.req-info-item{font-size:0.85rem;color:#555;}
+.req-info-item strong{color:var(--primary-dark);}
+.req-docs{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.8rem;}
+.doc-chip{display:inline-flex;align-items:center;gap:0.4rem;background:#f4f9fc;border:1.5px solid #d1e2ef;border-radius:8px;padding:0.3rem 0.7rem;font-size:0.8rem;color:var(--brand);text-decoration:none;}
+.doc-chip:hover{background:#e0f0f8;}
+.req-note{background:#fff9e6;border-right:3px solid #ffc107;border-radius:8px;padding:0.6rem 0.9rem;font-size:0.85rem;color:#6b4c00;margin-bottom:0.8rem;}
+.req-actions{display:flex;gap:0.5rem;flex-wrap:wrap;padding:0.8rem 1.4rem;border-top:1px solid #f0f5f8;background:#f4f9fc;}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;}
+.modal-box{background:white;border-radius:20px;width:100%;max-width:520px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-header{padding:1.3rem 1.5rem;background:var(--brand);color:white;display:flex;align-items:center;justify-content:space-between;}
+.modal-header h3{font-size:1.1rem;font-weight:800;}
+.modal-close{background:none;border:none;color:white;font-size:1.3rem;cursor:pointer;padding:0.2rem;}
+.modal-body{padding:1.4rem;}
+.modal-footer{padding:1rem 1.4rem;border-top:1px solid var(--border);display:flex;gap:0.7rem;justify-content:flex-end;}
+
+.empty-state{text-align:center;padding:3.5rem;color:#7fa0b8;}
+.empty-state i{font-size:3rem;margin-bottom:1rem;display:block;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="fa-solid fa-hand-holding-heart"></i> {% if session.get('lang','ar') == 'en' %}Donation Requests{% else %}طلبات ال{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}{% endif %}</h1>
+        <p class="page-sub">مراجعة وإدارة {% if session.get('lang','ar') == 'en' %}Donation Requests{% else %}طلبات ال{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}{% endif %} العينية من المحتاجين</p>
+    </div>
+</div>
+
+<!-- Status Tabs -->
+<div class="req-tabs">
+    <a href="{{ url_for('admin_donation_requests') }}" class="req-tab {% if not status_filter %}active{% endif %}">
+        الكل <span class="req-count">{{ counts.total }}</span>
+    </a>
+    <a href="{{ url_for('admin_donation_requests', status='pending') }}" class="req-tab {% if status_filter=='pending' %}active{% endif %}">
+        <i class="fa-solid fa-hourglass-half"></i> قيد المراجعة <span class="req-count">{{ counts.pending }}</span>
+    </a>
+    <a href="{{ url_for('admin_donation_requests', status='approved') }}" class="req-tab {% if status_filter=='approved' %}active{% endif %}">
+        <i class="fa-solid fa-check"></i> موافق عليه <span class="req-count">{{ counts.approved }}</span>
+    </a>
+    <a href="{{ url_for('admin_donation_requests', status='on_the_way') }}" class="req-tab {% if status_filter=='on_the_way' %}active{% endif %}">
+        <i class="fa-solid fa-truck"></i> في الطريق <span class="req-count">{{ counts.on_the_way }}</span>
+    </a>
+    <a href="{{ url_for('admin_donation_requests', status='rejected') }}" class="req-tab {% if status_filter=='rejected' %}active{% endif %}">
+        <i class="fa-solid fa-rotate-left"></i> مرفوض (قابل للتعديل) <span class="req-count">{{ counts.rejected }}</span>
+    </a>
+    <a href="{{ url_for('admin_donation_requests', status='final_rejected') }}" class="req-tab {% if status_filter=='final_rejected' %}active{% endif %}">
+        <i class="fa-solid fa-ban"></i> رفض نهائي <span class="req-count">{{ counts.final_rejected }}</span>
+    </a>
+</div>
+
+{% if requests %}
+{% for req in requests %}
+<div class="req-card">
+    <div class="req-card-header">
+        <div style="display:flex;gap:0.9rem;align-items:flex-start;flex:1;">
+            <div class="req-type-icon" style="background:{{ req.type_color }}20;color:{{ req.type_color }};">
+                {{ req.type_icon }}
+            </div>
+            <div class="req-title-block">
+                <div class="req-title">{{ req.item_requested }}</div>
+                <div class="req-meta">
+                    <i class="fa-solid fa-user"></i> {{ req.applicant_name }}
+                    &nbsp;·&nbsp;
+                    <i class="fa-solid fa-phone"></i> {{ req.phone }}
+                    &nbsp;·&nbsp;
+                    <i class="fa-solid fa-location-dot"></i> {{ req.address }}
+                    &nbsp;·&nbsp;
+                    <i class="fa-regular fa-calendar"></i> {{ req.created_at | fmt_date }}
+                </div>
+            </div>
+        </div>
+        <span class="req-status-badge status-{{ req.status }}">
+            {% if req.status == 'pending' %}⏳ قيد المراجعة
+            {% elif req.status == 'approved' %}✅ موافق عليه
+            {% elif req.status == 'on_the_way' %}🚚 في الطريق
+            {% elif req.status == 'rejected' %}🔄 مرفوض - قابل للتعديل
+            {% elif req.status == 'final_rejected' %}❌ رفض نهائي
+            {% endif %}
+        </span>
+    </div>
+
+    <div class="req-card-body">
+        <div class="req-info-grid">
+            <div class="req-info-item"><strong>نوع الطلب:</strong> {{ req.request_type }}</div>
+            <div class="req-info-item"><strong>الوصف:</strong> {{ req.description[:100] }}{% if req.description|length > 100 %}...{% endif %}</div>
+            {% if req.family_members %}<div class="req-info-item"><strong>عدد أفراد الأسرة:</strong> {{ req.family_members }}</div>{% endif %}
+        </div>
+
+        {% if req.documents %}
+        <div style="margin-bottom:0.8rem;">
+            <div style="font-size:0.83rem;font-weight:700;color:#4f7e95;margin-bottom:0.4rem;">📎 المستندات المرفقة:</div>
+            <div class="req-docs">
+                {% for doc in req.documents %}
+                <a href="{{ url_for('static', filename='uploads/' + doc.filename) }}" target="_blank" class="doc-chip">
+                    <i class="fa-solid fa-file-image"></i> {{ doc.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if req.admin_note %}
+        <div class="req-note">
+            <i class="fa-solid fa-comment-dots"></i> <strong>ملاحظة الإدارة:</strong> {{ req.admin_note }}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="req-actions">
+        {% if req.status == 'pending' %}
+        <button class="btn btn-success btn-sm" onclick="openModal('approve', {{ req.id }})">
+            <i class="fa-solid fa-check"></i> موافقة
+        </button>
+        <button class="btn btn-warning btn-sm" onclick="openModal('reject_note', {{ req.id }})">
+            <i class="fa-solid fa-rotate-left"></i> رفض مع ملاحظة
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="openModal('final_reject', {{ req.id }})">
+            <i class="fa-solid fa-ban"></i> رفض نهائي
+        </button>
+        {% elif req.status == 'approved' %}
+        <button class="btn btn-primary btn-sm" onclick="openModal('on_the_way', {{ req.id }})">
+            <i class="fa-solid fa-truck"></i> تحديد "في الطريق"
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="openModal('final_reject', {{ req.id }})">
+            <i class="fa-solid fa-ban"></i> رفض نهائي
+        </button>
+        {% elif req.status == 'on_the_way' %}
+        <span style="color:#0c5460;font-size:0.88rem;font-weight:700;padding:0.4rem 0.8rem;"><i class="fa-solid fa-truck"></i> الطلب في الطريق للمستفيد</span>
+        {% elif req.status == 'rejected' %}
+        <span style="color:#7d6000;font-size:0.85rem;padding:0.3rem;"><i class="fa-solid fa-info-circle"></i> في انتظار تعديل المستندات من المتقدم</span>
+        <button class="btn btn-success btn-sm" onclick="openModal('approve', {{ req.id }})">
+            <i class="fa-solid fa-check"></i> قبول بعد التعديل
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="openModal('final_reject', {{ req.id }})">
+            <i class="fa-solid fa-ban"></i> رفض نهائي
+        </button>
+        {% elif req.status == 'final_rejected' %}
+        <span style="color:#dc3545;font-size:0.85rem;padding:0.3rem;"><i class="fa-solid fa-ban"></i> تم الرفض النهائي لهذا الطلب</span>
+        {% endif %}
+        <form method="post" action="{{ url_for('admin_delete_donation_request', req_id=req.id) }}" style="display:inline;margin-right:auto;">
+            <button type="submit" class="btn btn-sm" style="background:#fde8e8;color:#dc3545;border:1px solid #f5c6cb;" onclick="return confirm('حذف هذا الطلب نهائياً من ال{% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %}؟')">
+                <i class="fa-solid fa-trash"></i> حذف الطلب
+            </button>
+        </form>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="empty-state">
+    <i class="fa-solid fa-inbox"></i>
+    لا توجد طلبات {% if status_filter %}بهذا {% if session.get('lang','ar') == 'en' %}Status{% else %}الحالة{% endif %}{% endif %}
+</div>
+{% endif %}
+
+<!-- Approve Modal -->
+<div id="modal-approve" class="modal-overlay" style="display:none;" onclick="closeModalOverlay(event,'modal-approve')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-check-circle"></i> تأكيد الموافقة على الطلب</h3>
+            <button class="modal-close" onclick="closeModal('modal-approve')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="color:#555;line-height:1.7;">هل أنت متأكد من الموافقة على هذا الطلب؟ سيتم إشعار المتقدم بالموافقة.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-warning btn-sm" onclick="closeModal('modal-approve')">إلغاء</button>
+            <form id="form-approve" method="post" action="">
+                <input type="hidden" name="action" value="approve">
+                <button type="submit" class="btn btn-success btn-sm"><i class="fa-solid fa-check"></i> تأكيد الموافقة</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reject with Note Modal -->
+<div id="modal-reject_note" class="modal-overlay" style="display:none;" onclick="closeModalOverlay(event,'modal-reject_note')">
+    <div class="modal-box">
+        <div class="modal-header" style="background:#ffc107;">
+            <h3><i class="fa-solid fa-rotate-left"></i> رفض مع ملاحظة للتعديل</h3>
+            <button class="modal-close" onclick="closeModal('modal-reject_note')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="color:#555;margin-bottom:0.8rem;">اكتب ملاحظة للمتقدم توضح ما يجب تعديله في المستندات أو البيانات.</p>
+            <div class="form-group">
+                <label style="font-weight:700;color:var(--primary-dark);font-size:0.9rem;">الملاحظة <span style="color:#dc3545;">*</span></label>
+                <textarea id="note-reject_note" class="form-control" rows="4" placeholder="مثال: يرجى إرفاق صورة من بطاقة الرقم القومي، أو تحديث بيانات عنوان الإقامة..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-warning btn-sm" onclick="closeModal('modal-reject_note')">إلغاء</button>
+            <form id="form-reject_note" method="post" action="">
+                <input type="hidden" name="action" value="reject_note">
+                <input type="hidden" name="admin_note" id="hidden-note-reject">
+                <button type="submit" class="btn btn-sm" style="background:#ffc107;color:white;" onclick="document.getElementById('hidden-note-reject').value=document.getElementById('note-reject_note').value">
+                    <i class="fa-solid fa-rotate-left"></i> {% if session.get('lang','ar') == 'en' %}Submit{% else %}إرسال{% endif %} الملاحظة
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Final Reject Modal -->
+<div id="modal-final_reject" class="modal-overlay" style="display:none;" onclick="closeModalOverlay(event,'modal-final_reject')">
+    <div class="modal-box">
+        <div class="modal-header" style="background:#dc3545;">
+            <h3><i class="fa-solid fa-ban"></i> رفض نهائي للطلب</h3>
+            <button class="modal-close" onclick="closeModal('modal-final_reject')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="color:#555;margin-bottom:0.8rem;">هذا {% if session.get('lang','ar') == 'en' %}Action{% else %}الإجراء{% endif %} نهائي. يمكنك كتابة سبب الرفض (اختياري).</p>
+            <div class="form-group">
+                <label style="font-weight:700;color:var(--primary-dark);font-size:0.9rem;">سبب الرفض (اختياري)</label>
+                <textarea id="note-final_reject" class="form-control" rows="3" placeholder="مثال: الطلب لا يستوفي شروط الأهلية..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-warning btn-sm" onclick="closeModal('modal-final_reject')">إلغاء</button>
+            <form id="form-final_reject" method="post" action="">
+                <input type="hidden" name="action" value="final_reject">
+                <input type="hidden" name="admin_note" id="hidden-note-final">
+                <button type="submit" class="btn btn-danger btn-sm" onclick="document.getElementById('hidden-note-final').value=document.getElementById('note-final_reject').value">
+                    <i class="fa-solid fa-ban"></i> تأكيد الرفض النهائي
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- On The Way Modal -->
+<div id="modal-on_the_way" class="modal-overlay" style="display:none;" onclick="closeModalOverlay(event,'modal-on_the_way')">
+    <div class="modal-box">
+        <div class="modal-header" style="background:#0c5460;">
+            <h3><i class="fa-solid fa-truck"></i> تحديد حالة "في الطريق"</h3>
+            <button class="modal-close" onclick="closeModal('modal-on_the_way')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="color:#555;margin-bottom:0.8rem;">هل تريد تحديث حالة الطلب إلى "في الطريق"؟ سيعلم المستفيد أن طلبه يُجهَّز ويتوجه إليه.</p>
+            <div class="form-group">
+                <label style="font-weight:700;color:var(--primary-dark);font-size:0.9rem;">ملاحظة (اختياري)</label>
+                <textarea id="note-on_the_way" class="form-control" rows="2" placeholder="مثال: تم تجهيز الطلب وسيصل خلال 3 أيام..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-warning btn-sm" onclick="closeModal('modal-on_the_way')">إلغاء</button>
+            <form id="form-on_the_way" method="post" action="">
+                <input type="hidden" name="action" value="on_the_way">
+                <input type="hidden" name="admin_note" id="hidden-note-otw">
+                <button type="submit" class="btn btn-primary btn-sm" onclick="document.getElementById('hidden-note-otw').value=document.getElementById('note-on_the_way').value">
+                    <i class="fa-solid fa-truck"></i> تأكيد
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function openModal(type, reqId) {
+    document.getElementById('modal-' + type).style.display = 'flex';
+    document.getElementById('form-' + type).action = '/admin/donation-request/' + reqId + '/update';
+}
+function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+}
+function closeModalOverlay(e, id) {
+    if (e.target.classList.contains('modal-overlay')) closeModal(id);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "admin/base_manager.html" %}
+{% block title %}المخزن - {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+{% block extra_css %}
+<style>
+.filter-bar{display:flex;gap:0.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1.5rem;}
+.filter-bar input,.filter-bar select{padding:0.6rem 1rem;border:1.5px solid var(--border);border-radius:10px;font-size:0.9rem;background:white;}
+.cat-pills{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;}
+.cat-pill{padding:0.4rem 1rem;border-radius:20px;font-size:0.85rem;font-weight:700;text-decoration:none;background:#d1e2ef;color:#4f7e95;transition:all 0.2s;}
+.cat-pill.active,.cat-pill:hover{background:var(--brand);color:white;}
+.item-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.2rem;}
+.item-card{background:white;border-radius:16px;overflow:hidden;box-shadow:0 3px 15px rgba(15,70,90,0.07);border:1.5px solid #d1e2ef;}
+.item-card-img{width:100%;height:160px;object-fit:cover;}
+.item-card-img-ph{width:100%;height:160px;background:#d1e2ef;display:flex;align-items:center;justify-content:center;font-size:3rem;color:#d1e2ef;}
+.item-card-body{padding:1rem;}
+.item-card-title{font-weight:800;color:var(--primary-dark);margin-bottom:0.3rem;}
+.item-card-meta{font-size:0.82rem;color:#4f7e95;margin-bottom:0.5rem;}
+.hist-action-add{background:#d4edda;color:#145a32;}
+.hist-action-deliver{background:#d1ecf1;color:#0c5460;}
+.hist-action-delete{background:#fde8e8;color:#dc3545;}
+.hist-action-returned{background:#fff3cd;color:#7d6000;}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="fa-solid fa-warehouse"></i> المخزن</h1>
+        <p class="page-sub">{% if session.get('lang','ar') == 'en' %}View{% else %}عرض{% endif %} جميع أصناف المخزن الخيري</p>
+    </div>
+</div>
+
+<div class="view-only-banner">
+    <i class="fa-solid fa-eye"></i>
+    وضع ال{% if session.get('lang','ar') == 'en' %}View{% else %}عرض{% endif %} فقط — لا يمكن إجراء أي تعديلات على المخزن
+</div>
+
+<form method="get" class="filter-bar">
+    <input type="text" name="q" value="{{ request.args.get('q','') }}" placeholder="🔍 {% if session.get('lang','ar') == 'en' %}Search{% else %}بحث{% endif %} في المخزن...">
+    <button type="submit" class="btn btn-primary btn-sm">{% if session.get('lang','ar') == 'en' %}Search{% else %}بحث{% endif %}</button>
+    {% if request.args.get('q') %}<a href="{{ url_for('manager_inventory') }}" class="btn btn-sm" style="background:#fff3cd;color:#7d6000;">مسح</a>{% endif %}
+</form>
+
+<div class="cat-pills">
+    <a href="{{ url_for('manager_inventory') }}" class="cat-pill {% if not request.args.get('category') %}active{% endif %}">الكل</a>
+    {% for cat, cnt in counts.items() %}
+    <a href="{{ url_for('manager_inventory', category=cat) }}" class="cat-pill {% if request.args.get('category') == cat %}active{% endif %}">
+        {{ cat }} <span style="background:rgba(0,0,0,0.1);padding:2px 7px;border-radius:10px;font-size:0.78rem;margin-right:4px;">{{ cnt }}</span>
+    </a>
+    {% endfor %}
+</div>
+
+{% if items %}
+<div class="item-grid">
+    {% for item in items %}
+    <div class="item-card">
+        {% if item.image %}
+        <img src="{{ url_for('static', filename='uploads/' + item.image) }}" alt="{{ item.item_name }}" class="item-card-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div class="item-card-img-ph" style="display:none;">📦</div>
+        {% else %}<div class="item-card-img-ph">📦</div>{% endif %}
+        <div class="item-card-body">
+            <div class="item-card-title">{{ item.item_name }}</div>
+            <div class="item-card-meta">
+                <i class="fa-solid fa-tag" style="color:var(--brand);"></i> {{ item.category }}
+                {% if item.subcategory %} · {{ item.subcategory }}{% endif %}
+                &nbsp;|&nbsp; الكمية: <strong>{{ item.quantity }}</strong>
+            </div>
+            <div style="font-size:0.75rem;color:#7fa0b8;font-family:monospace;">
+                <i class="fa-solid fa-qrcode"></i> {{ item.unique_code[:18] }}...
+                <span class="badge {% if item.status == 'available' %}badge-success{% elif item.status == 'returned' %}badge-warning{% else %}badge-secondary{% endif %}" style="margin-right:5px;">
+                    {{ 'متاح' if item.status == 'available' else 'مرتجع' if item.status == 'returned' else item.status }}
+                </span>
+            </div>
+            {% if item.description %}<p style="font-size:0.83rem;color:#4f7e95;margin-top:0.5rem;line-height:1.5;">{{ item.description[:80] }}{% if item.description|length > 80 %}...{% endif %}</p>{% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div style="text-align:center;padding:3rem;color:#7fa0b8;"><i class="fa-solid fa-box-open" style="font-size:3rem;margin-bottom:1rem;display:block;"></i>لا توجد أصناف</div>
+{% endif %}
+
+<div style="margin-top:2rem;">
+    <h2 style="font-size:1.3rem;font-weight:900;color:var(--primary-dark);margin-bottom:1rem;"><i class="fa-solid fa-clock-rotate-left"></i> {% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %} العمليات</h2>
+    <div class="card">
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>#</th><th>الصنف</th><th>الكود</th><th>العملية</th><th>التاريخ</th></tr></thead>
+                <tbody>
+                    {% if history %}{% for h in history %}
+                    <tr>
+                        <td>{{ h.id }}</td>
+                        <td><strong>{{ h.item_name }}</strong><br><small style="color:#4f7e95;">{{ h.category }}</small></td>
+                        <td style="font-family:monospace;font-size:0.8rem;">{{ h.unique_code[:14] if h.unique_code else '—' }}...</td>
+                        <td><span class="badge hist-action-{{ h.action }}">{{ {'add':'إضافة','deliver':'تسليم','delete':'حذف','returned':'مرتجع','available':'متاح'}.get(h.action, h.action) }}</span></td>
+                        <td style="font-size:0.85rem;">{{ h.timestamp | fmt_date }}</td>
+                    </tr>
+                    {% endfor %}{% else %}
+                    <tr><td colspan="5" style="text-align:center;color:#7fa0b8;padding:2rem;">لا توجد عمليات مسجلة</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

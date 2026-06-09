@@ -1,0 +1,503 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{% if session.get('lang','ar') == 'en' %}Donation Requests{% else %}طلبات ال{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}{% endif %} - {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+.req-tabs{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem;}
+.req-tab{padding:0.5rem 1.2rem;border-radius:30px;font-weight:700;font-size:0.88rem;text-decoration:none;background:#d1e2ef;color:#4f7e95;transition:all 0.2s;cursor:pointer;border:none;}
+.req-tab.active{background:var(--brand);color:white;}
+.req-tab:hover:not(.active){background:#d0dfe8;}
+.req-count{display:inline-block;background:rgba(0,0,0,0.12);padding:1px 7px;border-radius:20px;font-size:0.78rem;margin-right:4px;}
+.req-card{background:white;border-radius:18px;box-shadow:0 3px 15px rgba(15,70,90,0.07);border:1.5px solid #d1e2ef;margin-bottom:1.2rem;overflow:hidden;transition:box-shadow 0.2s;direction:rtl;text-align:right;}
+.req-card:hover{box-shadow:0 6px 25px rgba(15,70,90,0.12);}
+.req-card-header{display:flex;align-items:flex-start;justify-content:space-between;padding:1.2rem 1.4rem 0.8rem;flex-wrap:wrap;gap:0.5rem;}
+.req-type-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.07);}
+.req-title-block{flex:1;min-width:0;}
+.req-title{font-size:1.05rem;font-weight:900;color:var(--primary-dark);text-align:right;}
+.req-meta{font-size:0.82rem;color:#4f7e95;margin-top:5px;text-align:right;direction:rtl;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;line-height:1.8;}
+.req-meta i{color:var(--brand);margin-left:3px;}
+.req-meta-sep{color:#ccd9e4;}
+.req-status-badge{padding:0.35rem 1rem;border-radius:20px;font-size:0.82rem;font-weight:800;white-space:nowrap;align-self:flex-start;}
+.status-pending{background:#fff3cd;color:#7d6000;}
+.status-approved{background:#d4edda;color:#145a32;}
+.status-rejected{background:#fde8e8;color:#dc3545;}
+.status-final_rejected{background:#f8d7da;color:#7b1c1c;}
+.status-on_the_way{background:#d1ecf1;color:#0c5460;}
+.status-received{background:#c6f6d5;color:#22543d;}
+.urgent-row{border-right:4px solid #e53e3e !important;background:#fff5f5 !important;}
+.urgent-badge-admin{display:inline-flex;align-items:center;gap:4px;background:#fed7d7;color:#c53030;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:800;margin-right:6px;}
+.req-card-body{padding:0 1.4rem 1rem;}
+.req-info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.6rem;margin-bottom:0.8rem;text-align:right;}
+.req-info-item{font-size:0.85rem;color:#555;text-align:right;}
+.req-info-item strong{color:var(--primary-dark);}
+.req-docs{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.8rem;}
+.doc-chip{display:inline-flex;align-items:center;gap:0.4rem;background:#f4f9fc;border:1.5px solid #d1e2ef;border-radius:8px;padding:0.3rem 0.7rem;font-size:0.8rem;color:var(--brand);text-decoration:none;}
+.doc-chip:hover{background:#e0f0f8;}
+.req-note{background:#fff9e6;border-right:3px solid #ffc107;border-radius:8px;padding:0.6rem 0.9rem;font-size:0.85rem;color:#6b4c00;margin-bottom:0.8rem;text-align:right;}
+.req-actions{display:flex;gap:0.5rem;flex-wrap:wrap;padding:0.8rem 1.4rem;border-top:1px solid #f0f5f8;background:#f4f9fc;align-items:center;direction:rtl;}
+.empty-state{text-align:center;padding:3.5rem;color:#7fa0b8;}
+.empty-state i{font-size:3rem;margin-bottom:1rem;display:block;}
+.page-icon-box{width:52px;height:52px;background:var(--brand);border-radius:14px;display:flex;align-items:center;justify-content:center;color:white;font-size:1.35rem;}
+.req-delete-btn{background:#fde8e8;color:#dc3545;border:1px solid #f5c6cb;}
+.req-delete-btn:hover{background:#f8c8c8;}
+.confirm-form{display:inline;}
+/* assigned items */
+.assigned-items-box{background:#f0f9f0;border:1.5px solid #c3e6cb;border-radius:10px;padding:0.7rem 1rem;margin-top:0.7rem;}
+.assigned-items-title{font-size:0.83rem;font-weight:800;color:#145a32;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.4rem;}
+.assigned-item-row{display:flex;align-items:center;justify-content:space-between;gap:0.5rem;padding:0.3rem 0;border-bottom:1px solid #d4edda;font-size:0.83rem;}
+.assigned-item-row:last-child{border-bottom:none;}
+.assigned-item-name{font-weight:700;color:#0f2a4a;}
+.assigned-item-code{font-family:monospace;font-size:0.75rem;color:#1b4f8a;background:#dbeafe;padding:2px 8px;border-radius:6px;}
+.assigned-item-cat{font-size:0.75rem;color:#4f7e95;background:#e8f0f8;padding:2px 8px;border-radius:6px;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:1rem;">
+        <div class="page-icon-box"><i class="fa-solid fa-hand-holding-heart"></i></div>
+        <div>
+            <h1 class="page-title">{% if session.get('lang','ar') == 'en' %}Donation Requests{% else %}طلبات ال{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}{% endif %}</h1>
+            <p class="page-sub">مراجعة وإدارة {% if session.get('lang','ar') == 'en' %}Donation Requests{% else %}طلبات ال{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}{% endif %} العينية من المحتاجين</p>
+        </div>
+    </div>
+</div>
+
+<!-- Status Tabs -->
+<div class="req-tabs">
+    <a href="{{ url_for('admin_donation_requests') }}" class="req-tab {% if not status_filter %}active{% endif %}">
+        الكل <span class="req-count">{{ counts.total }}</span>
+    </a>
+    <a href="{{ url_for('admin_donation_requests', status='pending') }}" class="req-tab {% if status_filter=='pending' %}active{% endif %}">
+        <i class="fa-solid fa-hourglass-half"></i> قيد المراجعة <span class="req-count">{{ counts.pending }}</span>
+    </a>
+    <a href="{{ url_for('admin_donation_requests', status='approved') }}" class="req-tab {% if status_filter=='approved' %}active{% endif %}">
+        <i class="fa-solid fa-check"></i> موافق عليه <span class="req-count">{{ counts.approved }}</span>
+    </a>
+    <a href="{{ url_for('admin_donation_requests', status='on_the_way') }}" class="req-tab {% if status_filter=='on_the_way' %}active{% endif %}">
+        <i class="fa-solid fa-truck"></i> في الطريق <span class="req-count">{{ counts.on_the_way }}</span>
+    </a>
+    <a href="{{ url_for('admin_donation_requests', status='rejected') }}" class="req-tab {% if status_filter=='rejected' %}active{% endif %}">
+        <i class="fa-solid fa-rotate-left"></i> مرفوض (قابل للتعديل) <span class="req-count">{{ counts.rejected }}</span>
+    </a>
+    <a href="{{ url_for('admin_donation_requests', status='final_rejected') }}" class="req-tab {% if status_filter=='final_rejected' %}active{% endif %}">
+        <i class="fa-solid fa-ban"></i> رفض نهائي <span class="req-count">{{ counts.final_rejected }}</span>
+    </a>
+</div>
+
+{% if requests %}
+{% for req in requests %}
+<div class="req-card {% if req.is_urgent %}urgent-row{% endif %}">
+    <div class="req-card-header">
+        <div style="display:flex;gap:0.9rem;align-items:flex-start;flex:1;min-width:0;">
+            <div class="req-type-icon" style="background:{{ req.type_color }}20;color:{{ req.type_color }};">
+                {{ req.type_icon }}
+            </div>
+            <div class="req-title-block">
+                <div class="req-title">
+                    {% if req.is_urgent %}<span class="urgent-badge-admin"><i class="fa-solid fa-triangle-exclamation"></i> عاجل</span>{% endif %}
+                    {{ req.item_requested }}
+                </div>
+                <div class="req-meta">
+                    <span><i class="fa-solid fa-user"></i> {{ req.applicant_name }}</span>
+                    <span class="req-meta-sep">·</span>
+                    <span><i class="fa-solid fa-phone"></i> {{ req.phone }}</span>
+                    <span class="req-meta-sep">·</span>
+                    <span><i class="fa-solid fa-location-dot"></i> {{ req.address }}</span>
+                    <span class="req-meta-sep">·</span>
+                    <span><i class="fa-regular fa-calendar"></i> {{ req.created_at | fmt_date }}</span>
+                </div>
+            </div>
+        </div>
+        <span class="req-status-badge status-{{ req.status }}">
+            {% if req.status == 'pending' %}⏳ قيد المراجعة
+            {% elif req.status == 'approved' %}✅ موافق عليه
+            {% elif req.status == 'on_the_way' %}🚚 في الطريق
+            {% elif req.status == 'rejected' %}🔄 مرفوض - قابل للتعديل
+            {% elif req.status == 'final_rejected' %}❌ رفض نهائي
+            {% endif %}
+        </span>
+    </div>
+
+    <div class="req-card-body">
+        <div class="req-info-grid">
+            <div class="req-info-item"><strong>نوع الطلب:</strong> {{ req.request_type }}</div>
+            <div class="req-info-item"><strong>الوصف:</strong> {{ req.description[:100] }}{% if req.description|length > 100 %}...{% endif %}</div>
+            {% if req.family_members %}<div class="req-info-item"><strong>عدد أفراد الأسرة:</strong> {{ req.family_members }}</div>{% endif %}
+        </div>
+
+        {% if req.documents %}
+        <div style="margin-bottom:0.8rem;">
+            <div style="font-size:0.83rem;font-weight:700;color:#4f7e95;margin-bottom:0.4rem;">📎 المستندات المرفقة:</div>
+            <div class="req-docs">
+                {% for doc in req.documents %}
+                <a href="{{ url_for('static', filename='uploads/' + doc.filename) }}" target="_blank" class="doc-chip">
+                    <i class="fa-solid fa-file-image"></i> {{ doc.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if req.admin_note %}
+        <div class="req-note">
+            <i class="fa-solid fa-comment-dots"></i> <strong>ملاحظة الإدارة:</strong> {{ req.admin_note }}
+        </div>
+        {% endif %}
+
+        {% if req.assigned_items %}
+        <div class="assigned-items-box">
+            <div class="assigned-items-title">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                الأصناف المخصصة لهذا المستفيد ({{ req.assigned_items|length }} صنف)
+            </div>
+            {% for ai in req.assigned_items %}
+            <div class="assigned-item-row">
+                <span class="assigned-item-name">{{ ai.item_name }}</span>
+                <div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">
+                    <span class="assigned-item-cat">{{ ai.category }}</span>
+                    <span class="assigned-item-code"><i class="fa-solid fa-barcode"></i> {{ ai.unique_code[:16] if ai.unique_code else '—' }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% elif req.status in ('approved', 'on_the_way') %}
+        <div style="font-size:0.83rem;color:#6b7f95;background:#f8fafc;border-radius:8px;padding:0.5rem 0.8rem;margin-top:0.5rem;">
+            <i class="fa-solid fa-circle-info"></i> لم يتم تخصيص أصناف بعد
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="req-actions">
+        {% if req.status == 'pending' %}
+        <a href="{{ url_for('admin_approve_request', req_id=req.id) }}" class="btn btn-success btn-sm">
+            <i class="fa-solid fa-check"></i> موافقة
+        </a>
+        <form class="confirm-form" method="post" action="{{ url_for('admin_update_donation_request', req_id=req.id) }}">
+            <input type="hidden" name="action" value="reject_note">
+            <input type="hidden" name="admin_note" value="يرجى مراجعة المستندات وإعادة التقديم">
+            <button type="submit" class="btn btn-warning btn-sm">
+                <i class="fa-solid fa-rotate-left"></i> رفض مع ملاحظة
+            </button>
+        </form>
+        <form class="confirm-form" method="post" action="{{ url_for('admin_update_donation_request', req_id=req.id) }}">
+            <input type="hidden" name="action" value="final_reject">
+            <button type="submit" class="btn btn-danger btn-sm">
+                <i class="fa-solid fa-ban"></i> رفض نهائي
+            </button>
+        </form>
+
+        {% elif req.status == 'approved' %}
+        <form class="confirm-form" method="post" action="{{ url_for('admin_update_donation_request', req_id=req.id) }}">
+            <input type="hidden" name="action" value="on_the_way">
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="fa-solid fa-truck"></i> تحديد "في الطريق"
+            </button>
+        </form>
+        <form class="confirm-form" method="post" action="{{ url_for('admin_update_donation_request', req_id=req.id) }}">
+            <input type="hidden" name="action" value="final_reject">
+            <button type="submit" class="btn btn-danger btn-sm">
+                <i class="fa-solid fa-ban"></i> رفض نهائي
+            </button>
+        </form>
+
+        {% elif req.status == 'on_the_way' %}
+        <span style="color:#0c5460;font-size:0.88rem;font-weight:700;padding:0.4rem 0.8rem;">
+            <i class="fa-solid fa-truck"></i> الطلب في الطريق للمستفيد
+        </span>
+        <button onclick="openTrackModal({{ req.id }})" class="btn btn-sm" style="background:#1a73e8;color:white;border:none;border-radius:8px;padding:0.38rem 0.9rem;font-size:0.85rem;font-weight:700;cursor:pointer;">
+            <i class="fa-solid fa-location-dot"></i> تتبع الطلب
+        </button>
+        <span id="inline-timer-{{ req.id }}" style="background:#eef3ff;border:1.5px solid #c7d7f5;border-radius:10px;padding:0.2rem 0.7rem;font-size:0.82rem;font-weight:800;color:#1a73e8;font-family:monospace;min-width:55px;display:inline-block;text-align:center;">--:--</span>
+
+        {% elif req.status == 'rejected' %}
+        <span style="color:#7d6000;font-size:0.85rem;padding:0.3rem;">
+            <i class="fa-solid fa-info-circle"></i> في انتظار تعديل المستندات من المتقدم
+        </span>
+        <a href="{{ url_for('admin_approve_request', req_id=req.id) }}" class="btn btn-success btn-sm">
+            <i class="fa-solid fa-check"></i> قبول بعد التعديل
+        </a>
+        <form class="confirm-form" method="post" action="{{ url_for('admin_update_donation_request', req_id=req.id) }}">
+            <input type="hidden" name="action" value="final_reject">
+            <button type="submit" class="btn btn-danger btn-sm">
+                <i class="fa-solid fa-ban"></i> رفض نهائي
+            </button>
+        </form>
+
+        {% elif req.status == 'final_rejected' %}
+        <span style="color:#dc3545;font-size:0.85rem;padding:0.3rem;">
+            <i class="fa-solid fa-ban"></i> تم الرفض النهائي لهذا الطلب
+        </span>
+        {% endif %}
+
+        <form class="confirm-form" method="post" action="{{ url_for('admin_delete_donation_request', req_id=req.id) }}"
+              style="margin-right:auto;">
+            <button type="submit" class="btn btn-sm req-delete-btn">
+                <i class="fa-solid fa-trash"></i> حذف الطلب
+            </button>
+        </form>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="empty-state">
+    <i class="fa-solid fa-inbox"></i>
+    لا توجد طلبات {% if status_filter %}بهذه {% if session.get('lang','ar') == 'en' %}Status{% else %}الحالة{% endif %}{% endif %}
+</div>
+{% endif %}
+
+<!-- ── Tracking Modal ── -->
+<div id="trackModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(10,25,50,0.55);align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this)closeTrackModal()">
+<div style="background:white;border-radius:20px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.25);direction:rtl;" onclick="event.stopPropagation()">
+
+    <!-- Header -->
+    <div style="padding:1.4rem 1.6rem;border-bottom:1.5px solid #e5edf5;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+            <div style="font-size:1.1rem;font-weight:900;color:#0f2a4a;"><i class="fa-solid fa-truck" style="color:#1a73e8;margin-left:0.5rem;"></i> تتبع الطلب</div>
+            <div id="trackSubtitle" style="font-size:0.82rem;color:#8fa3b5;margin-top:2px;"></div>
+        </div>
+        <button onclick="closeTrackModal()" style="background:#f1f6fb;border:none;border-radius:10px;width:36px;height:36px;cursor:pointer;font-size:1.1rem;color:#4f7e95;">✕</button>
+    </div>
+
+    <!-- Beneficiary + Status -->
+    <div style="padding:1.2rem 1.6rem;border-bottom:1.5px solid #f1f6fb;display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+        <div style="flex:1;min-width:180px;">
+            <div style="font-size:0.78rem;color:#8fa3b5;margin-bottom:4px;">المستفيد</div>
+            <div id="trackName" style="font-weight:800;color:#0f2a4a;font-size:1rem;"></div>
+            <div id="trackPhone" style="font-size:0.85rem;color:#1a73e8;margin-top:2px;font-family:monospace;"></div>
+            <div id="trackAddress" style="font-size:0.82rem;color:#6b7f95;margin-top:4px;"></div>
+        </div>
+        <!-- Countdown -->
+        <div id="countdownBox" style="background:#eef3ff;border:1.5px solid #c7d7f5;border-radius:14px;padding:0.8rem 1.4rem;text-align:center;min-width:150px;">
+            <div style="font-size:0.75rem;color:#3a5fa8;font-weight:700;margin-bottom:4px;">الوقت المتوقع للوصول</div>
+            <div id="countdownTimer" style="font-size:1.8rem;font-weight:900;color:#1a73e8;font-family:monospace;letter-spacing:2px;">30:00</div>
+            <div id="countdownLabel" style="font-size:0.75rem;color:#3a5fa8;margin-top:2px;">دقيقة</div>
+        </div>
+    </div>
+
+    <!-- Items -->
+    <div style="padding:1rem 1.6rem;border-bottom:1.5px solid #f1f6fb;">
+        <div style="font-size:0.85rem;font-weight:800;color:#0f2a4a;margin-bottom:0.8rem;"><i class="fa-solid fa-boxes-stacked" style="color:#1a73e8;margin-left:0.4rem;"></i> الأصناف المرسلة</div>
+        <div id="trackItems" style="display:flex;gap:0.8rem;flex-wrap:wrap;"></div>
+    </div>
+
+    <!-- Map -->
+    <div style="padding:1rem 1.6rem 1.4rem;">
+        <div style="font-size:0.85rem;font-weight:800;color:#0f2a4a;margin-bottom:0.8rem;"><i class="fa-solid fa-map-location-dot" style="color:#1a73e8;margin-left:0.4rem;"></i> مسار التوصيل</div>
+        <div id="trackMap" style="width:100%;height:300px;border-radius:14px;overflow:hidden;border:1.5px solid #e5edf5;background:#f1f6fb;"></div>
+        <div id="mapNote" style="font-size:0.78rem;color:#8fa3b5;margin-top:6px;text-align:center;"></div>
+    </div>
+
+    <!-- Completed banner -->
+    <div id="completedBanner" style="display:none;margin:0 1.6rem 1.4rem;background:#d4edda;border:1.5px solid #a8d5b1;border-radius:12px;padding:1rem;text-align:center;">
+        <i class="fa-solid fa-circle-check" style="color:#1e7e34;font-size:1.5rem;"></i>
+        <div style="font-weight:800;color:#1e7e34;margin-top:6px;font-size:1rem;">تم التوصيل بنجاح!</div>
+        <div style="font-size:0.82rem;color:#28a745;margin-top:4px;">وصلت الأصناف للمستفيد</div>
+    </div>
+</div>
+</div>
+
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Embed requests data -->
+<script>
+const requestsData = {
+{% for req in requests %}
+{% if req.status == 'on_the_way' %}
+{{ req.id }}: {
+    name: {{ req.applicant_name | tojson }},
+    phone: {{ req.phone | tojson }},
+    address: {{ req.address | tojson }},
+    items: [
+        {% for item in req.assigned_items %}
+        { name: {{ item.item_name | tojson }}, category: {{ item.category | tojson }}, image: {{ (item.image or '') | tojson }} }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]
+},
+{% endif %}
+{% endfor %}
+};
+
+// Auto-start inline timers for all on_the_way requests
+const inlineTimers = {};
+const TIMER_DURATION = 30 * 60; // 30 minutes in seconds
+
+document.addEventListener('DOMContentLoaded', function() {
+    Object.keys(requestsData).forEach(function(reqId) {
+        startInlineTimer(parseInt(reqId));
+    });
+});
+
+function startInlineTimer(reqId) {
+    const el = document.getElementById('inline-timer-' + reqId);
+    if (!el) return;
+
+    const storageKey = 'ataa_timer_start_' + reqId;
+    let startTime = localStorage.getItem(storageKey);
+
+    // If no saved start time, save now
+    if (!startTime) {
+        startTime = Date.now();
+        localStorage.setItem(storageKey, startTime);
+    } else {
+        startTime = parseInt(startTime);
+    }
+
+    function tick() {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const remaining = TIMER_DURATION - elapsed;
+
+        if (remaining <= 0) {
+            el.textContent = '✓ وصل';
+            el.style.background = '#d4edda';
+            el.style.borderColor = '#a8d5b1';
+            el.style.color = '#1e7e34';
+            localStorage.removeItem(storageKey);
+            return;
+        }
+
+        const m = Math.floor(remaining / 60), s = remaining % 60;
+        el.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+        inlineTimers[reqId] = setTimeout(tick, 500);
+    }
+    tick();
+}
+
+let trackMap = null, countdownInterval = null;
+
+function openTrackModal(reqId) {
+    const req = requestsData[reqId];
+    if (!req) return;
+
+    document.getElementById('trackSubtitle').textContent = 'طلب رقم #' + reqId;
+    document.getElementById('trackName').textContent = req.name;
+    document.getElementById('trackPhone').innerHTML = '<i class="fa-solid fa-phone" style="font-size:0.75rem;"></i> ' + req.phone;
+    document.getElementById('trackAddress').innerHTML = '<i class="fa-solid fa-location-dot" style="font-size:0.75rem;color:#e74c3c;"></i> ' + req.address;
+
+    // Items
+    const container = document.getElementById('trackItems');
+    container.innerHTML = '';
+    req.items.forEach(item => {
+        const card = document.createElement('div');
+        card.style.cssText = 'background:#f8faff;border:1.5px solid #e5edf5;border-radius:12px;overflow:hidden;width:130px;flex-shrink:0;';
+        if (item.image) {
+            card.innerHTML = `<img src="/static/uploads/${item.image}" style="width:100%;height:90px;object-fit:cover;">
+                <div style="padding:0.5rem;"><div style="font-size:0.78rem;font-weight:700;color:#0f2a4a;">${item.name}</div>
+                <div style="font-size:0.72rem;color:#8fa3b5;">${item.category}</div></div>`;
+        } else {
+            card.innerHTML = `<div style="width:100%;height:90px;background:#eef3ff;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-box" style="font-size:2rem;color:#c7d7f5;"></i></div>
+                <div style="padding:0.5rem;"><div style="font-size:0.78rem;font-weight:700;color:#0f2a4a;">${item.name}</div>
+                <div style="font-size:0.72rem;color:#8fa3b5;">${item.category}</div></div>`;
+        }
+        container.appendChild(card);
+    });
+
+    // Reset completed banner
+    document.getElementById('completedBanner').style.display = 'none';
+
+    // Show modal
+    const modal = document.getElementById('trackModal');
+    modal.style.display = 'flex';
+
+    // Init map after modal visible
+    setTimeout(() => initMap(req.address), 100);
+
+    // Start countdown synced with persisted timer
+    const storageKey = 'ataa_timer_start_' + reqId;
+    let startTime = localStorage.getItem(storageKey);
+    if (!startTime) { startTime = Date.now(); localStorage.setItem(storageKey, startTime); }
+    const elapsed = Math.floor((Date.now() - parseInt(startTime)) / 1000);
+    const remaining = Math.max(0, 30 * 60 - elapsed);
+    startCountdown(remaining);
+}
+
+function closeTrackModal() {
+    document.getElementById('trackModal').style.display = 'none';
+    if (trackMap) { trackMap.remove(); trackMap = null; }
+    if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+}
+
+function initMap(address) {
+    if (trackMap) { trackMap.remove(); trackMap = null; }
+
+    // Default: Cairo center
+    const destLat = 30.0444, destLng = 31.2357;
+    // Truck starts ~3km away
+    const truckLat = destLat + 0.027, truckLng = destLng - 0.015;
+
+    trackMap = L.map('trackMap', { zoomControl: true }).setView([destLat, destLng], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        maxZoom: 18
+    }).addTo(trackMap);
+
+    // Truck icon
+    const truckIcon = L.divIcon({
+        html: '<div style="background:#1a73e8;color:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:0 2px 8px rgba(26,115,232,0.4);">🚚</div>',
+        iconSize: [36, 36], iconAnchor: [18, 18], className: ''
+    });
+
+    // Destination icon
+    const destIcon = L.divIcon({
+        html: '<div style="background:#e74c3c;color:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:0 2px 8px rgba(231,76,60,0.4);">📍</div>',
+        iconSize: [36, 36], iconAnchor: [18, 36], className: ''
+    });
+
+    const truckMarker = L.marker([truckLat, truckLng], {icon: truckIcon}).addTo(trackMap)
+        .bindPopup('<b>موقع العربية</b>').openPopup();
+
+    L.marker([destLat, destLng], {icon: destIcon}).addTo(trackMap)
+        .bindPopup('<b>' + (address || 'موقع المستفيد') + '</b>');
+
+    // Draw route line
+    const route = L.polyline([[truckLat, truckLng], [destLat, destLng]], {
+        color: '#1a73e8', weight: 4, opacity: 0.7, dashArray: '10, 8'
+    }).addTo(trackMap);
+
+    trackMap.fitBounds(route.getBounds(), {padding: [40, 40]});
+
+    // Animate truck toward destination
+    let step = 0, totalSteps = 60;
+    const latDiff = destLat - truckLat, lngDiff = destLng - truckLng;
+    const moveInterval = setInterval(() => {
+        step++;
+        if (step >= totalSteps) { clearInterval(moveInterval); return; }
+        const t = step / totalSteps;
+        truckMarker.setLatLng([truckLat + latDiff * t, truckLng + lngDiff * t]);
+    }, 29000); // moves over ~29 min
+
+    document.getElementById('mapNote').textContent = 'العنوان: ' + (address || 'القاهرة');
+}
+
+function startCountdown(seconds) {
+    if (countdownInterval) clearInterval(countdownInterval);
+    let remaining = seconds;
+
+    function update() {
+        const mins = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        document.getElementById('countdownTimer').textContent =
+            String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0');
+
+        if (remaining <= 0) {
+            clearInterval(countdownInterval);
+            // Show completed
+            const box = document.getElementById('countdownBox');
+            box.style.background = '#d4edda';
+            box.style.borderColor = '#a8d5b1';
+            document.getElementById('countdownTimer').style.color = '#1e7e34';
+            document.getElementById('countdownLabel').textContent = 'تم التوصيل ✓';
+            document.getElementById('completedBanner').style.display = 'block';
+        }
+        remaining--;
+    }
+
+    update();
+    countdownInterval = setInterval(update, 1000);
+}
+</script>
+
+{% endblock %}

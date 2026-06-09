@@ -1,0 +1,245 @@
+{% extends "admin/base_manager.html" %}
+{% block title %}تعديل الجمعية — {{ charity.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-page-wrap { max-width: 1060px; margin: 0 auto; }
+.back-link { display:inline-flex;align-items:center;gap:.4rem;color:var(--brand-primary);font-size:.85rem;font-weight:700;text-decoration:none;margin-bottom:.9rem;transition:gap .15s; }
+.back-link:hover { gap:.65rem; }
+.pg-breadcrumb { font-size:.8rem;color:var(--brand-text-soft);margin-bottom:.3rem; }
+.pg-breadcrumb a { color:var(--brand-primary);text-decoration:none;font-weight:700; }
+.pg-header h1 { font-size:1.75rem;font-weight:900;color:var(--brand-text);display:flex;align-items:center;gap:.5rem;justify-content:flex-end;margin-bottom:.25rem; }
+.pg-sub { font-size:.83rem;color:var(--brand-text-soft); }
+
+/* current charity card */
+.current-card {
+    background:var(--brand-surface);border-radius:var(--r);border:1px solid var(--brand-border);
+    box-shadow:var(--brand-card-shadow);padding:1rem 1.4rem;margin-bottom:1.3rem;
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem;
+}
+.cc-right { display:flex;align-items:center;gap:.9rem; }
+.cc-img { width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,#cce9e1,#a8d8cc);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;overflow:hidden; }
+.cc-img img { width:100%;height:100%;object-fit:cover; }
+.cc-name { font-size:1rem;font-weight:900;color:var(--brand-text); }
+.cc-sub { font-size:.8rem;color:var(--brand-text-soft);margin-top:.15rem; }
+.badge-sm { font-size:.74rem;font-weight:700;padding:.25rem .7rem;border-radius:15px; }
+.badge-charity { background:#e8f4fd;color:#1a5fa8; }
+
+/* form section */
+.form-section { background:var(--brand-surface);border-radius:var(--r);border:1px solid var(--brand-border);box-shadow:var(--brand-card-shadow);margin-bottom:1.1rem;overflow:hidden; }
+.section-divider { display:flex;align-items:center;justify-content:flex-end;padding:.7rem 1.5rem;border-bottom:1px solid var(--brand-border);background:var(--brand-surface-muted); }
+.sdivider-label { font-size:.82rem;font-weight:800;color:var(--brand-primary);border-right:3px solid var(--brand-primary);padding-right:.6rem; }
+.section-body { padding:1.3rem 1.5rem; }
+.field-row { display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem; }
+.field-row.full { grid-template-columns:1fr; }
+.field-group { display:flex;flex-direction:column;gap:.32rem; }
+.field-label { font-size:.85rem;font-weight:800;color:var(--brand-text);text-align:right; }
+.req { color:#e53e3e;margin-right:2px; }
+.field-input { padding:.72rem 1rem;border:1px solid var(--brand-border-strong);border-radius:var(--r);font-size:.9rem;font-family:'Cairo',sans-serif;color:var(--brand-text);background:var(--brand-surface-muted);width:100%;transition:border-color .2s,box-shadow .2s;text-align:right;direction:rtl; }
+.field-input:focus { outline:none;border-color:var(--brand-primary);box-shadow:0 0 0 3px rgba(27,79,138,.1);background:var(--brand-surface); }
+.field-input::placeholder { color:var(--brand-text-faint); }
+textarea.field-input { resize:vertical;min-height:120px; }
+.field-hint { font-size:.74rem;color:var(--brand-text-soft);background:var(--brand-surface-muted);padding:.3rem .7rem;border-radius:6px;margin-top:.25rem;display:flex;align-items:center;gap:.35rem;border:1px solid var(--brand-border); }
+
+/* fields tags */
+.fields-tags { display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.6rem;justify-content:flex-end; }
+.field-tag { font-size:.75rem;font-weight:700;padding:.25rem .65rem;border-radius:20px;background:#e8f4fd;color:#1a5fa8;border:1px solid #bde0fb; }
+
+/* stats cards */
+.stats-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:1rem; }
+.stat-card { border:1.5px solid var(--brand-border);border-radius:var(--r);padding:1.1rem;text-align:center;background:var(--brand-surface);position:relative; }
+.stat-card-label { font-size:.78rem;font-weight:800;color:var(--brand-primary);margin-bottom:.75rem;text-align:right;border-right:3px solid var(--brand-primary);padding-right:.5rem; }
+.stat-num-input { font-size:1.15rem;font-weight:900;text-align:center;padding:.6rem .8rem;border:1.5px solid var(--brand-border-strong);border-radius:var(--r);background:var(--brand-surface-muted);width:100%;font-family:'Cairo',sans-serif;color:var(--brand-text);margin-bottom:.5rem;transition:border-color .2s; }
+.stat-num-input:focus { outline:none;border-color:var(--brand-primary);box-shadow:0 0 0 3px rgba(27,79,138,.1); }
+.stat-lbl-input { font-size:.85rem;text-align:center;padding:.5rem .8rem;border:1px solid var(--brand-border);border-radius:var(--r);background:var(--brand-surface);width:100%;font-family:'Cairo',sans-serif;color:var(--brand-text-soft);transition:border-color .2s; }
+.stat-lbl-input:focus { outline:none;border-color:var(--brand-primary); }
+
+/* upload */
+.upload-zone { border:1.5px dashed #9ecdc4;border-radius:var(--r);background:#f5fafd;padding:2rem 1.5rem;text-align:center;cursor:pointer;transition:all .2s;position:relative; }
+.upload-zone:hover { border-color:var(--brand-primary);background:#eef8f5; }
+.upload-zone input[type=file] { position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%; }
+.upload-cloud { font-size:1.9rem;color:var(--brand-text);opacity:.6;display:block;margin-bottom:.7rem; }
+.upload-main-title { font-size:.95rem;font-weight:800;color:var(--brand-text); }
+.upload-sub { font-size:.77rem;color:var(--brand-text-soft);margin-top:.25rem; }
+.current-img-row { display:flex;align-items:center;gap:.75rem;margin-bottom:.8rem;padding:.7rem 1rem;background:var(--brand-surface-muted);border-radius:var(--r);border:1px solid var(--brand-border); }
+.current-img-thumb { width:52px;height:52px;border-radius:8px;object-fit:cover;border:1px solid var(--brand-border); }
+
+/* actions */
+.form-actions { background:var(--brand-surface);border-radius:var(--r);border:1px solid var(--brand-border);padding:1.1rem 1.5rem;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap; }
+.btn-save { display:inline-flex;align-items:center;gap:.5rem;padding:.72rem 2rem;border-radius:999px;background:linear-gradient(135deg,#1B4F8A,#155a3a);color:#fff;font-size:.92rem;font-weight:800;border:none;cursor:pointer;font-family:'Cairo',sans-serif;transition:opacity .2s,transform .15s;box-shadow:0 3px 12px rgba(27,79,138,.25); }
+.btn-save:hover { opacity:.9;transform:translateY(-1px); }
+.btn-cancel { display:inline-flex;align-items:center;gap:.5rem;padding:.72rem 1.4rem;border-radius:999px;background:var(--brand-surface);color:var(--brand-text);font-size:.9rem;font-weight:700;border:1.5px solid var(--brand-border-strong);text-decoration:none;font-family:'Cairo',sans-serif;transition:background .15s;margin-right:auto; }
+.btn-cancel:hover { background:var(--brand-surface-muted); }
+
+@media(max-width:640px){
+  .stats-grid { grid-template-columns:1fr; }
+  .field-row { grid-template-columns:1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-page-wrap">
+
+  <a href="javascript:history.back()" class="back-link">
+    <i class="fa-solid fa-arrow-right"></i> رجوع
+  </a>
+
+  <div class="pg-breadcrumb">
+    <a href="{{ url_for('manager_charities') }}">{% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %}</a> &lt; تعديل
+  </div>
+  <div class="pg-header" style="margin-bottom:1.3rem;">
+    <h1><i class="fa-solid fa-building-columns" style="color:var(--brand-primary);font-size:1.3rem;"></i> تعديل الجمعية</h1>
+    <div class="pg-sub">تعديل: {{ charity.name }}</div>
+  </div>
+
+  <!-- بطاقة الجمعية الحالية -->
+  <div class="current-card">
+    <div class="cc-right">
+      <div class="cc-img">
+        {% if charity.image and charity.image != 'default.jpg' %}
+          <img src="/static/uploads/{{ charity.image }}" alt="">
+        {% else %}🏛️{% endif %}
+      </div>
+      <div>
+        <div class="cc-name">{{ charity.name }}</div>
+        <div class="cc-sub">
+          {% if charity.fields %}
+            {{ charity.fields[:60] }}{% if charity.fields|length > 60 %}...{% endif %}
+          {% else %}لا توجد مجالات محددة{% endif %}
+        </div>
+      </div>
+    </div>
+    <span class="badge-sm badge-charity"><i class="fa-solid fa-heart" style="font-size:.65rem;margin-left:.3rem;"></i> جمعية شريكة</span>
+  </div>
+
+  <form method="POST" enctype="multipart/form-data">
+
+    <!-- المعلومات الأساسية -->
+    <div class="form-section">
+      <div class="section-divider"><span class="sdivider-label">المعلومات الأساسية</span></div>
+      <div class="section-body">
+        <div class="field-row full" style="margin-bottom:1rem;">
+          <div class="field-group">
+            <label class="field-label">اسم الجمعية <span class="req">*</span></label>
+            <input type="text" name="name" class="field-input" value="{{ charity.name }}" required placeholder="أدخل اسم الجمعية">
+          </div>
+        </div>
+        <div class="field-row full" style="margin-bottom:0;">
+          <div class="field-group">
+            <label class="field-label">وصف الجمعية <span class="req">*</span></label>
+            <textarea name="description" class="field-input" required placeholder="اكتب وصفاً تفصيلياً للجمعية وأهدافها...">{{ charity.description }}</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- مجالات العمل -->
+    <div class="form-section">
+      <div class="section-divider"><span class="sdivider-label">مجالات العمل</span></div>
+      <div class="section-body">
+        <div class="field-group">
+          <label class="field-label">المجالات <span style="font-weight:500;color:var(--brand-text-soft);">(افصل بين المجالات بفاصلة)</span></label>
+          <input type="text" name="fields" id="fieldsInput" class="field-input"
+                 value="{{ charity.fields or '' }}"
+                 placeholder="مثال: صحة, تعليم, إسكان, غذاء"
+                 oninput="updateTags()">
+          <div class="field-hint">
+            <i class="fa-solid fa-circle-info" style="color:var(--brand-primary);"></i>
+            أمثلة: صحة، تعليم، إسكان، غذاء، أيتام، طوارئ، بيئة
+          </div>
+          <div class="fields-tags" id="fieldsTags"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- الإحصائيات والأرقام -->
+    <div class="form-section">
+      <div class="section-divider"><span class="sdivider-label">الإحصائيات والأرقام</span></div>
+      <div class="section-body">
+        <p style="font-size:.82rem;color:var(--brand-text-soft);text-align:right;margin-bottom:1.1rem;">
+          <i class="fa-solid fa-chart-bar" style="color:var(--brand-primary);margin-left:.35rem;"></i>
+          تظهر هذه الإحصائيات في صفحة الجمعية العامة لإبراز إنجازاتها
+        </p>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-label">📊 إحصاء 1</div>
+            <input type="text" name="stat1_num" class="stat-num-input"
+                   value="{{ charity.stat1_num or '' }}" placeholder="مثال: 1500+">
+            <input type="text" name="stat1_label" class="stat-lbl-input"
+                   value="{{ charity.stat1_label or '' }}" placeholder="التسمية: مستفيد">
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">📈 إحصاء 2</div>
+            <input type="text" name="stat2_num" class="stat-num-input"
+                   value="{{ charity.stat2_num or '' }}" placeholder="مثال: 50">
+            <input type="text" name="stat2_label" class="stat-lbl-input"
+                   value="{{ charity.stat2_label or '' }}" placeholder="التسمية: مشروع">
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">🏆 إحصاء 3</div>
+            <input type="text" name="stat3_num" class="stat-num-input"
+                   value="{{ charity.stat3_num or '' }}" placeholder="مثال: 10">
+            <input type="text" name="stat3_label" class="stat-lbl-input"
+                   value="{{ charity.stat3_label or '' }}" placeholder="التسمية: سنة خبرة">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- صورة الجمعية -->
+    <div class="form-section">
+      <div class="section-divider"><span class="sdivider-label">صورة الجمعية</span></div>
+      <div class="section-body">
+        {% if charity.image and charity.image != 'default.jpg' %}
+        <div class="current-img-row">
+          <img src="/static/uploads/{{ charity.image }}" alt="" class="current-img-thumb">
+          <div>
+            <div style="font-size:.84rem;font-weight:700;color:var(--brand-text);">الصورة الحالية</div>
+            <div style="font-size:.75rem;color:var(--brand-text-soft);">ارفع صورة جديدة لاستبدالها</div>
+          </div>
+        </div>
+        {% endif %}
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" name="image" accept="image/*" onchange="handleUpload(this)">
+          <i class="fa-regular fa-cloud upload-cloud"></i>
+          <div class="upload-main-title">انقر لرفع صورة جديدة</div>
+          <div class="upload-sub">PNG, JPG, WEBP — الحد الأقصى 5MB</div>
+        </div>
+        <div id="uploadPreview" style="display:none;margin-top:.8rem;">
+          <img id="uploadPreviewImg" src="" style="max-width:200px;border-radius:var(--r);border:1px solid var(--brand-border);">
+        </div>
+      </div>
+    </div>
+
+    <!-- أزرار الحفظ -->
+    <div class="form-actions">
+      <button type="submit" class="btn-save"><i class="fa-solid fa-check"></i> حفظ التعديلات ✓</button>
+      <a href="{{ url_for('manager_charities') }}" class="btn-cancel">إلغاء</a>
+    </div>
+
+  </form>
+</div>
+
+<script>
+function updateTags() {
+    const val = document.getElementById('fieldsInput').value;
+    const container = document.getElementById('fieldsTags');
+    const tags = val.split(',').map(t => t.trim()).filter(t => t.length > 0);
+    container.innerHTML = tags.map(t =>
+        `<span class="field-tag">${t}</span>`
+    ).join('');
+}
+function handleUpload(input) {
+    const file = input.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        document.getElementById('uploadPreviewImg').src = e.target.result;
+        document.getElementById('uploadPreview').style.display = 'block';
+        document.getElementById('uploadZone').style.borderColor = '#1B4F8A';
+    };
+    reader.readAsDataURL(file);
+}
+document.addEventListener('DOMContentLoaded', updateTags);
+</script>
+{% endblock %}

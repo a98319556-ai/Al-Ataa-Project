@@ -1,0 +1,237 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{% if session.get('lang','ar') == 'en' %}Dashboard{% else %}لوحة التحكم{% endif %} — {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ══ WELCOME BANNER ══ */
+    .welcome-banner{
+        background:#fff;
+        border-radius:var(--r);
+        padding:1.8rem 2rem;
+        margin-bottom:1.6rem;
+        border:1.5px solid var(--border);
+        box-shadow:0 2px 12px rgba(0,0,0,0.04);
+        display:flex;align-items:center;justify-content:space-between;
+        position:relative;overflow:hidden;
+    }
+    .welcome-banner::before{
+        content:'';position:absolute;
+        left:-60px;top:-60px;
+        width:200px;height:200px;border-radius:50%;
+        background:radial-gradient(circle,rgba(21,101,192,0.06),transparent 70%);
+        pointer-events:none;
+    }
+    .wb-success-badge{
+        display:inline-flex;align-items:center;gap:0.45rem;
+        background:#d4edda;color:#145a32;
+        padding:0.3rem 0.85rem;border-radius:20px;
+        font-size:0.78rem;font-weight:700;
+        border:1px solid #bbf7d0;
+        margin-bottom:0.7rem;
+    }
+    .wb-title{
+        font-size:1.8rem;font-weight:900;
+        color:var(--text);margin-bottom:0.3rem;
+        display:flex;align-items:center;gap:0.5rem;
+    }
+    .wb-title em{color:var(--blue);font-style:normal;}
+    .wb-sub{font-size:0.88rem;color:var(--text-light);}
+    .wb-gear{
+        width:64px;height:64px;opacity:0.08;
+        font-size:3.5rem;color:var(--text);
+        flex-shrink:0;
+    }
+
+    /* ══ STAT CARDS ROW ══ */
+    .stat-row{
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:1.2rem;
+        margin-bottom:1.6rem;
+    }
+    .st-card{
+        background:#fff;border-radius:var(--r);
+        padding:1.4rem 1.6rem;
+        border:1.5px solid var(--border);
+        box-shadow:0 2px 12px rgba(0,0,0,0.04);
+        display:flex;align-items:center;justify-content:space-between;
+        transition:transform 0.2s,box-shadow 0.2s;
+    }
+    .st-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.08);}
+    .st-card-label{
+        font-size:0.85rem;color:var(--text-light);
+        font-weight:600;margin-bottom:0.4rem;
+        text-align:right;
+    }
+    .st-card-num{
+        font-size:2.2rem;font-weight:900;
+        color:var(--text);line-height:1;
+        text-align:right;
+    }
+    .st-card-icon{
+        width:56px;height:56px;border-radius:15px;
+        display:flex;align-items:center;justify-content:center;
+        font-size:1.6rem;flex-shrink:0;
+    }
+
+    /* ══ ACTION CARDS ══ */
+    .action-grid{
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:1.2rem;
+    }
+    .ac-card{
+        background:#fff;border-radius:var(--r);
+        border:1.5px solid var(--border);
+        box-shadow:0 2px 12px rgba(0,0,0,0.04);
+        padding:1.6rem;
+        display:flex;flex-direction:column;gap:0;
+        transition:transform 0.2s,box-shadow 0.2s;
+    }
+    .ac-card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,0.1);}
+    .ac-icon-wrap{
+        display:flex;justify-content:flex-end;
+        margin-bottom:1.2rem;
+    }
+    .ac-icon{
+        width:56px;height:56px;border-radius:16px;
+        display:flex;align-items:center;justify-content:center;
+        font-size:1.5rem;
+    }
+    .ac-title{
+        font-size:1.2rem;font-weight:900;
+        color:var(--text);text-align:right;
+        margin-bottom:0.5rem;
+    }
+    .ac-desc{
+        font-size:0.83rem;color:var(--text-light);
+        line-height:1.6;text-align:right;
+        flex:1;margin-bottom:1.4rem;
+    }
+    .ac-btn{
+        display:flex;align-items:center;justify-content:center;gap:0.5rem;
+        padding:0.7rem 1rem;border-radius:10px;
+        font-size:0.9rem;font-weight:800;
+        text-decoration:none;border:none;cursor:pointer;
+        font-family:'Tajawal',sans-serif;
+        transition:all 0.2s;width:100%;
+    }
+    .ac-btn-green{background:#10b981;color:#fff;}
+    .ac-btn-green:hover{background:#059669;}
+    .ac-btn-pink{background:#ec4899;color:#fff;}
+    .ac-btn-pink:hover{background:#db2777;}
+    .ac-btn-purple{background:#8b5cf6;color:#fff;}
+    .ac-btn-purple:hover{background:#7c3aed;}
+
+    @media(max-width:960px){
+        .stat-row,.action-grid{grid-template-columns:1fr 1fr;}
+    }
+    @media(max-width:600px){
+        .stat-row,.action-grid{grid-template-columns:1fr;}
+        .wb-gear{display:none;}
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ══ WELCOME BANNER ══ -->
+<div class="welcome-banner">
+    <div>
+        <div class="wb-success-badge">
+            <i class="fa-solid fa-circle-check"></i>
+            مرحباً {{ session.get('admin','المشرف') }}!
+        </div>
+        <div class="wb-title">
+            أهلاً، <em>{{ session.get('admin','المشرف') }}</em>. 🛡️
+        </div>
+        <div class="wb-sub">لوحة تحكم المشرف — {% if session.get('lang','ar') == 'en' %}Warehouses{% else %}إدارة المخازن{% endif %} و{% if session.get('lang','ar') == 'en' %}Donation Requests{% else %}طلبات ال{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}{% endif %}</div>
+    </div>
+    <div class="wb-gear"><i class="fa-solid fa-gear"></i></div>
+</div>
+
+<!-- ══ STAT CARDS ══ -->
+<div class="stat-row">
+    <div class="st-card">
+        <div>
+            <div class="st-card-label">صنف في المخزن</div>
+            <div class="st-card-num">{{ total_inventory }}</div>
+        </div>
+        <div class="st-card-icon" style="background:#e8f5e9;color:#2e7d32;">
+            <i class="fa-solid fa-cube"></i>
+        </div>
+    </div>
+
+    <div class="st-card">
+        <div>
+            <div class="st-card-label">طلب ينتظر</div>
+            <div class="st-card-num">{{ pending_requests }}</div>
+        </div>
+        <div class="st-card-icon" style="background:#fff3cd;color:#d97706;">
+            <i class="fa-regular fa-hourglass-half"></i>
+        </div>
+    </div>
+
+    <div class="st-card">
+        <div>
+            <div class="st-card-label">م{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %} م{% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %}</div>
+            <div class="st-card-num">{{ total_donors }}</div>
+        </div>
+        <div class="st-card-icon" style="background:#dbeafe;color:#1565C0;">
+            <i class="fa-solid fa-users"></i>
+        </div>
+    </div>
+</div>
+
+<!-- ══ ACTION CARDS ══ -->
+<div class="action-grid">
+
+    <!-- المخزن -->
+    <div class="ac-card">
+        <div class="ac-icon-wrap">
+            <div class="ac-icon" style="background:#10b981;color:#fff;">
+                <i class="fa-solid fa-warehouse"></i>
+            </div>
+        </div>
+        <div class="ac-title">إدارة المخزن</div>
+        <div class="ac-desc">إضافة الأصناف الخيرية، تتبع التسليمات، واستعراض {% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %} العمليات الكامل.</div>
+        <a href="{{ url_for('admin_inventory') }}" class="ac-btn ac-btn-green">
+            <i class="fa-solid fa-arrow-left"></i> {% if session.get('lang','ar') == 'en' %}View Inventory{% else %}{% if session.get('lang','ar') == 'en' %}View{% else %}عرض{% endif %} المخزن{% endif %}
+        </a>
+    </div>
+
+    <!-- {% if session.get('lang','ar') == 'en' %}Donation Requests{% else %}طلبات ال{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}{% endif %} -->
+    <div class="ac-card">
+        <div class="ac-icon-wrap">
+            <div class="ac-icon" style="background:#ec4899;color:#fff;">
+                <i class="fa-solid fa-hand-holding-heart"></i>
+            </div>
+        </div>
+        <div class="ac-title">{% if session.get('lang','ar') == 'en' %}Donation Requests{% else %}طلبات ال{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}{% endif %}</div>
+        <div class="ac-desc">مراجعة طلبات المستفيدين، الموافقة أو الرفض، وحذف {% if session.get('lang','ar') == 'en' %}Requests{% else %}الطلبات{% endif %}.</div>
+        <a href="{{ url_for('admin_donation_requests') }}" class="ac-btn ac-btn-pink">
+            <i class="fa-solid fa-arrow-left"></i>
+            {% if session.get('lang','ar') == 'en' %}Requests{% else %}الطلبات{% endif %}
+            {% if pending_requests > 0 %}
+            <span style="background:rgba(255,255,255,0.3);border-radius:12px;padding:1px 7px;font-size:0.78rem;">{{ pending_requests }}</span>
+            {% endif %}
+        </a>
+    </div>
+
+    <!-- الصفحة {% if session.get('lang','ar') == 'en' %}Home{% else %}الرئيسية{% endif %} -->
+    <div class="ac-card">
+        <div class="ac-icon-wrap">
+            <div class="ac-icon" style="background:#8b5cf6;color:#fff;">
+                <i class="fa-solid fa-house"></i>
+            </div>
+        </div>
+        <div class="ac-title">الصفحة {% if session.get('lang','ar') == 'en' %}Home{% else %}الرئيسية{% endif %}</div>
+        <div class="ac-desc">زيارة الصفحة {% if session.get('lang','ar') == 'en' %}Home{% else %}الرئيسية{% endif %} للمنصة و{% if session.get('lang','ar') == 'en' %}View{% else %}عرض{% endif %}ها كما يراها الزوار والم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ون.</div>
+        <a href="{{ url_for('landing') }}" class="ac-btn ac-btn-purple" target="_blank">
+            <i class="fa-solid fa-arrow-left"></i> فتح الموقع
+        </a>
+    </div>
+
+</div>
+
+{% endblock %}

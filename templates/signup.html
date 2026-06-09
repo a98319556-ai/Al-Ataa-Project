@@ -1,0 +1,356 @@
+{% set _theme = session.get('theme','light') %}
+{% set _lang  = session.get('lang','ar') %}
+<!DOCTYPE html>
+<html lang="{{ 'en' if _lang == 'en' else 'ar' }}" dir="{{ 'ltr' if _lang == 'en' else 'rtl' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create account — Ataa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        :root{
+            --blue:#1565C0;--blue-dark:#0D47A1;
+            --white:#fff;--gray:#f0f4f8;--gray2:#e8edf2;
+            --text:#1a2332;--text-light:#6b7a8d;
+            --border:#dde3ec;--r:10px;
+        }
+        html,body{height:100%;}
+        body{
+            min-height:100vh;
+            background:var(--gray);
+            font-family:'Inter',sans-serif;
+            color:var(--text);
+        }
+
+        /* ── TOP BAR ── */
+        .top-bar{
+            background:#fff;
+            border-bottom:1px solid var(--border);
+            padding:0 2rem;height:52px;
+            display:flex;align-items:center;justify-content:space-between;
+        }
+        .back-btn{
+            display:inline-flex;align-items:center;gap:0.5rem;
+            color:var(--text-light);font-size:0.85rem;font-weight:500;
+            text-decoration:none;transition:color 0.2s;
+        }
+        .back-btn:hover{color:var(--blue);}
+        .lang-btn{
+            padding:0.3rem 0.8rem;border-radius:8px;
+            border:1.5px solid var(--border);
+            font-size:0.8rem;font-weight:600;
+            color:var(--text-light);background:#fff;
+            cursor:pointer;display:flex;align-items:center;gap:0.35rem;
+            font-family:'Inter',sans-serif;
+        }
+
+        /* ── MAIN ── */
+        .main{
+            display:flex;align-items:flex-start;justify-content:center;
+            padding:2.5rem 1.5rem 4rem;
+        }
+
+        /* ── FORM CARD ── */
+        .form-card{
+            width:100%;max-width:580px;
+            background:#fff;border-radius:16px;
+            box-shadow:0 4px 24px rgba(0,0,0,0.08);
+            overflow:hidden;
+        }
+
+        /* Header strip */
+        .card-head{
+            background:var(--blue);
+            padding:1.8rem 2.2rem 1.5rem;
+        }
+        .card-head h1{
+            font-size:1.55rem;font-weight:800;
+            color:#fff;margin-bottom:0.3rem;
+        }
+        .card-head p{color:rgba(255,255,255,0.75);font-size:0.88rem;}
+
+        /* Form body */
+        .card-body{padding:2rem 2.2rem 2.2rem;}
+
+        /* Flash */
+        .flash{padding:0.75rem 1rem;border-radius:8px;margin-bottom:1.2rem;font-weight:600;font-size:0.85rem;font-family:'Inter',sans-serif;}
+        .flash-danger{background:#fde8e8;color:#c0392b;border-right:3px solid #e74c3c;}
+        .flash-warning{background:#fff3cd;color:#7d6000;border-right:3px solid #f59e0b;}
+        .flash-success{background:#d4edda;color:#145a32;border-right:3px solid #27ae60;}
+
+        /* Row */
+        .f-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
+        .f-row.full{grid-template-columns:1fr;}
+
+        /* Field */
+        .f-group{display:flex;flex-direction:column;gap:0.38rem;}
+        .f-label{font-size:0.82rem;font-weight:600;color:var(--text);}
+        .f-input{
+            width:100%;padding:0.72rem 0.95rem;
+            border:1.5px solid var(--border);border-radius:8px;
+            font-family:'Inter',sans-serif;font-size:0.9rem;
+            color:var(--text);background:#fff;outline:none;
+            transition:border-color 0.2s,box-shadow 0.2s;
+        }
+        .f-input::placeholder{color:#94a3b8;}
+        .f-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,0.1);}
+
+        /* Phone row with country code */
+        .phone-wrap{display:flex;gap:0;}
+        .phone-code{
+            padding:0.72rem 0.8rem;
+            border:1.5px solid var(--border);border-radius:8px 0 0 8px;
+            background:var(--gray);font-size:0.88rem;font-weight:600;
+            color:var(--text-light);white-space:nowrap;
+            border-right:none;
+        }
+        .phone-wrap .f-input{border-radius:0 8px 8px 0;}
+        .phone-wrap .f-input:focus{border-color:var(--blue);}
+
+        /* Password wrap */
+        .pass-wrap{position:relative;}
+        .pass-toggle{
+            position:absolute;left:0.8rem;top:50%;transform:translateY(-50%);
+            background:none;border:none;cursor:pointer;
+            color:#94a3b8;font-size:0.9rem;padding:0.2rem;
+        }
+        .pass-wrap .f-input{padding-left:2.2rem;}
+
+        /* Governorate select */
+        select.f-input{cursor:pointer;appearance:none;
+            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat:no-repeat;background-position:left 0.8rem center;
+            padding-left:2.2rem;
+        }
+
+        /* Terms */
+        .terms-row{
+            display:flex;align-items:center;gap:0.6rem;
+            margin-bottom:1.4rem;margin-top:0.5rem;
+        }
+        .terms-row input[type=checkbox]{
+            width:16px;height:16px;cursor:pointer;
+            accent-color:var(--blue);
+        }
+        .terms-row label{
+            font-size:0.83rem;color:var(--text-light);cursor:pointer;
+        }
+        .terms-row a{color:var(--blue);font-weight:600;text-decoration:none;}
+        .terms-row a:hover{text-decoration:underline;}
+
+        /* Submit */
+        .submit-btn{
+            width:100%;padding:0.9rem;
+            background:var(--blue);color:#fff;
+            border:none;border-radius:8px;
+            font-family:'Inter',sans-serif;
+            font-size:0.97rem;font-weight:700;
+            cursor:pointer;transition:all 0.2s;
+            letter-spacing:0.2px;
+        }
+        .submit-btn:hover{background:var(--blue-dark);transform:translateY(-1px);}
+
+        /* divider */
+        .or-row{
+            display:flex;align-items:center;gap:0.8rem;
+            margin:1.2rem 0;
+        }
+        .or-line{flex:1;height:1px;background:var(--border);}
+        .or-txt{font-size:0.8rem;color:var(--text-light);font-weight:500;}
+
+        /* Sign in link */
+        .signin-row{
+            text-align:center;margin-top:1.4rem;
+            font-size:0.85rem;color:var(--text-light);
+        }
+        .signin-row a{color:var(--blue);font-weight:700;text-decoration:none;}
+        .signin-row a:hover{text-decoration:underline;}
+
+        @media(max-width:520px){
+            .f-row{grid-template-columns:1fr;}
+            .card-head{padding:1.4rem 1.4rem 1.2rem;}
+            .card-body{padding:1.5rem 1.4rem 1.8rem;}
+            .top-bar{padding:0 1rem;}
+        }
+    </style>
+    <style>
+        /* ══ TOGGLE BAR ══ */
+        .toggle-bar{position:fixed;bottom:1.2rem;left:1.2rem;z-index:9000;display:flex;align-items:center;gap:0.45rem;background:rgba(255,255,255,0.92);border:1px solid #e2e8f0;border-radius:50px;padding:0.3rem 0.55rem;box-shadow:0 4px 20px rgba(0,0,0,0.12);backdrop-filter:blur(12px);}
+        .tgl-btn{display:inline-flex;align-items:center;gap:0.28rem;background:none;border:none;cursor:pointer;font-family:inherit;font-size:0.82rem;font-weight:700;color:#64748b;padding:0.3rem 0.55rem;border-radius:40px;transition:background 0.18s,color 0.18s;}
+        .tgl-btn:hover{background:#f0f3f8;}
+        .tgl-active{color:#1565C0;font-weight:900;}
+        .tgl-dim{color:#94a3b8;}
+        .tgl-sep{color:#e2e8f0;font-size:0.75rem;margin:0 0.05rem;}
+        body.dark-mode{background:#0f172a !important;color:#e2e8f0 !important;}
+        body.dark-mode .toggle-bar{background:rgba(30,41,59,0.95) !important;border-color:#334155 !important;}
+        body.dark-mode .tgl-btn{color:#e2e8f0;}
+        body.dark-mode .tgl-btn:hover{background:#334155;}
+
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{% if _theme == 'dark' %}dark-mode{% endif %}">
+
+<!-- Top Bar -->
+<div class="top-bar">
+    <a href="{{ url_for('landing') }}" class="back-btn">
+        <i class="fa-solid fa-arrow-left"></i> Back to home
+    </a>
+    <form method="POST" action="/set_lang" style="display:inline;">
+        <button type="submit" class="lang-btn">
+            <i class="fa-solid fa-earth-americas"></i>
+            {% if _lang == 'ar' %}EN{% else %}عربي{% endif %}
+        </button>
+    </form>
+</div>
+
+<!-- Main -->
+<div class="main">
+    <div class="form-card">
+
+        <!-- Header -->
+        <div class="card-head">
+            <h1>Create a new account</h1>
+            <p>Join thousands of donors and start your giving journey</p>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}{% for cat,msg in messages %}
+                <div class="flash flash-{{ cat }}">{{ msg }}</div>
+                {% endfor %}{% endif %}
+            {% endwith %}
+
+            <form method="POST" id="signupForm">
+
+                <!-- Name row -->
+                <div class="f-row">
+                    <div class="f-group">
+                        <label class="f-label">First name</label>
+                        <input type="text" name="first_name" class="f-input"
+                               placeholder="Enter your first name"
+                               value="{{ request.form.get('first_name','') }}">
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">Last name</label>
+                        <input type="text" name="last_name" class="f-input"
+                               placeholder="Enter your last name"
+                               value="{{ request.form.get('last_name','') }}">
+                    </div>
+                </div>
+
+                <!-- Phone + Governorate row -->
+                <div class="f-row">
+                    <div class="f-group">
+                        <label class="f-label">Mobile number</label>
+                        <div class="phone-wrap">
+                            <span class="phone-code">+20</span>
+                            <input type="tel" name="phone" class="f-input"
+                                   placeholder="1XXXXXXXXX"
+                                   value="{{ request.form.get('phone','') }}">
+                        </div>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">Governorate</label>
+                        <select name="governorate" class="f-input">
+                            <option value="">Choose a governorate</option>
+                            <option>القاهرة</option><option>الجيزة</option><option>الإسكندرية</option>
+                            <option>الدقهلية</option><option>البحيرة</option><option>الشرقية</option>
+                            <option>المنوفية</option><option>الغربية</option><option>القليوبية</option>
+                            <option>كفر الشيخ</option><option>دمياط</option><option>بورسعيد</option>
+                            <option>الإسماعيلية</option><option>السويس</option><option>الفيوم</option>
+                            <option>بني سويف</option><option>المنيا</option><option>أسيوط</option>
+                            <option>سوهاج</option><option>قنا</option><option>الأقصر</option>
+                            <option>أسوان</option><option>البحر الأحمر</option><option>مطروح</option>
+                            <option>سيناء الشمالية</option><option>سيناء الجنوبية</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="f-row full">
+                    <div class="f-group">
+                        <label class="f-label">Email</label>
+                        <input type="email" name="username" class="f-input"
+                               placeholder="example@email.com" required
+                               value="{{ request.form.get('username','') }}">
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="f-row full">
+                    <div class="f-group">
+                        <label class="f-label">Password</label>
+                        <div class="pass-wrap">
+                            <input type="password" name="password" id="pw1" class="f-input"
+                                   placeholder="Enter your password" required>
+                            <button type="button" class="pass-toggle" onclick="togglePw('pw1',this)">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Confirm password -->
+                <div class="f-row full">
+                    <div class="f-group">
+                        <label class="f-label">Confirm password</label>
+                        <div class="pass-wrap">
+                            <input type="password" name="confirm_password" id="pw2" class="f-input"
+                                   placeholder="Re-enter your password" required>
+                            <button type="button" class="pass-toggle" onclick="togglePw('pw2',this)">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- hidden role -->
+                <input type="hidden" name="role" value="donor">
+
+                <!-- Terms -->
+                <div class="terms-row">
+                    <input type="checkbox" id="terms" required>
+                    <label for="terms">I agree to the <a href="#">terms and conditions</a></label>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="submit-btn">Create account</button>
+
+                <!-- Sign in link -->
+                <div class="signin-row">
+                    Already have an account? <a href="{{ url_for('unified_login') }}">Sign in</a>
+                </div>
+
+            </form>
+        </div><!-- /card-body -->
+    </div><!-- /form-card -->
+</div><!-- /main -->
+
+<script>
+function togglePw(id, btn) {
+    const input = document.getElementById(id);
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-regular fa-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'fa-regular fa-eye';
+    }
+}
+
+// combine first + last name into username if not already set
+document.getElementById('signupForm').addEventListener('submit', function() {
+    const first = document.querySelector('[name=first_name]').value.trim();
+    const last = document.querySelector('[name=last_name]').value.trim();
+    const email = document.querySelector('[name=username]').value.trim();
+    // username field is email — no change needed
+});
+</script>
+</body>
+</html>

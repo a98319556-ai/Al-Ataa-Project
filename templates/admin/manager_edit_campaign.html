@@ -1,0 +1,248 @@
+{% extends "admin/base_manager.html" %}
+{% block title %}تعديل الحملة — {{ campaign.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-page-wrap { max-width: 1060px; margin: 0 auto; }
+.back-link { display:inline-flex;align-items:center;gap:.4rem;color:var(--brand-primary);font-size:.85rem;font-weight:700;text-decoration:none;margin-bottom:.9rem;transition:gap .15s; }
+.back-link:hover { gap:.65rem; }
+.pg-breadcrumb { font-size:.8rem;color:var(--brand-text-soft);margin-bottom:.3rem; }
+.pg-breadcrumb a { color:var(--brand-primary);text-decoration:none;font-weight:700; }
+.pg-header h1 { font-size:1.75rem;font-weight:900;color:var(--brand-text);display:flex;align-items:center;gap:.5rem;justify-content:flex-end;margin-bottom:.25rem; }
+.pg-sub { font-size:.83rem;color:var(--brand-text-soft); }
+
+/* current campaign card */
+.current-card {
+    background:var(--brand-surface);border-radius:var(--r);border:1px solid var(--brand-border);
+    box-shadow:var(--brand-card-shadow);padding:1rem 1.4rem;margin-bottom:1.3rem;
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem;
+}
+.cc-right { display:flex;align-items:center;gap:.9rem; }
+.cc-img { width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,#cce9e1,#a8d8cc);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;overflow:hidden; }
+.cc-img img { width:100%;height:100%;object-fit:cover; }
+.cc-name { font-size:1rem;font-weight:900;color:var(--brand-text); }
+.cc-collected { font-size:.8rem;color:var(--brand-text-soft);margin-top:.15rem; }
+.badge-sm { font-size:.74rem;font-weight:700;padding:.25rem .7rem;border-radius:15px; }
+.s-active    { background:#d4edda;color:#1a6b3c; }
+.s-completed { background:#dbeafe;color:#1e40af; }
+.s-paused    { background:#fff8e1;color:#7d6000; }
+.cc-left { font-size:.82rem;color:var(--brand-text-soft); display:flex;align-items:center;gap:.5rem; }
+
+/* form section */
+.form-section { background:var(--brand-surface);border-radius:var(--r);border:1px solid var(--brand-border);box-shadow:var(--brand-card-shadow);margin-bottom:1.1rem;overflow:hidden; }
+.section-divider { display:flex;align-items:center;justify-content:flex-end;padding:.7rem 1.5rem;border-bottom:1px solid var(--brand-border);background:var(--brand-surface-muted); }
+.sdivider-label { font-size:.82rem;font-weight:800;color:var(--brand-primary);border-right:3px solid var(--brand-primary);padding-right:.6rem; }
+.section-body { padding:1.3rem 1.5rem; }
+.field-row { display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem; }
+.field-row.full { grid-template-columns:1fr; }
+.field-group { display:flex;flex-direction:column;gap:.32rem; }
+.field-label { font-size:.85rem;font-weight:800;color:var(--brand-text);text-align:right; }
+.req { color:#e53e3e;margin-right:2px; }
+.field-input { padding:.72rem 1rem;border:1px solid var(--brand-border-strong);border-radius:var(--r);font-size:.9rem;font-family:'Cairo',sans-serif;color:var(--brand-text);background:var(--brand-surface-muted);width:100%;transition:border-color .2s,box-shadow .2s;text-align:right;direction:rtl; }
+.field-input:focus { outline:none;border-color:var(--brand-primary);box-shadow:0 0 0 3px rgba(27,79,138,.1);background:var(--brand-surface); }
+.field-input::placeholder { color:var(--brand-text-faint); }
+textarea.field-input { resize:vertical;min-height:120px; }
+.field-hint { font-size:.74rem;color:var(--brand-status-warning-text);background:var(--brand-status-warning-bg);padding:.3rem .7rem;border-radius:6px;margin-top:.25rem;display:flex;align-items:center;gap:.35rem; }
+
+/* categories */
+.cat-grid { display:flex;flex-wrap:wrap;gap:.5rem;justify-content:flex-end; }
+.cat-pill { display:flex;align-items:center;gap:.35rem;padding:.42rem 1rem;border-radius:25px;border:1px solid var(--brand-border-strong);background:var(--brand-surface);font-size:.82rem;font-weight:700;color:var(--brand-text-muted);cursor:pointer;transition:all .15s;user-select:none; }
+.cat-pill input[type=radio] { display:none; }
+.cat-pill.selected { background:var(--brand-primary);color:#fff;border-color:var(--brand-primary); }
+
+/* status cards */
+.status-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem; }
+.status-card { border:1.5px solid var(--brand-border);border-radius:var(--r);padding:1.1rem;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--brand-surface); }
+.status-card input[type=radio] { display:none; }
+.status-card.selected { border-color:var(--brand-primary);background:var(--brand-active-bg); }
+.status-card.selected::before { content:'✓';position:absolute;top:8px;right:10px;width:20px;height:20px;border-radius:50%;background:var(--brand-primary);color:#fff;font-size:.7rem;font-weight:900;display:flex;align-items:center;justify-content:center; }
+.sc-icon { font-size:1.6rem;margin-bottom:.45rem; }
+.sc-name { font-size:.9rem;font-weight:800;color:var(--brand-text);margin-bottom:.2rem; }
+.sc-desc { font-size:.73rem;color:var(--brand-text-soft); }
+
+/* upload */
+.upload-zone { border:1.5px dashed #9ecdc4;border-radius:var(--r);background:#f5fafd;padding:2rem 1.5rem;text-align:center;cursor:pointer;transition:all .2s;position:relative; }
+.upload-zone:hover { border-color:var(--brand-primary);background:#eef8f5; }
+.upload-zone input[type=file] { position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%; }
+.upload-cloud { font-size:1.9rem;color:var(--brand-text);opacity:.6;display:block;margin-bottom:.7rem; }
+.upload-main-title { font-size:.95rem;font-weight:800;color:var(--brand-text); }
+.upload-sub { font-size:.77rem;color:var(--brand-text-soft);margin-top:.25rem; }
+.current-img-row { display:flex;align-items:center;gap:.75rem;margin-bottom:.8rem;padding:.7rem 1rem;background:var(--brand-surface-muted);border-radius:var(--r);border:1px solid var(--brand-border); }
+.current-img-thumb { width:52px;height:52px;border-radius:8px;object-fit:cover;border:1px solid var(--brand-border); }
+
+/* actions */
+.form-actions { background:var(--brand-surface);border-radius:var(--r);border:1px solid var(--brand-border);padding:1.1rem 1.5rem;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap; }
+.btn-save { display:inline-flex;align-items:center;gap:.5rem;padding:.72rem 2rem;border-radius:999px;background:linear-gradient(135deg,#1B4F8A,#155a3a);color:#fff;font-size:.92rem;font-weight:800;border:none;cursor:pointer;font-family:'Cairo',sans-serif;transition:opacity .2s,transform .15s;box-shadow:0 3px 12px rgba(27,79,138,.25); }
+.btn-save:hover { opacity:.9;transform:translateY(-1px); }
+.btn-preview { display:inline-flex;align-items:center;gap:.5rem;padding:.72rem 1.4rem;border-radius:999px;background:var(--brand-surface);color:var(--brand-primary);font-size:.88rem;font-weight:700;border:1.5px solid var(--brand-primary);font-family:'Cairo',sans-serif;cursor:pointer;text-decoration:none;transition:background .15s; }
+.btn-preview:hover { background:var(--brand-active-bg); }
+.btn-cancel { display:inline-flex;align-items:center;gap:.5rem;padding:.72rem 1.4rem;border-radius:999px;background:var(--brand-surface);color:var(--brand-text);font-size:.9rem;font-weight:700;border:1.5px solid var(--brand-border-strong);text-decoration:none;font-family:'Cairo',sans-serif;transition:background .15s;margin-right:auto; }
+.btn-cancel:hover { background:var(--brand-surface-muted); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-page-wrap">
+
+  <a href="javascript:history.back()" class="back-link">
+    <i class="fa-solid fa-arrow-right"></i> رجوع
+  </a>
+
+  <div class="pg-breadcrumb">
+    <a href="{{ url_for('manager_charities') }}">{% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %}</a> &lt;
+    {% if campaign.charity_name %}<a href="{{ url_for('manager_charity_campaigns', cid=campaign.charity_id) }}">{{ campaign.charity_name }}</a> &lt; {% endif %}
+    {% if session.get('lang','ar') == 'en' %}Campaigns{% else %}الحملات{% endif %} &lt; تعديل
+  </div>
+  <div class="pg-header" style="margin-bottom:1.3rem;">
+    <h1><i class="fa-solid fa-pen" style="color:var(--brand-primary);font-size:1.3rem;"></i> تعديل الحملة</h1>
+    <div class="pg-sub">تعديل: {{ campaign.title }}</div>
+  </div>
+
+  <!-- بطاقة الحملة الحالية -->
+  <div class="current-card">
+    <div class="cc-right">
+      <div class="cc-img">
+        {% if campaign.image and campaign.image != 'default.jpg' %}
+          <img src="/static/uploads/{{ campaign.image }}" alt="">
+        {% else %}📷{% endif %}
+      </div>
+      <div>
+        <div class="cc-name">{{ campaign.title }}</div>
+        <div class="cc-collected">{% if session.get('lang','ar') == 'en' %}Amount{% else %}المبلغ{% endif %} الحالي: {{ "{:,.0f}".format(campaign.collected_amount or 0) }} {% if session.get('lang','ar') == 'en' %}EGP{% else %}ج.م{% endif %}</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:.7rem;">
+      <span class="badge-sm s-{{ campaign.get('status','active') }}">
+        {% if campaign.get('status') == 'active' %}نشطة{% elif campaign.get('status') == 'completed' %}مكتملة{% else %}موقوفة{% endif %}
+      </span>
+      <div class="cc-left">{% if session.get('lang','ar') == 'en' %}Status{% else %}الحالة{% endif %} الحالية: {{ 'نشطة' if campaign.get('status')=='active' else 'مكتملة' if campaign.get('status')=='completed' else 'موقوفة' }}</div>
+    </div>
+  </div>
+
+  <form method="POST" enctype="multipart/form-data">
+
+    <!-- معلومات أساسية -->
+    <div class="form-section">
+      <div class="section-divider"><span class="sdivider-label">معلومات الحملة الأساسية</span></div>
+      <div class="section-body">
+        <div class="field-row full">
+          <div class="field-group">
+            <label class="field-label">عنوان الحملة <span class="req">*</span></label>
+            <input type="text" name="title" class="field-input" value="{{ campaign.title }}" required>
+          </div>
+        </div>
+        <div class="field-row full">
+          <div class="field-group">
+            <label class="field-label">وصف الحملة <span class="req">*</span></label>
+            <textarea name="description" class="field-input" required>{{ campaign.description }}</textarea>
+          </div>
+        </div>
+        <div class="field-row full">
+          <div class="field-group">
+            <label class="field-label">الجمعية</label>
+            <select name="charity_id" class="field-input">
+              {% for ch in charities %}
+              <option value="{{ ch.id }}" {% if ch.id == campaign.charity_id %}selected{% endif %}>{{ ch.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- التصنيف و{% if session.get('lang','ar') == 'en' %}Amount{% else %}المبلغ{% endif %} -->
+    <div class="form-section">
+      <div class="section-divider"><span class="sdivider-label">التصنيف و{% if session.get('lang','ar') == 'en' %}Amount{% else %}المبلغ{% endif %}</span></div>
+      <div class="section-body">
+        <div class="field-group" style="margin-bottom:1.2rem;">
+          <label class="field-label">الفئة <span class="req">*</span></label>
+          <div class="cat-grid">
+            {% for cat, icon in [('صحة','🏥'),('تعليم','📚'),('غذاء','🍽'),('أيتام','🧒'),('غارمات','🤲'),('ملابس','👕'),('إسكان','🏠'),('طوارئ','🚨'),('عام','🌍')] %}
+            <label class="cat-pill {% if campaign.category == cat %}selected{% endif %}">
+              <input type="radio" name="category" value="{{ cat }}" {% if campaign.category == cat %}checked{% endif %} onchange="selectCat(this.parentElement)">
+              {{ icon }} {{ cat }}
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">{% if session.get('lang','ar') == 'en' %}Amount{% else %}المبلغ{% endif %} المستهدف ({% if session.get('lang','ar') == 'en' %}EGP{% else %}ج.م{% endif %})</label>
+            <input type="number" name="goal_amount" class="field-input" value="{{ campaign.goal_amount or 0 }}" min="0" step="500">
+          </div>
+          <div class="field-group">
+            <label class="field-label">{% if session.get('lang','ar') == 'en' %}Amount{% else %}المبلغ{% endif %} المحصّل ({% if session.get('lang','ar') == 'en' %}EGP{% else %}ج.م{% endif %})</label>
+            <input type="number" name="collected_amount" id="collectedInput" class="field-input" value="{{ campaign.collected_amount or 0 }}" min="0" step="500" style="background:#fffbeb;border-color:#f5d96a;">
+            <div class="field-hint"><i class="fa-solid fa-triangle-exclamation"></i> هذا الحقل يحدّث شريط الإنجاز</div>
+          </div>
+        </div>
+        <div class="field-group" style="margin-top:1.2rem;">
+          <label class="field-label">حالة الحملة <span class="req">*</span></label>
+          <div class="status-grid">
+            {% set cur_status = campaign.get('status','active') %}
+            <label class="status-card {% if cur_status=='active' %}selected{% endif %}">
+              <input type="radio" name="status" value="active" {% if cur_status=='active' %}checked{% endif %} onchange="selectStatus(this.closest('.status-card'))">
+              <div class="sc-icon">🟢</div><div class="sc-name">نشطة</div><div class="sc-desc">الحملة مفتوحة لل{% if session.get('lang','ar') == 'en' %}Donate Now{% else %}تبرع الآن{% endif %}</div>
+            </label>
+            <label class="status-card {% if cur_status=='paused' %}selected{% endif %}">
+              <input type="radio" name="status" value="paused" {% if cur_status=='paused' %}checked{% endif %} onchange="selectStatus(this.closest('.status-card'))">
+              <div class="sc-icon">⏸</div><div class="sc-name">موقوفة</div><div class="sc-desc">الحملة متوقفة مؤقتاً</div>
+            </label>
+            <label class="status-card {% if cur_status=='completed' %}selected{% endif %}">
+              <input type="radio" name="status" value="completed" {% if cur_status=='completed' %}checked{% endif %} onchange="selectStatus(this.closest('.status-card'))">
+              <div class="sc-icon">✅</div><div class="sc-name">مكتملة</div><div class="sc-desc">تم استيفاء الهدف المطلوب</div>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- صورة الحملة -->
+    <div class="form-section">
+      <div class="section-divider"><span class="sdivider-label">صورة الحملة</span></div>
+      <div class="section-body">
+        {% if campaign.image and campaign.image != 'default.jpg' %}
+        <div class="current-img-row">
+          <img src="/static/uploads/{{ campaign.image }}" alt="" class="current-img-thumb">
+          <div>
+            <div style="font-size:.84rem;font-weight:700;color:var(--brand-text);">الصورة الحالية</div>
+            <div style="font-size:.75rem;color:var(--brand-text-soft);">ارفع صورة جديدة لاستبدالها</div>
+          </div>
+        </div>
+        {% endif %}
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" name="image" accept="image/*" onchange="handleUpload(this)">
+          <i class="fa-regular fa-cloud upload-cloud"></i>
+          <div class="upload-main-title">انقر لرفع صورة جديدة</div>
+          <div class="upload-sub">PNG, JPG, WEBP — الحد الأقصى 5MB</div>
+        </div>
+        <div id="uploadPreview" style="display:none;margin-top:.8rem;">
+          <img id="uploadPreviewImg" src="" style="max-width:200px;border-radius:var(--r);border:1px solid var(--brand-border);">
+        </div>
+      </div>
+    </div>
+
+    <!-- أزرار -->
+    <div class="form-actions">
+      <button type="submit" class="btn-save"><i class="fa-solid fa-check"></i> حفظ التعديلات ✓</button>
+      <button type="button" class="btn-preview" onclick="alert('المعاينة قريباً!')">معاينة التغييرات</button>
+      <a href="javascript:history.back()" class="btn-cancel">إلغاء</a>
+    </div>
+
+  </form>
+</div>
+<script>
+function selectCat(el) { document.querySelectorAll('.cat-pill').forEach(p=>p.classList.remove('selected')); el.classList.add('selected'); }
+function selectStatus(el) { document.querySelectorAll('.status-card').forEach(c=>c.classList.remove('selected')); el.classList.add('selected'); }
+function handleUpload(input) {
+    const file = input.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        document.getElementById('uploadPreviewImg').src = e.target.result;
+        document.getElementById('uploadPreview').style.display = 'block';
+        document.getElementById('uploadZone').style.borderColor = '#1B4F8A';
+    };
+    reader.readAsDataURL(file);
+}
+</script>
+{% endblock %}

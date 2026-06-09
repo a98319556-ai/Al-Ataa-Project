@@ -1,0 +1,125 @@
+{% extends "admin/base_manager.html" %}
+{% block title %}{% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %} الشريكة - {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+
+{% block content %}
+
+<!-- ══ DELETE MODAL ══ -->
+<div id="deleteModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,42,74,.45);align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(15,42,74,.2);padding:2rem 1.6rem;max-width:420px;width:100%;text-align:center;position:relative;">
+    <button onclick="closeDeleteModal()" style="position:absolute;top:.9rem;right:.9rem;width:28px;height:28px;border-radius:50%;background:#f0f4f8;border:1px solid #e5edf5;cursor:pointer;font-size:.85rem;color:#6b7f95;">✕</button>
+    <div style="width:68px;height:68px;border-radius:50%;background:#fde8e8;border:2px solid #f5b7b1;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem;">🗑️</div>
+    <div style="font-size:1.25rem;font-weight:900;color:#0f2a4a;margin-bottom:.3rem;">تأكيد حذف الجمعية</div>
+    <div style="font-size:.84rem;color:#b23a3a;font-weight:700;margin-bottom:1.2rem;">هذا {% if session.get('lang','ar') == 'en' %}Action{% else %}الإجراء{% endif %} لا يمكن التراجع عنه</div>
+    <div style="background:#f5f8fc;border-radius:10px;border:1px solid #e5edf5;padding:.85rem 1rem;margin-bottom:1.1rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;">
+      <div style="flex:1;min-width:0;text-align:right;">
+        <div id="modal-charity-name" style="font-size:.92rem;font-weight:800;color:#0f2a4a;"></div>
+        <div style="font-size:.75rem;color:#6b7f95;margin-top:.2rem;">جمعية شريكة</div>
+      </div>
+      <div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#cce9e1,#a8d8cc);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">🏛️</div>
+    </div>
+    <ul style="text-align:right;margin-bottom:1.3rem;background:#f5f8fc;border-radius:10px;border:1px solid #e5edf5;padding:.85rem 1rem .85rem 1.5rem;">
+      <li style="font-size:.82rem;color:#516b82;margin-bottom:.35rem;">سيتم حذف الجمعية نهائياً من قاعدة البيانات</li>
+      <li style="font-size:.82rem;color:#516b82;margin-bottom:.35rem;">سيتم حذف جميع حملاتها المرتبطة بها</li>
+      <li style="font-size:.82rem;color:#516b82;">لن يتمكن الم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ون من رؤية هذه الجمعية</li>
+    </ul>
+    <form id="deleteForm" method="POST">
+      <button type="submit" style="width:100%;padding:.85rem;background:#e53e3e;color:#fff;font-size:.95rem;font-weight:800;border:none;border-radius:10px;cursor:pointer;font-family:'Cairo',sans-serif;margin-bottom:.7rem;" onmouseover="this.style.background='#c53030'" onmouseout="this.style.background='#e53e3e'">🗑️ تأكيد الحذف نهائياً</button>
+    </form>
+    <a href="#" onclick="closeDeleteModal();return false;" style="font-size:.84rem;color:#6b7f95;text-decoration:none;font-weight:600;">إلغاء — احتفظ بالجمعية</a>
+  </div>
+</div>
+<script>
+function openDeleteModal(url, name) {
+    document.getElementById('deleteForm').action = url;
+    document.getElementById('modal-charity-name').textContent = name;
+    const m = document.getElementById('deleteModal');
+    m.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteModal();
+});
+</script>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="fa-solid fa-building-ngo"></i> {% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %} الشريكة</h1>
+        <p class="page-sub">إدارة بيانات {% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %} الشريكة</p>
+    </div>
+    <a href="{{ url_for('manager_add_charity') }}" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> إضافة جمعية
+    </a>
+</div>
+
+{% if charities %}
+<div class="card">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>#</th><th>الجمعية</th><th>{% if session.get('lang','ar') == 'en' %}Campaigns{% else %}الحملات{% endif %}</th><th>مجالات العمل</th><th>{% if session.get('lang','ar') == 'en' %}Action{% else %}الإجراء{% endif %}ات</th></tr>
+            </thead>
+            <tbody>
+                {% for c in charities %}
+                <tr>
+                    <td>{{ c.id }}</td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:0.9rem;">
+                            {% if c.image and c.image != 'default.jpg' %}
+                            <img src="{{ url_for('static', filename='uploads/' + c.image) }}" alt="{{ c.name }}"
+                                 style="width:56px;height:56px;border-radius:12px;object-fit:cover;border:2px solid #e5edf5;box-shadow:0 2px 8px rgba(15,42,74,0.1);flex-shrink:0;"
+                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                            <div style="display:none;width:56px;height:56px;border-radius:12px;background:#eef3ff;border:2px solid #c7d7f5;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa-solid fa-building-ngo" style="font-size:1.5rem;color:#3a5fa8;"></i>
+                            </div>
+                            {% else %}
+                            <div style="width:56px;height:56px;border-radius:12px;background:#eef3ff;border:2px solid #c7d7f5;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa-solid fa-building-ngo" style="font-size:1.5rem;color:#3a5fa8;"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <strong style="font-size:0.95rem;color:#0f2a4a;">{{ c.name }}</strong><br>
+                                <small style="color:#4f7e95;">{{ c.description[:60] }}...</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('manager_charity_campaigns', cid=c.id) }}"
+                           style="display:inline-flex;align-items:center;gap:.35rem;font-size:.82rem;font-weight:700;color:var(--brand);text-decoration:none;padding:.3rem .8rem;border-radius:15px;border:1.5px solid var(--border);background:#f8fbfd;transition:all .15s;"
+                           onmouseover="this.style.background='var(--brand)';this.style.color='#fff';"
+                           onmouseout="this.style.background='#f8fbfd';this.style.color='var(--brand)';">
+                            <i class="fa-solid fa-list-check"></i>
+                            {{ c.campaign_count }} حملة
+                        </a>
+                    </td>
+                    <td style="font-size:0.83rem;color:#4f7e95;max-width:200px;">
+                        {{ c.fields[:80] if c.fields else '—' }}{% if c.fields and c.fields|length > 80 %}...{% endif %}
+                    </td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:.4rem;">
+                            <a href="{{ url_for('manager_edit_charity', cid=c.id) }}" class="btn btn-warning btn-sm">
+                                <i class="fa-solid fa-edit"></i> تعديل
+                            </a>
+                            <button type="button" class="btn btn-danger btn-sm"
+                                onclick="openDeleteModal('{{ url_for('manager_delete_charity', cid=c.id) }}','{{ c.name }}')">
+                                <i class="fa-solid fa-trash"></i> حذف
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card" style="text-align:center;padding:3rem;color:#4f7e95;">
+    <i class="fa-solid fa-building-ngo" style="font-size:3rem;margin-bottom:1rem;color:#d1e2ef;display:block;"></i>
+    <p>لا توجد جمعيات مسجلة بعد</p>
+    <a href="{{ url_for('manager_add_charity') }}" class="btn btn-primary" style="margin-top:1rem;">إضافة أول جمعية</a>
+</div>
+{% endif %}
+{% endblock %}

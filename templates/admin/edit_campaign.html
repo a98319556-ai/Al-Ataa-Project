@@ -1,0 +1,44 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}تعديل حملة - {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="fa-solid fa-edit"></i> تعديل حملة: {{ campaign.title }}</h1>
+        <p class="page-sub">جمعية: {{ charity.name }}</p>
+    </div>
+    <a href="{{ url_for('admin_campaigns', cid=charity.id) }}" class="btn btn-dark"><i class="fa-solid fa-arrow-right"></i> العودة</a>
+</div>
+<div class="card" style="max-width:700px;">
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-grid">
+            <div class="form-group" style="grid-column:1/-1;">
+                <label>عنوان الحملة *</label>
+                <input type="text" name="title" class="form-control" value="{{ campaign.title }}" required>
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+                <label>وصف الحملة *</label>
+                <textarea name="description" class="form-control" rows="4" required>{{ campaign.description }}</textarea>
+            </div>
+            <div class="form-group">
+                <label>فئة الحملة</label>
+                <input type="text" name="category" class="form-control" value="{{ campaign.category or 'عام' }}">
+            </div>
+            <div class="form-group">
+                <label>{% if session.get('lang','ar') == 'en' %}Amount{% else %}المبلغ{% endif %} المستهدف ({% if session.get('lang','ar') == 'en' %}EGP{% else %}ج.م{% endif %})</label>
+                <input type="number" name="goal_amount" class="form-control" value="{{ campaign.goal_amount or 0 }}" min="0" step="1">
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+                <label>صورة جديدة (اتركه فارغاً للإبقاء على الحالية)</label>
+                {% if campaign.image and campaign.image != 'default.jpg' %}
+                <img src="{{ url_for('static', filename='uploads/' + campaign.image) }}" style="max-width:150px;border-radius:10px;margin-bottom:8px;display:block;">
+                {% endif %}
+                <input type="file" name="image" class="form-control" accept="image/*">
+            </div>
+        </div>
+        <div style="margin-top:1.5rem;display:flex;gap:1rem;">
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> حفظ التعديلات</button>
+            <a href="{{ url_for('admin_campaigns', cid=charity.id) }}" class="btn btn-dark">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,416 @@
+{% set _theme = session.get('theme','light') %}
+{% set _lang  = session.get('lang','ar') %}
+<!DOCTYPE html>
+<html lang="{% if _lang=='en' %}en{% else %}ar{% endif %}" dir="{% if _lang=='en' %}ltr{% else %}rtl{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in — Ataa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        :root{
+            --blue:#1565C0;--blue-dark:#0D47A1;
+            --white:#fff;--gray:#f0f4f8;
+            --text:#1a2332;--text-light:#6b7a8d;
+            --border:#dde3ec;
+        }
+        html,body{height:100%;}
+        body{
+            min-height:100vh;display:flex;flex-direction:column;
+            font-family:'Inter',sans-serif;color:var(--text);
+            background:var(--gray);
+        }
+
+        /* ── TOP LANG BUTTON ── */
+        .top-lang{
+            position:absolute;top:14px;left:14px;z-index:10;
+        }
+        .lang-btn{
+            padding:0.32rem 0.85rem;border-radius:8px;
+            border:1.5px solid rgba(255,255,255,0.3);
+            font-size:0.8rem;font-weight:600;
+            color:#fff;background:rgba(255,255,255,0.12);
+            cursor:pointer;display:flex;align-items:center;gap:0.35rem;
+            font-family:'Inter',sans-serif;backdrop-filter:blur(4px);
+            transition:all 0.2s;
+        }
+        .lang-btn:hover{background:rgba(255,255,255,0.22);}
+
+        /* ── SPLIT LAYOUT ── */
+        .split{
+            display:flex;min-height:100vh;
+        }
+
+        /* LEFT SIDE — blue panel */
+        .left-panel{
+            flex:1;
+            background:linear-gradient(160deg, #1565C0 0%, #0D47A1 60%, #0a347a 100%);
+            padding:3.5rem 3rem;
+            display:flex;flex-direction:column;
+            position:relative;overflow:hidden;
+        }
+        .left-panel::before{
+            content:'';position:absolute;
+            top:-120px;right:-100px;width:380px;height:380px;
+            border-radius:50%;background:rgba(255,255,255,0.06);pointer-events:none;
+        }
+        .left-panel::after{
+            content:'';position:absolute;
+            bottom:-80px;left:-60px;width:280px;height:280px;
+            border-radius:50%;background:rgba(255,255,255,0.04);pointer-events:none;
+        }
+
+        /* Logo */
+        .logo-row{
+            display:flex;align-items:center;gap:0.7rem;
+            margin-bottom:3.5rem;position:relative;z-index:1;
+        }
+        .logo-box{ width:48px !important; height:48px !important; border-radius:12px !important; overflow:hidden; flex-shrink:0; background:linear-gradient(135deg,#1565C0,#0D47A1); 
+            width:44px;height:44px;border-radius:12px;
+            background:rgba(255,255,255,0.15);
+            border:1.5px solid rgba(255,255,255,0.25);
+            display:flex;align-items:center;justify-content:center;
+            overflow:hidden;
+        }
+        .logo-box img{width:100%;height:100%;object-fit:cover;}
+        .logo-box-fallback{display:flex;align-items:center;justify-content:center;width:100%;height:100%;}
+        .logo-box-fallback i{color:#fff;font-size:1.2rem;}
+        .logo-name{color:#fff;font-size:1.2rem;font-weight:900;line-height:1.15;margin:0;padding:0;}
+        .logo-name small{display:block;font-size:0.7rem;font-weight:400;opacity:0.65;}
+
+        /* Hero text */
+        .hero-text{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;justify-content:center;}
+        .hero-text h2{
+            color:#fff;font-size:2.1rem;font-weight:800;
+            line-height:1.3;margin-bottom:1rem;
+        }
+        .hero-text p{color:rgba(255,255,255,0.7);font-size:0.92rem;line-height:1.65;}
+
+        /* Stats row */
+        .stats-row{
+            display:flex;gap:0.8rem;margin-top:3rem;
+            position:relative;z-index:1;
+        }
+        .stat-chip{
+            flex:1;
+            background:rgba(255,255,255,0.1);
+            border:1px solid rgba(255,255,255,0.18);
+            backdrop-filter:blur(8px);
+            border-radius:12px;padding:1rem 0.8rem;text-align:center;
+        }
+        .stat-chip i{font-size:1.1rem;color:rgba(255,255,255,0.7);margin-bottom:0.4rem;display:block;}
+        .stat-num{font-size:1.2rem;font-weight:800;color:#fff;display:block;line-height:1;}
+        .stat-lbl{font-size:0.68rem;color:rgba(255,255,255,0.6);font-weight:500;margin-top:0.3rem;display:block;}
+
+        /* RIGHT SIDE — form */
+        .right-panel{
+            width:460px;flex-shrink:0;
+            background:#fff;
+            display:flex;flex-direction:column;
+            align-items:center;justify-content:center;
+            padding:3rem 2.8rem;
+            box-shadow:-8px 0 32px rgba(0,0,0,0.08);
+            position:relative;
+        }
+        .form-wrap{width:100%;max-width:340px;}
+
+        /* Brand icon */
+        .brand-icon{
+            width:52px;height:52px;
+            background:var(--blue);
+            border-radius:14px;
+            display:flex;align-items:center;justify-content:center;
+            margin:0 auto 1.5rem;
+            box-shadow:0 4px 14px rgba(21,101,192,0.3);
+        }
+        .brand-icon i{color:#fff;font-size:1.4rem;}
+
+        /* Heading */
+        .form-hd{text-align:center;margin-bottom:2rem;}
+        .form-hd h1{font-size:1.5rem;font-weight:800;color:var(--text);margin-bottom:0.3rem;}
+        .form-hd p{font-size:0.85rem;color:var(--text-light);}
+
+        /* Flash */
+        .flash{padding:0.72rem 1rem;border-radius:8px;margin-bottom:1rem;font-weight:600;font-size:0.83rem;}
+        .flash-danger{background:#fde8e8;color:#c0392b;border-right:3px solid #e74c3c;}
+        .flash-warning{background:#fff3cd;color:#7d6000;border-right:3px solid #f59e0b;}
+        .flash-success{background:#d4edda;color:#145a32;border-right:3px solid #27ae60;}
+
+        /* Fields */
+        .f-group{margin-bottom:1.1rem;}
+        .f-label{display:block;font-size:0.8rem;font-weight:600;color:var(--text);margin-bottom:0.38rem;}
+        .f-wrap{position:relative;}
+        .f-wrap .f-icon{
+            position:absolute;left:0.85rem;top:50%;transform:translateY(-50%);
+            color:#94a3b8;font-size:0.85rem;
+        }
+        .f-input{
+            width:100%;
+            padding:0.78rem 0.95rem 0.78rem 2.4rem;
+            border:1.5px solid var(--border);border-radius:8px;
+            font-family:'Inter',sans-serif;font-size:0.9rem;
+            color:var(--text);background:#fff;outline:none;
+            transition:border-color 0.2s,box-shadow 0.2s;
+        }
+        .f-input::placeholder{color:#94a3b8;}
+        .f-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,0.1);}
+
+        /* Password eye */
+        .pass-toggle{
+            position:absolute;right:0.8rem;top:50%;transform:translateY(-50%);
+            background:none;border:none;cursor:pointer;color:#94a3b8;font-size:0.88rem;
+        }
+
+        /* Remember + forgot */
+        .rem-row{
+            display:flex;align-items:center;justify-content:space-between;
+            margin-bottom:1.4rem;
+        }
+        .rem-left{display:flex;align-items:center;gap:0.45rem;}
+        .rem-left input{accent-color:var(--blue);width:14px;height:14px;cursor:pointer;}
+        .rem-left label{font-size:0.8rem;color:var(--text-light);cursor:pointer;font-weight:500;}
+        .forgot-link{font-size:0.8rem;color:var(--blue);text-decoration:none;font-weight:600;}
+        .forgot-link:hover{text-decoration:underline;}
+
+        /* Sign in btn */
+        .signin-btn{
+            width:100%;padding:0.88rem;
+            background:var(--blue);color:#fff;
+            border:none;border-radius:8px;
+            font-family:'Inter',sans-serif;
+            font-size:0.97rem;font-weight:700;cursor:pointer;
+            transition:all 0.2s;
+        }
+        .signin-btn:hover{background:var(--blue-dark);transform:translateY(-1px);}
+
+        /* OR divider */
+        .or-row{display:flex;align-items:center;gap:0.8rem;margin:1.2rem 0;}
+        .or-line{flex:1;height:1px;background:var(--border);}
+        .or-txt{font-size:0.78rem;color:var(--text-light);font-weight:500;}
+
+        /* Google btn */
+        .google-btn{
+            width:100%;padding:0.78rem;
+            border:1.5px solid var(--border);border-radius:8px;
+            background:#fff;cursor:pointer;
+            font-family:'Inter',sans-serif;font-size:0.9rem;font-weight:600;
+            color:var(--text);
+            display:flex;align-items:center;justify-content:center;gap:0.6rem;
+            transition:all 0.2s;
+        }
+        .google-btn:hover{background:var(--gray);border-color:#c0c8d4;}
+        .google-btn svg{width:18px;height:18px;}
+
+        /* Sign up link */
+        .signup-row{
+            text-align:center;margin-top:1.5rem;
+            font-size:0.83rem;color:var(--text-light);
+        }
+        .signup-row a{color:var(--blue);font-weight:700;text-decoration:none;}
+        .signup-row a:hover{text-decoration:underline;}
+
+        /* ── RESPONSIVE ── */
+        @media(max-width:860px){
+            .left-panel{display:none;}
+            .right-panel{width:100%;padding:3rem 2rem;}
+        }
+        @media(max-width:440px){
+            .right-panel{padding:2.5rem 1.5rem;}
+            .form-hd h1{font-size:1.3rem;}
+        }
+    
+        /* Dark mode for login */
+        body.dark-mode { background: #0f172a !important; color: #e2e8f0; }
+        body.dark-mode .right-panel { background: #1e293b !important; }
+        body.dark-mode .left-panel  { background: linear-gradient(135deg,#0d1b2e,#0d2a4a) !important; }
+        body.dark-mode .form-hd h1  { color: #f1f5f9 !important; }
+        body.dark-mode .form-hd p   { color: #94a3b8 !important; }
+        body.dark-mode .f-label     { color: #cbd5e1 !important; }
+        body.dark-mode .f-wrap      { background: #0f172a !important; border-color: #334155 !important; }
+        body.dark-mode .f-input     { background: #0f172a !important; color: #e2e8f0 !important; }
+        body.dark-mode .f-input::placeholder { color: #475569 !important; }
+        body.dark-mode .remember-label { color: #cbd5e1 !important; }
+        body.dark-mode .google-btn  { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+        body.dark-mode .signup-row  { color: #94a3b8 !important; }
+        body.dark-mode .or-line     { background: #334155 !important; }
+        body.dark-mode .or-txt      { color: #64748b !important; }
+        body.dark-mode .top-lang    { background: rgba(30,41,59,.8) !important; }
+        body.dark-mode .lang-btn    { color: #e2e8f0 !important; }
+    </style>
+    <style>
+        /* ══ TOGGLE BAR ══ */
+        .toggle-bar{position:fixed;bottom:1.2rem;left:1.2rem;z-index:9000;display:flex;align-items:center;gap:0.45rem;background:rgba(255,255,255,0.92);border:1px solid #e2e8f0;border-radius:50px;padding:0.3rem 0.55rem;box-shadow:0 4px 20px rgba(0,0,0,0.12);backdrop-filter:blur(12px);}
+        .tgl-btn{display:inline-flex;align-items:center;gap:0.28rem;background:none;border:none;cursor:pointer;font-family:inherit;font-size:0.82rem;font-weight:700;color:#64748b;padding:0.3rem 0.55rem;border-radius:40px;transition:background 0.18s,color 0.18s;}
+        .tgl-btn:hover{background:#f0f3f8;}
+        .tgl-active{color:#1565C0;font-weight:900;}
+        .tgl-dim{color:#94a3b8;}
+        .tgl-sep{color:#e2e8f0;font-size:0.75rem;margin:0 0.05rem;}
+        body.dark-mode{background:#0f172a !important;color:#e2e8f0 !important;}
+        body.dark-mode .toggle-bar{background:rgba(30,41,59,0.95) !important;border-color:#334155 !important;}
+        body.dark-mode .tgl-btn{color:#e2e8f0;}
+        body.dark-mode .tgl-btn:hover{background:#334155;}
+
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{% if _theme == 'dark' %}dark-mode{% endif %}">
+
+<div class="split">
+
+    <!-- ══ LEFT PANEL ══ -->
+    <div class="left-panel">
+        <div class="top-lang">
+            <form method="POST" action="/set_lang" style="display:inline;">
+                <button type="submit" class="lang-btn">
+                    <i class="fa-solid fa-earth-americas"></i>
+                    {% if _lang == 'ar' %}EN{% else %}عربي{% endif %}
+                </button>
+            </form>
+        </div>
+
+        <!-- Logo -->
+        <div class="logo-row">
+            <div class="logo-box">
+                <img src="{{ url_for('static', filename='uploads/logo.jpeg') }}" alt="Ataa"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div class="logo-box-fallback" style="display:none;"><i class="fa-solid fa-heart"></i></div>
+            </div>
+            <h3 class="logo-name">
+                Ataa
+                <small>Charitable giving platform</small>
+            </h3>
+        </div>
+
+        <!-- Hero text -->
+        <div class="hero-text">
+            <h2>Together we make a difference in the lives of those in need</h2>
+            <p>Join thousands of donors helping families in need</p>
+
+            <!-- Stats -->
+            <div class="stats-row">
+                <div class="stat-chip">
+                    <i class="fa-solid fa-users"></i>
+                    <span class="stat-num">12,450+</span>
+                    <span class="stat-lbl">Active donors</span>
+                </div>
+                <div class="stat-chip">
+                    <i class="fa-solid fa-building-ngo"></i>
+                    <span class="stat-num">85+</span>
+                    <span class="stat-lbl">Partner charities</span>
+                </div>
+                <div class="stat-chip">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span class="stat-num">2.5M+</span>
+                    <span class="stat-lbl">EGP raised</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ RIGHT PANEL ══ -->
+    <div class="right-panel">
+        <div class="form-wrap">
+
+            <!-- Brand -->
+            <div style="display:flex;align-items:center;gap:.7rem;justify-content:center;margin-bottom:1.4rem;">
+                <img src="{{ url_for('static', filename='uploads/logo.jpeg') }}" alt="عطاء"
+                     style="width:48px;height:48px;border-radius:12px;object-fit:cover;"
+                     onerror="this.style.display='none'">
+                <h1 style="font-size:1.5rem;font-weight:900;color:var(--blue,#1565C0);margin:0;">منصة العطاء</h1>
+            </div>
+            <!-- Heading -->
+            <div class="form-hd">
+                <p>{% if _lang=='en' %}Sign in and continue your giving journey{% else %}سجّل دخولك وواصل رحلتك الخيرية{% endif %}</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}{% for cat,msg in messages %}
+                <div class="flash flash-{{ cat }}">{{ msg }}</div>
+                {% endfor %}{% endif %}
+            {% endwith %}
+
+            <form method="POST">
+
+                <!-- Email -->
+                <div class="f-group">
+                    <label class="f-label">{% if _lang=='en' %}Email{% else %}البريد الإلكتروني أو اسم المستخدم{% endif %}</label>
+                    <div class="f-wrap">
+                        <i class="fa-regular fa-envelope f-icon"></i>
+                        <input type="text" name="username" class="f-input"
+                               placeholder="Enter your email" required
+                               value="{{ request.form.get('username','') }}">
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="f-group">
+                    <label class="f-label">{% if _lang=='en' %}Password{% else %}كلمة المرور{% endif %}</label>
+                    <div class="f-wrap">
+                        <i class="fa-solid fa-lock f-icon"></i>
+                        <input type="password" name="password" id="loginPw" class="f-input"
+                               placeholder="Enter your password" required>
+                        <button type="button" class="pass-toggle" onclick="toggleLoginPw()">
+                            <i class="fa-regular fa-eye" id="loginEye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Remember + Forgot -->
+                <div class="rem-row">
+                    <div class="rem-left">
+                        <input type="checkbox" id="remember" name="remember">
+                        <label for="remember">Remember me</label>
+                    </div>
+                    <a href="{{ url_for('forgot_password') }}" class="forgot-link">{% if _lang=='en' %}Forgot password?{% else %}نسيت كلمة المرور؟{% endif %}</a>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="signin-btn">Sign in</button>
+
+            </form>
+
+            <!-- OR -->
+            <div class="or-row">
+                <div class="or-line"></div>
+                <span class="or-txt">or</span>
+                <div class="or-line"></div>
+            </div>
+
+            <!-- Google sign in (UI only) -->
+            <button class="google-btn" type="button">
+                <svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+                    <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
+                    <path d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                    <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+                </svg>
+                Sign in with Google
+            </button>
+
+            <!-- Sign up link -->
+            <div class="signup-row">
+                Don't have an account? <a href="{{ url_for('signup') }}">Sign up now</a>
+            </div>
+
+        </div><!-- /form-wrap -->
+    </div><!-- /right-panel -->
+
+</div><!-- /split -->
+
+<script>
+function toggleLoginPw() {
+    const input = document.getElementById('loginPw');
+    const icon = document.getElementById('loginEye');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-regular fa-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'fa-regular fa-eye';
+    }
+}
+</script>
+</body>
+</html>

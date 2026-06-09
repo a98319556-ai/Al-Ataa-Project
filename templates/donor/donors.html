@@ -1,0 +1,141 @@
+{% extends "donor/base_donor.html" %}
+{% block title %}شركاء الخير (الم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ون) - {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+
+{% block content %}
+<style>
+    /* تنسيقات البانر الترحيبي الخاصة بالم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ين */
+    .d-header {
+        background: linear-gradient(135deg, #ffc107 0%, #e67e22 100%); /* لون ذهبي للم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ين */
+        color: white; 
+        padding: 40px 20px; 
+        border-radius: var(--radius-lg);
+        margin-bottom: 30px; 
+        box-shadow: var(--shadow); 
+        text-align: center;
+        position: relative; 
+        overflow: hidden;
+    }
+    
+    .d-header::after {
+        content: ''; position: absolute; top: -50%; right: -10%;
+        width: 300px; height: 300px; background: rgba(255,255,255,0.1); border-radius: 50%;
+    }
+    
+    .d-header h1 { margin-bottom: 15px; font-weight: 800; font-size: 28px; }
+    .d-header p { font-size: 16px; opacity: 0.95; max-width: 700px; margin: 0 auto; line-height: 1.8; }
+    
+    /* شبكة الكروت (نفس تصميم المستفيدين لتوحيد الهوية) */
+    .b-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
+    
+    .b-card {
+        background: white; border-radius: var(--radius-lg); padding: 25px; 
+        box-shadow: var(--shadow); border-top-width: 5px; border-top-style: solid;
+        transition: all 0.3s ease; display: flex; flex-direction: column;
+    }
+    .b-card:hover { transform: translateY(-7px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+    
+    .b-icon-wrapper {
+        width: 55px; height: 55px; border-radius: 50%; /* شكل دائري للم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ين */
+        display: flex; align-items: center; justify-content: center;
+        font-size: 22px; color: white; margin-bottom: 20px;
+    }
+    
+    .b-title { font-size: 19px; font-weight: 800; color: var(--text-dark); margin-bottom: 5px; }
+    .b-type { color: #7f8c8d; font-size: 13px; margin-bottom: 15px; font-weight: 600; }
+    .b-story { color: #555; font-size: 14px; line-height: 1.7; margin-bottom: 20px; flex-grow: 1; background: #f9f9f9; padding: 10px; border-radius: 8px; border-right: 3px solid var(--dynamic-color);}
+    
+    .card-footer {
+        display: flex; justify-content: space-between; align-items: center;
+        padding-top: 15px; border-top: 1px dashed #eee;
+    }
+    
+    .b-category-tag {
+        display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px;
+        background: var(--bg-start); color: var(--text-dark);
+        border-radius: 6px; font-size: 12px; font-weight: bold; border: 1px solid #ddd;
+    }
+</style>
+
+<div class="dashboard-layout">
+    
+    <!-- {% if session.get('lang','ar') == 'en' %}Menu{% else %}القائمة{% endif %} الجانبية -->
+    <aside class="sidebar">
+        <div class="sidebar-title">
+            <i class="fa-solid fa-bars"></i> {% if session.get('lang','ar') == 'en' %}Menu{% else %}القائمة{% endif %} {% if session.get('lang','ar') == 'en' %}Home{% else %}الرئيسية{% endif %}
+        </div>
+<ul class="nav-links">
+            <li class="{% if request.endpoint == 'donor_home' %}active{% endif %}">
+                <a href="{{ url_for('donor_home') }}"><i class="fa-solid fa-chart-pie"></i> {% if session.get('lang','ar') == 'en' %}Donations Dashboard{% else %}لوحة التبرعات{% endif %}</a>
+            </li>
+            
+            <!-- هذا هو الرابط الجديد الذي تم إضافته -->
+            <li class="{% if request.endpoint == 'donor_my_donations' %}active{% endif %}">
+                <a href="{{ url_for('donor_my_donations') }}"><i class="fa-solid fa-hand-holding-heart"></i> {% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %} {% if session.get('lang','ar') == 'en' %}My Donations{% else %}تبرعاتي{% endif %}</a>
+            </li>
+            
+            <li class="{% if request.endpoint == 'donor_donate' %}active{% endif %}">
+                <a href="{{ url_for('donor_donate') }}"><i class="fa-solid fa-hand-holding-dollar"></i> {% if session.get('lang','ar') == 'en' %}New Donation{% else %}{% if session.get('lang','ar') == 'en' %}New Donation{% else %}تبرع جديد{% endif %}{% endif %}</a>
+            </li>
+                                    <!-- الرابط الجديد -->
+            <li class="{% if request.endpoint == 'charities' %}active{% endif %}">
+            <li class="{% if request.endpoint == 'donor_settings' %}active{% endif %}">
+                <a href="{{ url_for('donor_settings') }}"><i class="fa-solid fa-gear"></i> {% if session.get('lang','ar') == 'en' %}Settings{% else %}الإعدادات{% endif %}</a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="main-content">
+        <!-- الهيدر العلوي -->
+        <header class="top-header" style="margin-bottom: 20px;">
+            <div class="logo-area">
+                <span class="icon-star"><i class="fa-solid fa-crown"></i></span>
+                <h1>قائمة الم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ين</h1>
+            </div>
+            <div class="user-profile">
+                <a href="{{ url_for('logout') }}" class="user-btn"><i class="fa-solid fa-user"></i> حساب الم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %} ({{ username }})</a>
+            </div>
+        </header>
+
+        <div class="content-wrapper" style="background: transparent; box-shadow: none; padding: 0;">
+            
+            <!-- بنر ترحيبي يوضح الشكر للم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ين -->
+            <div class="d-header">
+                <h1><i class="fa-solid fa-medal"></i> أبطال العطاء وشركاء النجاح</h1>
+                <p>نفخر في منصة "العطاء" بالثقة التي منحنا إياها هؤلاء الم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ون. بفضل الله ثم دعمهم، تمكنا من إيصال تبرعاتهم للحالات الأكثر احتياجاً بكل شفافية واحترافية.</p>
+            </div>
+
+            <!-- شبكة كروت الم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ين -->
+            <div class="b-grid">
+                {% for d in donors %}
+                
+                <!-- استخدام متغيرات CSS لتجنب أخطاء المحرر -->
+                <div class="b-card" style="--dynamic-color: {{ d.color }}; border-top-color: var(--dynamic-color);">
+                    
+                    <div class="b-icon-wrapper" style="background-color: var(--dynamic-color);">
+                        <i class="fa-solid {{ d.icon }}"></i>
+                    </div>
+                    
+                    <div class="b-title">{{ d.name }}</div>
+                    <div class="b-type"><i class="fa-solid fa-circle-user"></i> {{ d.type }}</div>
+                    
+                    <div class="b-story">
+                        <strong><i class="fa-solid fa-bullseye" style="color: var(--dynamic-color);"></i> الأثر:</strong> 
+                        {{ d.impact }}
+                    </div>
+                    
+                    <div class="card-footer">
+                        <div class="b-category-tag">
+                            <i class="fa-solid fa-award" style="color: var(--dynamic-color);"></i> {{ d.badge }}
+                        </div>
+                        <div style="color: #28a745a; font-weight: bold; font-size: 12px;"><i class="fa-solid fa-check-double"></i> تم التوثيق</div>
+                    </div>
+                    
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </main>
+</div>
+{% endblock %}

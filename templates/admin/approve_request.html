@@ -1,0 +1,230 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}الموافقة على الطلب — {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Layout ── */
+.approve-wrap{display:grid;grid-template-columns:1fr 1.6fr;gap:1.5rem;align-items:start;}
+@media(max-width:900px){.approve-wrap{grid-template-columns:1fr;}}
+
+/* ── Breadcrumb ── */
+.breadcrumb{display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;color:#6b7f95;margin-bottom:1.2rem;flex-wrap:wrap;}
+.breadcrumb a{color:var(--brand);text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb span{color:#aaa;}
+
+/* ── Card ── */
+.card{background:#fff;border-radius:16px;border:1.5px solid #e5edf5;box-shadow:0 1px 4px rgba(15,42,74,0.05);overflow:hidden;}
+.card-header{padding:1rem 1.4rem;border-bottom:1.5px solid #e5edf5;display:flex;align-items:center;gap:0.7rem;}
+.card-header h2{font-size:1rem;font-weight:800;color:#0f2a4a;margin:0;}
+.card-header .icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.card-body{padding:1.2rem 1.4rem;}
+
+/* ── Beneficiary info ── */
+.info-row{display:flex;flex-direction:column;gap:0.7rem;}
+.info-item{display:flex;gap:0.6rem;align-items:flex-start;font-size:0.88rem;color:#333;}
+.info-item i{color:var(--brand);margin-top:2px;width:16px;flex-shrink:0;}
+.info-item strong{color:#0f2a4a;min-width:90px;flex-shrink:0;}
+.status-badge{display:inline-block;padding:0.3rem 0.9rem;border-radius:20px;font-size:0.8rem;font-weight:800;}
+.status-pending{background:#fff3cd;color:#7d6000;}
+
+/* ── Filter bar ── */
+.filter-bar{display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:1rem;}
+.filter-bar input,.filter-bar select{padding:0.45rem 0.8rem;border:1.5px solid #d1e2ef;border-radius:8px;font-size:0.87rem;font-family:inherit;background:#fff;color:#333;}
+.filter-bar input{flex:1;min-width:130px;}
+.filter-bar button{padding:0.45rem 1rem;background:var(--brand);color:#fff;border:none;border-radius:8px;font-size:0.87rem;font-family:inherit;font-weight:700;cursor:pointer;}
+.filter-bar button:hover{opacity:0.9;}
+
+/* ── Inventory items ── */
+.inv-list{display:flex;flex-direction:column;gap:0.45rem;max-height:420px;overflow-y:auto;padding-left:2px;}
+.inv-item{display:flex;align-items:center;gap:0.8rem;padding:0.65rem 0.9rem;border:1.5px solid #d1e2ef;border-radius:10px;background:#fff;cursor:pointer;}
+.inv-item:hover{background:#f0f7ff;border-color:#b3cfe8;}
+.inv-item input[type=checkbox]{width:17px;height:17px;accent-color:var(--brand);flex-shrink:0;cursor:pointer;}
+.inv-item-info{flex:1;min-width:0;}
+.inv-item-name{font-weight:700;font-size:0.9rem;color:#0f2a4a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.inv-item-meta{font-size:0.77rem;color:#6b7f95;margin-top:2px;display:flex;gap:0.4rem;flex-wrap:wrap;}
+.tag{background:#e8f0f8;padding:1px 7px;border-radius:4px;}
+.tag-green{background:#eef5e8;}
+.tag-gray{color:#aaa;background:none;padding:0;}
+.inv-empty{text-align:center;padding:2.5rem;color:#aaa;font-size:0.9rem;}
+.inv-empty i{font-size:2rem;display:block;margin-bottom:0.5rem;}
+
+/* ── Selected count ── */
+.selected-info{font-size:0.84rem;color:#4f7e95;margin-bottom:0.7rem;padding:0.4rem 0.7rem;background:#f4f9fc;border-radius:8px;border:1px solid #d1e2ef;}
+
+/* ── Actions ── */
+.action-bar{display:flex;gap:0.8rem;align-items:center;flex-wrap:wrap;margin-top:1.2rem;}
+.btn{display:inline-flex;align-items:center;gap:0.4rem;padding:0.6rem 1.4rem;border-radius:10px;font-size:0.9rem;font-family:inherit;font-weight:700;border:none;cursor:pointer;text-decoration:none;}
+.btn-success{background:#28a745;color:#fff;}
+.btn-success:hover{background:#218838;}
+.btn-secondary{background:#e5edf5;color:#4f7e95;}
+.btn-secondary:hover{background:#d1e2ef;}
+.hint{font-size:0.81rem;color:#999;line-height:1.6;margin-top:0.8rem;padding:0.5rem 0.7rem;background:#fafcff;border-radius:8px;border:1px solid #e5edf5;}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <a href="{{ url_for('admin_donation_requests') }}"><i class="fa-solid fa-hand-holding-heart"></i> {% if session.get('lang','ar') == 'en' %}Donation Requests{% else %}طلبات ال{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}{% endif %}</a>
+    <span>›</span>
+    <span>الموافقة على طلب #{{ req.id }}</span>
+</div>
+
+<div class="approve-wrap">
+
+    <!-- ── العمود الأيمن: بيانات المستفيد ── -->
+    <div>
+        <div class="card">
+            <div class="card-header">
+                <div class="icon" style="background:#e8f4ec;color:#28a745;"><i class="fa-solid fa-user"></i></div>
+                <h2>بيانات المستفيد</h2>
+            </div>
+            <div class="card-body">
+                <div class="info-row">
+                    <div class="info-item">
+                        <i class="fa-solid fa-hashtag"></i>
+                        <strong>{% if session.get('lang','ar') == 'en' %}Request Number{% else %}رقم الطلب{% endif %}:</strong>
+                        <span>#{{ req.id }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fa-solid fa-user"></i>
+                        <strong>الاسم:</strong>
+                        <span>{{ req.applicant_name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fa-solid fa-phone"></i>
+                        <strong>الهاتف:</strong>
+                        <span>{{ req.phone }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <strong>العنوان:</strong>
+                        <span>{{ req.address }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fa-solid fa-tag"></i>
+                        <strong>الأصناف المطلوبة:</strong>
+                        <span>{{ req.item_requested }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <strong>نوع الطلب:</strong>
+                        <span>{{ req.request_type }}</span>
+                    </div>
+                    {% if req.family_members %}
+                    <div class="info-item">
+                        <i class="fa-solid fa-people-group"></i>
+                        <strong>أفراد الأسرة:</strong>
+                        <span>{{ req.family_members }}</span>
+                    </div>
+                    {% endif %}
+                    {% if req.description %}
+                    <div class="info-item">
+                        <i class="fa-solid fa-align-right"></i>
+                        <strong>الوصف:</strong>
+                        <span>{{ req.description }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="info-item">
+                        <i class="fa-regular fa-calendar"></i>
+                        <strong>تاريخ الطلب:</strong>
+                        <span>{{ req.created_at | fmt_date }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fa-solid fa-circle-dot"></i>
+                        <strong>{% if session.get('lang','ar') == 'en' %}Status{% else %}الحالة{% endif %} الحالية:</strong>
+                        <span class="status-badge status-{{ req.status }}">
+                            {% if req.status == 'pending' %}⏳ قيد المراجعة
+                            {% elif req.status == 'rejected' %}🔄 مرفوض - قابل للتعديل
+                            {% else %}{{ req.status }}{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── العمود الأيسر: اختيار الأصناف ── -->
+    <div>
+        <div class="card">
+            <div class="card-header">
+                <div class="icon" style="background:#e8f0f8;color:var(--brand);"><i class="fa-solid fa-boxes-stacked"></i></div>
+                <h2>اختر الأصناف من المخزن</h2>
+            </div>
+            <div class="card-body">
+
+                <!-- فلتر {% if session.get('lang','ar') == 'en' %}Search{% else %}بحث{% endif %} وفئة (GET form) -->
+                <form method="get" action="{{ url_for('admin_approve_request', req_id=req.id) }}">
+                    <div class="filter-bar">
+                        <input type="text" name="q" value="{{ search_query }}" placeholder="🔍 ا{% if session.get('lang','ar') == 'en' %}Search{% else %}بحث{% endif %} عن صنف أو كود...">
+                        <select name="cat">
+                            <option value="">كل الفئات</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat }}" {% if category_filter == cat %}selected{% endif %}>{{ cat }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit"><i class="fa-solid fa-magnifying-glass"></i> {% if session.get('lang','ar') == 'en' %}Search{% else %}بحث{% endif %}</button>
+                        {% if search_query or category_filter %}
+                        <a href="{{ url_for('admin_approve_request', req_id=req.id) }}" class="btn btn-secondary" style="padding:0.45rem 0.9rem;font-size:0.85rem;">مسح</a>
+                        {% endif %}
+                    </div>
+                </form>
+
+                <!-- فورم الموافقة مع الأصناف (POST) -->
+                <form method="post" action="{{ url_for('admin_approve_request', req_id=req.id) }}">
+
+                    {% if inventory_items %}
+                    <div class="selected-info">
+                        <i class="fa-solid fa-circle-check" style="color:var(--brand);"></i>
+                        ضع علامة ✓ على الأصناف التي ستُرسل للمستفيد
+                        &nbsp;—&nbsp; يظهر في المخزن و{% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %} العمليات فور الموافقة
+                    </div>
+                    <div class="inv-list">
+                        {% for item in inventory_items %}
+                        <label class="inv-item">
+                            <input type="checkbox" name="item_ids[]" value="{{ item.id }}">
+                            <div class="inv-item-info">
+                                <div class="inv-item-name">{{ item.item_name }}</div>
+                                <div class="inv-item-meta">
+                                    <span class="tag">{{ item.category }}</span>
+                                    {% if item.subcategory %}<span class="tag tag-green">{{ item.subcategory }}</span>{% endif %}
+                                    <span class="tag-gray">{{ item.unique_code[:14] }}...</span>
+                                </div>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="inv-empty">
+                        <i class="fa-solid fa-box-open"></i>
+                        {% if search_query or category_filter %}
+                        لا توجد أصناف تطابق ال{% if session.get('lang','ar') == 'en' %}Search{% else %}بحث{% endif %}
+                        {% else %}
+                        المخزن فارغ حالياً — لا توجد أصناف متاحة
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <div class="hint">
+                        <i class="fa-solid fa-circle-info"></i>
+                        يمكنك الموافقة بدون اختيار أصناف — يمكن إضافة أصناف لاحقاً من المخزن مباشرة.
+                    </div>
+
+                    <div class="action-bar">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fa-solid fa-check"></i> تأكيد الموافقة
+                        </button>
+                        <a href="{{ url_for('admin_donation_requests') }}" class="btn btn-secondary">
+                            <i class="fa-solid fa-xmark"></i> إلغاء والرجوع
+                        </a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

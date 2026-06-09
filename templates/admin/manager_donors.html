@@ -1,0 +1,223 @@
+{% extends "admin/base_manager.html" %}
+{% block title %}قائمة الم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ين — {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+.page-wrap { max-width: 1200px; margin: 0 auto; }
+.back-link { display:inline-flex;align-items:center;gap:.4rem;color:var(--brand-primary);font-size:.85rem;font-weight:700;text-decoration:none;margin-bottom:.9rem;transition:gap .15s; }
+.back-link:hover { gap:.65rem; }
+.pg-header { text-align:right; margin-bottom:1.4rem; }
+.pg-header h1 { font-size:1.75rem;font-weight:900;color:var(--brand-text);display:flex;align-items:center;gap:.5rem;justify-content:flex-end; }
+.pg-sub { font-size:.83rem;color:var(--brand-text-soft);margin-top:.2rem; }
+
+/* stat cards */
+.stat-row { display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.3rem; }
+.st-card { background:var(--brand-surface);border-radius:var(--r);padding:1.2rem 1.4rem;border:1px solid var(--brand-border);box-shadow:var(--brand-card-shadow);display:flex;align-items:center;justify-content:space-between; }
+.st-label { font-size:.82rem;color:var(--brand-text-soft);font-weight:600;margin-bottom:.3rem;text-align:right; }
+.st-num { font-size:2rem;font-weight:900;color:var(--brand-text);line-height:1;text-align:right; }
+.st-icon { width:48px;height:48px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0; }
+
+/* filter bar */
+.filter-bar { background:var(--brand-surface);border-radius:var(--r);border:1px solid var(--brand-border);padding:.9rem 1.3rem;margin-bottom:1rem;display:flex;align-items:center;gap:.7rem;flex-wrap:wrap; }
+.search-box { flex:1;min-width:220px;display:flex;align-items:center;gap:.5rem;padding:.48rem .9rem;border:1px solid var(--brand-border-strong);border-radius:var(--r);background:var(--brand-surface-muted); }
+.search-box i { color:var(--brand-text-faint);font-size:.85rem; }
+.search-box input { flex:1;background:transparent;border:none;outline:none;font-family:'Cairo',sans-serif;font-size:.84rem;color:var(--brand-text);direction:rtl; }
+.search-box input:focus { outline:none; }
+.date-input { padding:.45rem .7rem;border:1px solid var(--brand-border-strong);border-radius:var(--r);font-family:'Cairo',sans-serif;font-size:.82rem;color:var(--brand-text);background:var(--brand-surface); }
+.date-label { font-size:.78rem;color:var(--brand-text-soft);font-weight:600; }
+.result-count { font-size:.8rem;color:var(--brand-text-soft);font-weight:600;margin-right:auto; }
+.btn-search { display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1rem;border-radius:var(--r);background:var(--brand-primary);color:#fff;font-size:.82rem;font-weight:700;border:none;cursor:pointer;font-family:'Cairo',sans-serif; }
+
+/* table panel */
+.panel { background:var(--brand-surface);border-radius:var(--r);border:1px solid var(--brand-border);box-shadow:var(--brand-card-shadow);overflow:hidden; }
+.table-wrap { overflow-x:auto; }
+table { width:100%;border-collapse:collapse;font-size:.84rem; }
+thead tr { background:var(--brand-surface-muted); }
+th { padding:.75rem 1rem;text-align:right;font-size:.74rem;font-weight:700;color:var(--brand-text-soft);border-bottom:1px solid var(--brand-border);white-space:nowrap; }
+td { padding:.85rem 1rem;text-align:right;color:var(--brand-text-muted);border-top:1px solid var(--brand-border-soft);vertical-align:middle; }
+tbody tr:hover { background:var(--brand-surface-muted); }
+
+/* cell styles */
+.donor-avatar { width:34px;height:34px;border-radius:50%;background:var(--brand-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.88rem;font-weight:700;flex-shrink:0; }
+.donor-name { font-weight:800;color:var(--brand-text);font-size:.88rem; }
+.donor-username { font-size:.74rem;color:var(--brand-text-soft);margin-top:.1rem; }
+.info-cell { font-size:.8rem;color:var(--brand-text-muted);display:flex;align-items:center;gap:.35rem;justify-content:flex-end; }
+.info-cell i { color:var(--brand-text-faint);font-size:.78rem; }
+.total-donated { font-weight:800;color:var(--brand-primary);font-size:.9rem; }
+.date-cell { font-size:.78rem;color:var(--brand-text-soft); }
+.count-badge { display:inline-block;background:var(--brand-status-info-bg);color:var(--brand-primary);font-weight:700;font-size:.78rem;padding:.2rem .65rem;border-radius:15px; }
+.status-badge { display:inline-block;font-size:.73rem;font-weight:700;padding:.2rem .6rem;border-radius:15px; }
+.status-active { background:var(--brand-status-success-bg);color:var(--brand-status-success-text); }
+.status-suspended { background:#fde8e8;color:#b23a3a; }
+.empty-state { text-align:center;padding:3rem;color:var(--brand-text-soft); }
+.empty-icon { font-size:2.5rem;opacity:.2;display:block;margin-bottom:.75rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+
+    <a href="{{ url_for('manager_dashboard') }}" class="back-link">
+        <i class="fa-solid fa-arrow-right"></i> رجوع ل{% if session.get('lang','ar') == 'en' %}Dashboard{% else %}لوحة التحكم{% endif %}
+    </a>
+
+    <div class="pg-header">
+        <h1>
+            <i class="fa-solid fa-users" style="color:var(--brand-primary);font-size:1.4rem;"></i>
+            قائمة الم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ين
+        </h1>
+        <div class="pg-sub">كل الم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ين المسجلين في المنصة مع تفاصيلهم الكاملة</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stat-row">
+        <div class="st-card">
+            <div>
+                <div class="st-label">{% if session.get('lang','ar') == 'en' %}Total{% else %}إجمالي{% endif %} الم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ين</div>
+                <div class="st-num">{{ total_donors }}</div>
+            </div>
+            <div class="st-icon" style="background:var(--brand-status-info-bg);color:var(--brand-primary);">
+                <i class="fa-solid fa-users"></i>
+            </div>
+        </div>
+        <div class="st-card">
+            <div>
+                <div class="st-label">{% if session.get('lang','ar') == 'en' %}Total{% else %}إجمالي{% endif %} المبالغ المحصّلة</div>
+                <div class="st-num" style="font-size:1.5rem;">{{ "{:,.0f}".format(total_amount) }} {% if session.get('lang','ar') == 'en' %}EGP{% else %}ج.م{% endif %}</div>
+            </div>
+            <div class="st-icon" style="background:var(--brand-status-success-bg);color:var(--brand-status-success-text);">
+                <i class="fa-solid fa-dollar-sign"></i>
+            </div>
+        </div>
+        <div class="st-card">
+            <div>
+                <div class="st-label">{% if session.get('lang','ar') == 'en' %}Total{% else %}إجمالي{% endif %} عمليات ال{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}</div>
+                <div class="st-num">{{ total_ops }}</div>
+            </div>
+            <div class="st-icon" style="background:var(--brand-status-warning-bg);color:var(--brand-status-warning-text);">
+                <i class="fa-regular fa-calendar"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter -->
+    <form method="get" class="filter-bar">
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" name="q" value="{{ search }}"
+                   placeholder="ا{% if session.get('lang','ar') == 'en' %}Search{% else %}بحث{% endif %} بالاسم أو البريد أو {% if session.get('lang','ar') == 'en' %}Username{% else %}اسم المستخدم{% endif %}...">
+        </div>
+        <div style="display:flex;align-items:center;gap:.4rem;">
+            <span class="date-label">من</span>
+            <input type="date" name="from" class="date-input">
+        </div>
+        <div style="display:flex;align-items:center;gap:.4rem;">
+            <span class="date-label">إلى</span>
+            <input type="date" name="to" class="date-input">
+        </div>
+        <button type="submit" class="btn-search">
+            <i class="fa-solid fa-magnifying-glass"></i> {% if session.get('lang','ar') == 'en' %}Search{% else %}بحث{% endif %}
+        </button>
+        <div class="result-count">النتائج: {{ donors|length }}</div>
+    </form>
+
+    <!-- Table -->
+    <div class="panel">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>الم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}</th>
+                        <th>{% if session.get('lang','ar') == 'en' %}Email{% else %}البريد الإلكتروني{% endif %}</th>
+                        <th>رقم الهاتف</th>
+                        <th>العنوان</th>
+                        <th>تاريخ التسجيل</th>
+                        <th>{% if session.get('lang','ar') == 'en' %}Status{% else %}الحالة{% endif %}</th>
+                        <th>عدد التبرعات</th>
+                        <th>{% if session.get('lang','ar') == 'en' %}Total{% else %}إجمالي{% endif %} ال{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}</th>
+                        <th>آخر {% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% if donors %}
+                    {% for d in donors %}
+                    <tr>
+                        <!-- الم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %} -->
+                        <td>
+                            <div style="display:flex;align-items:center;gap:.7rem;justify-content:flex-end;">
+                                <div>
+                                    <div class="donor-name">{{ d.full_name or d.username }}</div>
+                                    {% if d.full_name and d.username %}
+                                    <div class="donor-username">@{{ d.username }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="donor-avatar">
+                                    {{ (d.full_name or d.username or 'م')[0] | upper }}
+                                </div>
+                            </div>
+                        </td>
+                        <!-- البريد -->
+                        <td>
+                            <div class="info-cell">
+                                <span>{{ d.email or '—' }}</span>
+                                <i class="fa-regular fa-envelope"></i>
+                            </div>
+                        </td>
+                        <!-- الهاتف -->
+                        <td>
+                            <div class="info-cell">
+                                <span>{{ d.phone or '—' }}</span>
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
+                        </td>
+                        <!-- العنوان -->
+                        <td>
+                            <div class="info-cell">
+                                <span>{{ d.address or '—' }}</span>
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+                        </td>
+                        <!-- تاريخ التسجيل -->
+                        <td class="date-cell">
+                            {{ d.created_at.strftime('%Y-%m-%d') if d.created_at else '—' }}
+                        </td>
+                        <!-- {% if session.get('lang','ar') == 'en' %}Status{% else %}الحالة{% endif %} -->
+                        <td>
+                            {% set st = d.get('status','active') if d.get else d.status if d.status else 'active' %}
+                            <span class="status-badge {% if st == 'active' %}status-active{% else %}status-suspended{% endif %}">
+                                {{ 'نشط' if st == 'active' else 'موقوف' }}
+                            </span>
+                        </td>
+                        <!-- عدد التبرعات -->
+                        <td>
+                            <span class="count-badge">{{ d.donation_count }}</span>
+                        </td>
+                        <!-- {% if session.get('lang','ar') == 'en' %}Total{% else %}إجمالي{% endif %} ال{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %} -->
+                        <td>
+                            <span class="total-donated">
+                                {{ "{:,.0f}".format(d.total_donated) }} {% if session.get('lang','ar') == 'en' %}EGP{% else %}ج.م{% endif %}
+                            </span>
+                        </td>
+                        <!-- آخر {% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %} -->
+                        <td class="date-cell">
+                            {{ d.last_donation.strftime('%Y-%m-%d') if d.last_donation else '—' }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="9">
+                            <div class="empty-state">
+                                <i class="fa-solid fa-users empty-icon"></i>
+                                <p>لا يوجد م{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}ون م{% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %}ون بعد</p>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

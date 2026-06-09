@@ -1,0 +1,52 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}إضافة جمعية - {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="fa-solid fa-plus-circle"></i> إضافة جمعية جديدة</h1>
+        <p class="page-sub">أضف جمعية خيرية شريكة للمنصة</p>
+    </div>
+    <a href="{{ url_for('admin_charities') }}" class="btn btn-dark"><i class="fa-solid fa-arrow-right"></i> العودة</a>
+</div>
+<div class="card" style="max-width:750px;">
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-grid">
+            <div class="form-group" style="grid-column:1/-1;">
+                <label>اسم الجمعية *</label>
+                <input type="text" name="name" class="form-control" placeholder="مثال: جمعية رسالة" required>
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+                <label>وصف الجمعية *</label>
+                <textarea name="description" class="form-control" rows="4" placeholder="وصف الجمعية وأهدافها ومجالات عملها..." required></textarea>
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+                <label>مجالات العمل <small style="color:#7fa0b8;font-weight:500;">(افصل بفاصلة)</small></label>
+                <input type="text" name="fields" class="form-control" placeholder="تعليم,صحة,إغاثة,أيتام,غذاء">
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+                <label>صورة الجمعية</label>
+                <input type="file" name="image" class="form-control" accept="image/*" onchange="prev(this)">
+                <img id="imgprev" style="max-width:200px;border-radius:10px;margin-top:8px;display:none;">
+            </div>
+        </div>
+        <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+            <h4 style="color:var(--primary-dark);font-weight:800;margin-bottom:1rem;">📊 إحصائيات (اختياري)</h4>
+            <div class="form-grid">
+                <div class="form-group"><label>رقم 1</label><input type="text" name="stat1_num" class="form-control" placeholder="١٢٠٠+"></div>
+                <div class="form-group"><label>تسمية 1</label><input type="text" name="stat1_label" class="form-control" placeholder="م{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %} شهرياً"></div>
+                <div class="form-group"><label>رقم 2</label><input type="text" name="stat2_num" class="form-control" placeholder="٢٢"></div>
+                <div class="form-group"><label>تسمية 2</label><input type="text" name="stat2_label" class="form-control" placeholder="فرع في مصر"></div>
+                <div class="form-group"><label>رقم 3</label><input type="text" name="stat3_num" class="form-control" placeholder="٣٠٠+"></div>
+                <div class="form-group"><label>تسمية 3</label><input type="text" name="stat3_label" class="form-control" placeholder="متطوع"></div>
+            </div>
+        </div>
+        <div style="margin-top:1.5rem;display:flex;gap:1rem;">
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> حفظ الجمعية</button>
+            <a href="{{ url_for('admin_charities') }}" class="btn btn-dark">إلغاء</a>
+        </div>
+    </form>
+</div>
+<script>
+function prev(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{const i=document.getElementById('imgprev');i.src=e.target.result;i.style.display='block';};r.readAsDataURL(f);}
+</script>
+{% endblock %}

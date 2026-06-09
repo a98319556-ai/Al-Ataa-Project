@@ -1,0 +1,45 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}إضافة حملة - {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="fa-solid fa-flag"></i> إضافة حملة لـ {{ charity.name }}</h1>
+    </div>
+    <a href="{{ url_for('admin_campaigns', cid=charity.id) }}" class="btn btn-dark"><i class="fa-solid fa-arrow-right"></i> العودة</a>
+</div>
+<div class="card" style="max-width:700px;">
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-grid">
+            <div class="form-group" style="grid-column:1/-1;">
+                <label>عنوان الحملة *</label>
+                <input type="text" name="title" class="form-control" placeholder="مثال: حملة الكساء الشتوي" required>
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+                <label>وصف الحملة *</label>
+                <textarea name="description" class="form-control" rows="4" placeholder="اشرح تفاصيل الحملة وهدفها..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label>فئة الحملة</label>
+                <input type="text" name="category" class="form-control" value="عام" placeholder="غذاء / تعليم / علاج / ملابس / أيتام...">
+            </div>
+            <div class="form-group">
+                <label>{% if session.get('lang','ar') == 'en' %}Amount{% else %}المبلغ{% endif %} المستهدف ({% if session.get('lang','ar') == 'en' %}EGP{% else %}ج.م{% endif %})</label>
+                <input type="number" name="goal_amount" class="form-control" value="0" min="0" step="1" placeholder="50000">
+                <small style="color:#7fa0b8;font-size:0.8rem;">اتركه 0 إذا لم يكن هناك مبلغ محدد</small>
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+                <label>صورة الحملة</label>
+                <input type="file" name="image" class="form-control" accept="image/*" onchange="prev(this)">
+                <img id="imgprev" style="max-width:200px;border-radius:10px;margin-top:8px;display:none;">
+            </div>
+        </div>
+        <div style="margin-top:1.5rem;display:flex;gap:1rem;">
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> إضافة الحملة</button>
+            <a href="{{ url_for('admin_campaigns', cid=charity.id) }}" class="btn btn-dark">إلغاء</a>
+        </div>
+    </form>
+</div>
+<script>
+function prev(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{const i=document.getElementById('imgprev');i.src=e.target.result;i.style.display='block';};r.readAsDataURL(f);}
+</script>
+{% endblock %}

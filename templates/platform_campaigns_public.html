@@ -1,0 +1,463 @@
+{% set _theme = session.get('theme','light') %}
+{% set _lang  = session.get('lang','ar') %}
+<!DOCTYPE html>
+<html lang="{% if _lang == 'en' %}en{% else %}ar{% endif %}" dir="{% if _lang == 'en' %}ltr{% else %}rtl{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حملات العطاء — منصة عطاء</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Tajawal',sans-serif;}
+        :root{
+            --blue:#1565C0;--blue-dark:#0D47A1;--blue-light:#1976D2;
+            --white:#ffffff;--gray:#f5f7fa;--text:#1e293b;
+            --text-light:#64748b;--border:#e2e8f0;--r:14px;
+        }
+        html{scroll-behavior:smooth;}
+        body{background:var(--white);color:var(--text);}
+
+        /* ══ NAVBAR ══ */
+        nav{background:var(--white);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(0,0,0,0.06);}
+        .nav-brand{display:flex;align-items:center;gap:0.6rem;text-decoration:none;flex-shrink:0;}
+        .nav-logo{width:40px;height:40px;border-radius:10px;object-fit:cover;}
+        .nav-logo-fallback{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;font-weight:900;}
+        .nav-brand-name{font-size:1.3rem;font-weight:900;color:var(--blue-dark);display:flex;align-items:center;gap:0.35rem;margin:0;padding:0;}
+        .nav-center{display:flex;gap:0.3rem;align-items:center;}
+        .nav-link{padding:0.45rem 1rem;border-radius:25px;font-size:0.87rem;font-weight:600;text-decoration:none;color:#555;transition:all 0.2s;}
+        .nav-link:hover,.nav-link.active{color:var(--blue);background:#EEF4FF;}
+        .nav-actions{display:flex;gap:0.6rem;align-items:center;}
+        .btn-ctrl{padding:0.42rem 0.9rem;border-radius:25px;border:1.5px solid var(--border);font-size:0.83rem;font-weight:700;color:#555;background:#fff;cursor:pointer;display:flex;align-items:center;gap:0.4rem;transition:all 0.2s;font-family:'Tajawal',sans-serif;}
+        .btn-ctrl:hover{border-color:var(--blue);color:var(--blue);}
+        .btn-icon{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;transition:all 0.2s;color:#555;}
+        .btn-icon:hover{border-color:var(--blue);color:var(--blue);}
+        .btn-login{padding:0.48rem 1.2rem;border-radius:25px;border:2px solid var(--blue);color:var(--blue);font-weight:700;font-size:0.87rem;text-decoration:none;background:#fff;transition:all 0.2s;display:inline-flex;align-items:center;gap:0.4rem;}
+        .btn-login:hover{background:#EEF4FF;}
+        .btn-register{padding:0.48rem 1.3rem;border-radius:25px;background:var(--blue);color:#fff;font-weight:700;font-size:0.87rem;text-decoration:none;border:2px solid var(--blue);transition:all 0.2s;display:inline-flex;align-items:center;gap:0.4rem;}
+        .btn-register:hover{background:var(--blue-dark);transform:translateY(-1px);}
+        .user-menu{position:relative;}
+        .user-btn{display:flex;align-items:center;gap:0.5rem;padding:0.4rem 1rem;background:#EEF4FF;border:2px solid var(--blue);border-radius:25px;color:var(--blue);font-weight:700;font-size:0.85rem;cursor:pointer;text-decoration:none;transition:all 0.2s;}
+        .user-btn:hover{background:var(--blue);color:#fff;}
+        .u-av{width:28px;height:28px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;}
+        .user-btn:hover .u-av{background:#fff;color:var(--blue);}
+        .u-drop{position:absolute;top:calc(100% + 8px);left:0;background:#fff;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.12);min-width:190px;padding:0.5rem;border:1px solid var(--border);display:none;z-index:600;}
+        .user-menu:hover .u-drop{display:block;}
+        .u-drop a{display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.8rem;border-radius:10px;color:var(--text);text-decoration:none;font-size:0.85rem;font-weight:600;transition:background 0.15s;}
+        .u-drop a:hover{background:#EEF4FF;color:var(--blue);}
+        .u-drop a.logout{color:#dc3545;}
+        .u-drop a.logout:hover{background:#fde8e8;}
+        .u-divider{height:1px;background:var(--border);margin:0.3rem 0;}
+
+        /* ══ PAGE HEADER ══ */
+        .page-hd{
+            padding:3.5rem 2.5rem 2.5rem;
+            text-align:right;
+            border-bottom:1px solid var(--border);
+        }
+        .page-hd h1{
+            font-size:3rem;font-weight:900;
+            color:var(--text);margin-bottom:0.5rem;
+        }
+        .page-hd p{
+            font-size:0.97rem;color:var(--text-light);
+            line-height:1.6;
+        }
+
+        /* ══ FILTER BAR ══ */
+        .filter-bar{
+            padding:1.4rem 2.5rem;
+            display:flex;align-items:center;gap:0.7rem;
+            flex-wrap:wrap;
+            border-bottom:1px solid var(--border);
+            background:#fff;
+            position:sticky;top:64px;z-index:50;
+        }
+        .filter-pills{display:flex;gap:0.5rem;flex-wrap:wrap;}
+        .f-pill{
+            padding:0.55rem 1.3rem;border-radius:30px;
+            font-family:'Tajawal',sans-serif;
+            font-size:0.9rem;font-weight:700;
+            cursor:pointer;border:1.5px solid var(--border);
+            background:#fff;color:var(--text-light);
+            transition:all 0.2s;
+        }
+        .f-pill:hover{border-color:var(--blue);color:var(--blue);}
+        .f-pill.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+        .filter-icon-btn{
+            width:42px;height:42px;border-radius:12px;
+            border:1.5px solid var(--border);background:#fff;
+            cursor:pointer;display:flex;align-items:center;justify-content:center;
+            font-size:0.95rem;color:var(--text-light);transition:all 0.2s;
+        }
+        .filter-icon-btn:hover{border-color:var(--blue);color:var(--blue);}
+        .search-wrap{
+            margin-right:auto;
+            position:relative;min-width:260px;
+        }
+        .search-wrap i{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.88rem;}
+        .search-input{
+            width:100%;padding:0.65rem 1rem 0.65rem 2.6rem;
+            border:1.5px solid var(--border);border-radius:30px;
+            font-family:'Tajawal',sans-serif;font-size:0.88rem;
+            color:var(--text);outline:none;transition:border-color 0.2s;
+        }
+        .search-input:focus{border-color:var(--blue);}
+        .search-input::placeholder{color:#94a3b8;}
+
+        /* ══ MAIN ══ */
+        .main{padding:2.5rem 2.5rem 5rem;}
+        .inner{max-width:1200px;margin:0 auto;}
+
+        /* ══ GRID ══ */
+        .camps-grid{
+            display:grid;
+            grid-template-columns:repeat(3,1fr);
+            gap:1.6rem;
+        }
+
+        /* ══ CAMPAIGN CARD ══ */
+        .camp-card{
+            background:#fff;
+            border-radius:18px;
+            overflow:hidden;
+            border:1.5px solid var(--border);
+            transition:transform 0.25s,box-shadow 0.25s;
+            animation:cardIn 0.4s ease both;
+            cursor:pointer;
+        }
+        .camp-card:nth-child(1){animation-delay:.03s}
+        .camp-card:nth-child(2){animation-delay:.08s}
+        .camp-card:nth-child(3){animation-delay:.13s}
+        .camp-card:nth-child(4){animation-delay:.18s}
+        .camp-card:nth-child(5){animation-delay:.23s}
+        .camp-card:nth-child(6){animation-delay:.28s}
+        @keyframes cardIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+        .camp-card:hover{transform:translateY(-5px);box-shadow:0 14px 36px rgba(21,101,192,0.14);}
+
+        /* image area */
+        .camp-img-wrap{position:relative;height:220px;overflow:hidden;}
+        .camp-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.35s;}
+        .camp-card:hover .camp-img{transform:scale(1.04);}
+        .camp-ph{width:100%;height:100%;background:linear-gradient(135deg,#dbeafe,#bfdbfe);display:flex;align-items:center;justify-content:center;font-size:3rem;}
+
+        /* category badge — top left in image */
+        .cat-badge{
+            position:absolute;top:14px;left:14px;
+            background:rgba(255,255,255,0.92);
+            backdrop-filter:blur(6px);
+            color:var(--text);
+            padding:0.28rem 0.85rem;border-radius:25px;
+            font-size:0.8rem;font-weight:800;
+            box-shadow:0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* card body */
+        .camp-body{padding:1.4rem 1.4rem 1.1rem;}
+        .camp-title{
+            font-size:1.2rem;font-weight:900;
+            color:var(--text);
+            margin-bottom:0.4rem;
+            text-align:right;
+        }
+        .camp-desc{
+            font-size:0.83rem;color:var(--text-light);
+            line-height:1.6;margin-bottom:1.1rem;
+            text-align:right;
+        }
+
+        /* collected + goal row */
+        .camp-money-row{
+            display:flex;align-items:baseline;justify-content:space-between;
+            margin-bottom:0.5rem;
+        }
+        .camp-collected{
+            font-size:1rem;font-weight:900;
+            color:var(--blue);
+        }
+        .camp-goal-lbl{
+            font-size:0.78rem;color:var(--text-light);font-weight:600;
+        }
+
+        /* progress bar */
+        .prog-track{
+            width:100%;height:7px;
+            background:#e2e8f0;border-radius:10px;
+            overflow:hidden;margin-bottom:0.75rem;
+        }
+        .prog-fill{
+            height:100%;border-radius:10px;
+            background:linear-gradient(90deg,var(--blue-dark),var(--blue));
+            transition:width 0.6s ease;
+        }
+
+        /* meta row: goal + donors */
+        .camp-meta-row{
+            display:flex;justify-content:space-between;
+            align-items:center;
+        }
+        .camp-meta-item{
+            font-size:0.78rem;color:var(--text-light);font-weight:600;
+            display:flex;align-items:center;gap:0.3rem;
+        }
+        .camp-meta-item strong{color:var(--text);}
+
+        /* ══ EMPTY ══ */
+        .empty-state{
+            grid-column:1/-1;text-align:center;
+            padding:5rem 2rem;color:var(--text-light);
+        }
+        .empty-state i{font-size:3rem;color:#cbd5e1;margin-bottom:1rem;display:block;}
+        .empty-state p{font-size:1rem;font-weight:600;}
+
+        /* ══ FOOTER ══ */
+        footer{background:#0D2B55;padding:2.5rem 2rem;}
+        .footer-inner{max-width:1160px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;}
+        .footer-brand{display:flex;align-items:center;gap:0.7rem;}
+        .footer-brand img{width:36px;height:36px;border-radius:9px;object-fit:cover;}
+        .footer-brand-text{color:#fff;font-size:1rem;font-weight:900;}
+        .footer-links{display:flex;gap:0.5rem 1.5rem;flex-wrap:wrap;}
+        .footer-links a{color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.83rem;font-weight:600;transition:color 0.2s;}
+        .footer-links a:hover{color:#fff;}
+        .footer-copy{color:rgba(255,255,255,0.3);font-size:0.78rem;}
+
+        /* ══ RESPONSIVE ══ */
+        @media(max-width:1024px){.camps-grid{grid-template-columns:repeat(2,1fr);}}
+        @media(max-width:768px){.nav-center{display:none;}}
+        @media(max-width:640px){
+            nav{padding:0 1rem;}
+            .page-hd{padding:2.5rem 1.2rem 2rem;}
+            .page-hd h1{font-size:2.2rem;}
+            .filter-bar{padding:1rem 1.2rem;}
+            .search-wrap{min-width:0;width:100%;margin-right:0;}
+            .main{padding:2rem 1.2rem 4rem;}
+            .camps-grid{grid-template-columns:1fr;}
+            .footer-inner{flex-direction:column;text-align:center;}
+        }
+    </style>
+    <style>
+        /* ══ TOGGLE BAR ══ */
+        .toggle-bar{position:fixed;bottom:1.2rem;left:1.2rem;z-index:9000;display:flex;align-items:center;gap:0.45rem;background:rgba(255,255,255,0.92);border:1px solid #e2e8f0;border-radius:50px;padding:0.3rem 0.55rem;box-shadow:0 4px 20px rgba(0,0,0,0.12);backdrop-filter:blur(12px);}
+        .tgl-btn{display:inline-flex;align-items:center;gap:0.28rem;background:none;border:none;cursor:pointer;font-family:inherit;font-size:0.82rem;font-weight:700;color:#64748b;padding:0.3rem 0.55rem;border-radius:40px;transition:background 0.18s,color 0.18s;}
+        .tgl-btn:hover{background:#f0f3f8;}
+        .tgl-active{color:#1565C0;font-weight:900;}
+        .tgl-dim{color:#94a3b8;}
+        .tgl-sep{color:#e2e8f0;font-size:0.75rem;margin:0 0.05rem;}
+        body.dark-mode{background:#0f172a !important;color:#e2e8f0 !important;}
+        body.dark-mode .toggle-bar{background:rgba(30,41,59,0.95) !important;border-color:#334155 !important;}
+        body.dark-mode .tgl-btn{color:#e2e8f0;}
+        body.dark-mode .tgl-btn:hover{background:#334155;}
+
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{% if _theme == 'dark' %}dark-mode{% endif %}">
+
+<!-- ══ NAVBAR ══ -->
+<nav>
+    <a href="{{ url_for('landing') }}" class="nav-brand">
+        <img src="{{ url_for('static', filename='uploads/logo.jpeg') }}" alt="عطاء" class="nav-logo"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div class="nav-logo-fallback" style="display:none;">ع</div>
+        <h3 class="nav-brand-name">
+{% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}
+        </div>
+    </a>
+    <div class="nav-center">
+        <a href="{{ url_for('public_charities') }}" class="nav-link">{% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %}</a>
+        <a href="{{ url_for('beneficiary_landing') }}" class="nav-link">الاحتياجات</a>
+        <a href="{{ url_for('how_it_works') }}" class="nav-link">{% if session.get('lang','ar') == 'en' %}How It Works{% else %}كيف يعمل{% endif %}</a>
+    </div>
+    <div class="nav-actions">
+        {% if current_user.is_authenticated %}
+        <div class="user-menu">
+            <a href="{{ url_for('donor_home') }}" class="user-btn">
+                <div class="u-av">{{ current_user.username[0]|upper }}</div>
+                {{ current_user.username }}
+                <i class="fa-solid fa-chevron-down" style="font-size:0.65rem;opacity:0.6;"></i>
+            </a>
+            <div class="u-drop">
+                <a href="{{ url_for('donor_home') }}"><i class="fa-solid fa-gauge"></i> {% if session.get('lang','ar') == 'en' %}My Dashboard{% else %}لوحتي{% endif %}</a>
+                <a href="{{ url_for('donor_donate') }}"><i class="fa-solid fa-hand-holding-dollar"></i> {% if session.get('lang','ar') == 'en' %}New Donation{% else %}{% if session.get('lang','ar') == 'en' %}New Donation{% else %}تبرع جديد{% endif %}{% endif %}</a>
+                <a href="{{ url_for('donor_my_donations') }}"><i class="fa-solid fa-list"></i> {% if session.get('lang','ar') == 'en' %}My Donations{% else %}تبرعاتي{% endif %}</a>
+                <a href="{{ url_for('donor_settings') }}"><i class="fa-solid fa-gear"></i> {% if session.get('lang','ar') == 'en' %}Settings{% else %}الإعدادات{% endif %}</a>
+                <div class="u-divider"></div>
+                <a href="{{ url_for('logout') }}" class="logout"><i class="fa-solid fa-right-from-bracket"></i> {% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %} ال{% if session.get('lang','ar') == 'en' %}Logout{% else %}خروج{% endif %}</a>
+            </div>
+        </div>
+        {% elif 'admin' in session %}
+        <div class="user-menu">
+            <a href="{{ url_for('admin_dashboard') }}" class="user-btn">
+                <div class="u-av">م</div>
+                {{ session.get('admin','المشرف') }}
+            </a>
+            <div class="u-drop">
+                <a href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-gauge"></i> {% if session.get('lang','ar') == 'en' %}Dashboard{% else %}لوحة التحكم{% endif %}</a>
+                <div class="u-divider"></div>
+                <a href="{{ url_for('logout') }}" class="logout"><i class="fa-solid fa-right-from-bracket"></i> {% if session.get('lang','ar') == 'en' %}Logout{% else %}خروج{% endif %}</a>
+            </div>
+        </div>
+        {% else %}
+        <button class="btn-icon"><i class="fa-regular fa-moon"></i></button>
+        <button class="btn-ctrl"><i class="fa-solid fa-earth-americas"></i> EN</button>
+        <a href="{{ url_for('unified_login') }}" class="btn-login">{% if session.get('lang','ar') == 'en' %}Login{% else %}{% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %} ال{% if session.get('lang','ar') == 'en' %}Sign In{% else %}دخول{% endif %}{% endif %}</a>
+        <a href="{{ url_for('signup') }}" class="btn-register">{% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %} الآن</a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- ══ PAGE HEADER ══ -->
+<div class="page-hd">
+    <h1>حملات العطاء</h1>
+    <p>اختر الحملة التي تود دعمها وساهم في تحقيق أهدافها</p>
+</div>
+
+<!-- ══ FILTER BAR ══ -->
+<div class="filter-bar">
+    <div class="filter-pills" id="filterPills">
+        <button class="f-pill active" onclick="filterCat('الكل',this)">الكل</button>
+        <button class="f-pill" onclick="filterCat('صحة',this)">الصحة</button>
+        <button class="f-pill" onclick="filterCat('غذاء',this)">الطعام</button>
+        <button class="f-pill" onclick="filterCat('تعليم',this)">التعليم</button>
+        <button class="f-pill" onclick="filterCat('غارمات',this)">غارمات</button>
+        <button class="f-pill" onclick="filterCat('بنية تحتية',this)">بنية تحتية</button>
+        <button class="f-pill" onclick="filterCat('عام',this)">عام</button>
+    </div>
+    <button class="filter-icon-btn" title="{% if session.get('lang','ar') == 'en' %}More{% else %}المزيد{% endif %} من الفلاتر">
+        <i class="fa-solid fa-sliders"></i>
+    </button>
+    <div class="search-wrap">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" class="search-input" id="searchInput"
+               placeholder="ا{% if session.get('lang','ar') == 'en' %}Search{% else %}بحث{% endif %} عن حملة..." oninput="searchCards()">
+    </div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+    <div class="inner">
+        <div class="camps-grid" id="campsGrid">
+
+            {% if campaigns %}
+            {% for c in campaigns %}
+            {% set pct = ((c.collected_amount / c.goal_amount * 100) if c.goal_amount and c.goal_amount > 0 else 0)|int %}
+            {% set pct_capped = [pct, 100]|min %}
+
+            <div class="camp-card"
+                 data-cat="{{ c.category }}"
+                 data-title="{{ c.title }}"
+                 onclick="window.location='{{ url_for('signup') }}'">
+
+                <!-- image -->
+                <div class="camp-img-wrap">
+                    {% if c.image and c.image != 'default.jpg' %}
+                    <img src="{{ url_for('static', filename='uploads/' + c.image) }}"
+                         alt="{{ c.title }}" class="camp-img"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                    <div class="camp-ph" style="display:none;">📢</div>
+                    {% else %}
+                    <div class="camp-ph">
+                        {% if c.category in ['صحة','طب'] %}🏥
+                        {% elif c.category in ['غذاء','طعام'] %}🍽️
+                        {% elif c.category == 'تعليم' %}📚
+                        {% elif c.category == 'غارمات' %}🤝
+                        {% elif c.category == 'بنية تحتية' %}🏗️
+                        {% else %}📢{% endif %}
+                    </div>
+                    {% endif %}
+                    <div class="cat-badge">{{ c.category }}</div>
+                </div>
+
+                <!-- body -->
+                <div class="camp-body">
+                    {% if camp.is_urgent %}<div style="display:inline-flex;align-items:center;gap:4px;background:#fed7d7;color:#c53030;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:800;margin-bottom:6px;"><i class="fa-solid fa-triangle-exclamation"></i> حملة عاجلة</div>{% endif %}
+                <div class="camp-title">{{ c.title }}</div>
+                    <div class="camp-desc">{{ c.description[:65] }}{% if c.description|length > 65 %}...{% endif %}</div>
+
+                    <!-- money row -->
+                    <div class="camp-money-row">
+                        <span class="camp-collected">{{ "{:,.0f}".format(c.collected_amount or 0) }} {% if session.get('lang','ar') == 'en' %}EGP{% else %}جنيه{% endif %}</span>
+                        <span class="camp-goal-lbl">تم جمع</span>
+                    </div>
+
+                    <!-- progress bar -->
+                    <div class="prog-track">
+                        <div class="prog-fill" style="width:{{ pct_capped }}%;"></div>
+                    </div>
+
+                    <!-- meta: goal + donors -->
+                    <div class="camp-meta-row">
+                        <div class="camp-meta-item">
+                            <i class="fa-solid fa-users" style="color:var(--blue);"></i>
+                            <strong>{{ c.get('donor_count', 0) if c.get('donor_count') else 0 }}</strong> م{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %}
+                        </div>
+                        <div class="camp-meta-item">
+                            الهدف: <strong>{{ "{:,.0f}".format(c.goal_amount or 0) }}</strong> {% if session.get('lang','ar') == 'en' %}EGP{% else %}جنيه{% endif %}
+                        </div>
+                    </div>
+                </div><!-- /camp-body -->
+            </div><!-- /camp-card -->
+            {% endfor %}
+
+            {% else %}
+            <div class="empty-state">
+                <i class="fa-solid fa-bullhorn"></i>
+                <p>لا توجد حملات نشطة حالياً</p>
+            </div>
+            {% endif %}
+
+        </div><!-- /camps-grid -->
+    </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <img src="{{ url_for('static', filename='uploads/logo.jpeg') }}" alt="عطاء"
+                 onerror="this.style.display='none';">
+            <span class="footer-brand-text">منصة عطاء</span>
+        </div>
+        <div class="footer-links">
+            <a href="{{ url_for('landing') }}">{% if session.get('lang','ar') == 'en' %}Home{% else %}الرئيسية{% endif %}</a>
+            <a href="{{ url_for('platform_campaigns_public') }}">حملات المنصة</a>
+            <a href="{{ url_for('public_charities') }}">{% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %}</a>
+            <a href="{{ url_for('unified_login') }}">{% if session.get('lang','ar') == 'en' %}Login{% else %}{% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %} ال{% if session.get('lang','ar') == 'en' %}Sign In{% else %}دخول{% endif %}{% endif %}</a>
+            <a href="{{ url_for('signup') }}">{% if session.get('lang','ar') == 'en' %}Create Account{% else %}إنشاء حساب{% endif %}</a>
+            <a href="{{ url_for('beneficiary_landing') }}">خدمات المستفيد</a>
+        </div>
+        <div class="footer-copy">منصة عطاء © 2024</div>
+    </div>
+</footer>
+
+<script>
+// ── Category filter ──
+function filterCat(cat, btn) {
+    document.querySelectorAll('.f-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const cards = document.querySelectorAll('#campsGrid .camp-card');
+    cards.forEach(card => {
+        const cardCat = card.getAttribute('data-cat') || '';
+        const show = cat === 'الكل' || cardCat === cat ||
+                     (cat === 'صحة' && ['صحة','طب'].includes(cardCat)) ||
+                     (cat === 'غذاء' && ['غذاء','طعام'].includes(cardCat));
+        card.style.display = show ? '' : 'none';
+    });
+    applySearch();
+}
+
+// ── Search filter ──
+function searchCards() { applySearch(); }
+
+function applySearch() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    if (!q) return;
+    document.querySelectorAll('#campsGrid .camp-card').forEach(card => {
+        if (card.style.display === 'none') return; // already hidden by cat filter
+        const title = (card.getAttribute('data-title') || '').toLowerCase();
+        card.style.display = title.includes(q) ? '' : 'none';
+    });
+}
+</script>
+</body>
+</html>

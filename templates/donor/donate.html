@@ -1,0 +1,389 @@
+{% extends "donor/base_donor.html" %}
+{% block title %}{% if session.get('lang','ar') == 'en' %}New Donation{% else %}{% if session.get('lang','ar') == 'en' %}New Donation{% else %}تبرع جديد{% endif %}{% endif %} - {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+
+{% block content %}
+<style>
+/* ── نوع التبرع (Tabs) ── */
+.donate-type-wrap {
+    max-width: 800px; margin: 0 auto 0; padding: 0;
+}
+.donate-tabs {
+    display: flex; border-bottom: 2px solid #e5e7eb;
+    margin-bottom: 28px; gap: 0;
+}
+.dtab {
+    flex: 1; padding: 14px 20px; background: none; border: none;
+    font-family: 'Tajawal', sans-serif; font-size: 16px; font-weight: 700;
+    color: #6B7280; cursor: pointer; text-align: center;
+    border-bottom: 3px solid transparent; margin-bottom: -2px;
+    transition: color 0.2s, border-color 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.dtab:hover { color: var(--brand, #2f8f7a); }
+.dtab.active { color: var(--brand, #2f8f7a); border-bottom-color: var(--brand, #2f8f7a); }
+.dtab i { font-size: 18px; }
+
+/* ── محتوى الـ tabs ── */
+.dtab-content { display: none; }
+.dtab-content.active { display: block; }
+
+/* ── بطاقة التبرع العيني ── */
+.inkind-card {
+    background: white; border-radius: var(--radius-lg, 16px);
+    padding: 40px; box-shadow: var(--shadow, 0 4px 20px rgba(0,0,0,0.08));
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+    display: flex; flex-direction: column; align-items: center;
+}
+#tab-inkind {
+    min-height: 60vh;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+#tab-inkind.active {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+.inkind-icon-wrap {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px; font-size: 36px;
+}
+.inkind-card h2 {
+    font-size: 22px; font-weight: 800; color: var(--text-dark, #1a2e2b);
+    margin-bottom: 10px;
+}
+.inkind-card > p {
+    color: #6B7280; font-size: 15px; line-height: 1.7;
+    max-width: 500px; margin: 0 auto 32px;
+}
+
+/* ── أزرار التواصل ── */
+.contact-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 16px; max-width: 500px; margin: 0 auto 28px;
+}
+.contact-btn {
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px; padding: 16px 20px; border-radius: 14px;
+    font-family: 'Tajawal', sans-serif; font-size: 16px; font-weight: 700;
+    text-decoration: none; transition: transform 0.2s, box-shadow 0.2s;
+    border: none; cursor: pointer;
+}
+.contact-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+.contact-btn.whatsapp {
+    background: linear-gradient(135deg, #25D366, #128C7E);
+    color: white;
+}
+.contact-btn.facebook {
+    background: linear-gradient(135deg, #1877F2, #0d5dbf);
+    color: white;
+}
+.contact-btn i { font-size: 22px; }
+
+.inkind-note {
+    background: #f0fdf4; border: 1px solid #bbf7d0;
+    border-radius: 10px; padding: 14px 18px;
+    color: #15803d; font-size: 13px; line-height: 1.6;
+    max-width: 500px; margin: 0 auto;
+    display: flex; align-items: flex-start; gap: 8px; text-align: right;
+}
+.inkind-note i { flex-shrink: 0; margin-top: 2px; }
+
+/* dark mode */
+body.dark-mode .donate-tabs { border-color: #334155; }
+body.dark-mode .dtab { color: #94a3b8; }
+body.dark-mode .inkind-card { background: #1e293b; }
+body.dark-mode .inkind-card h2 { color: #f1f5f9; }
+body.dark-mode .inkind-card > p { color: #94a3b8; }
+body.dark-mode .inkind-note { background: #14532d; border-color: #166534; color: #86efac; }
+</style>
+
+<style>
+    /* تنسيقات صفحة ال{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %} */
+    .donate-container {
+        background: white; border-radius: var(--radius-lg);
+        padding: 40px; box-shadow: var(--shadow); max-width: 800px; margin: 0 auto;
+    }
+    .donate-header { text-align: center; margin-bottom: 30px; }
+    .donate-header h2 { color: var(--brand); font-weight: 800; font-size: 26px; }
+    .donate-header p { color: var(--text-muted); }
+    
+    .form-section { margin-bottom: 30px; }
+    .form-section h3 { font-size: 18px; margin-bottom: 15px; color: var(--text-dark); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+    
+    /* اختيار الحملة */
+    .campaign-select {
+        width: 100%; padding: 15px; border: 2px solid #eee; border-radius: var(--radius-md);
+        font-family: 'Tajawal'; font-size: 16px; color: var(--text-dark); outline: none; transition: 0.3s;
+    }
+    .campaign-select:focus { border-color: var(--brand); }
+
+    /* أزرار المبالغ */
+    .amount-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-bottom: 15px; }
+    .amount-option { position: relative; }
+    .amount-option input { display: none; }
+    .amount-label {
+        display: block; padding: 15px; text-align: center; border: 2px solid #eee;
+        border-radius: var(--radius-md); cursor: pointer; font-weight: bold; font-size: 18px; transition: 0.3s;
+    }
+    .amount-option input:checked + .amount-label { background: var(--brand); color: white; border-color: var(--brand); }
+    
+    .custom-amount {
+        width: 100%; padding: 15px; border: 2px solid #eee; border-radius: var(--radius-md);
+        font-family: 'Tajawal'; font-size: 16px; outline: none; transition: 0.3s;
+    }
+    .custom-amount:focus { border-color: var(--brand); }
+
+    /* طرق الدفع */
+    .payment-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+    .payment-method { position: relative; }
+    .payment-method input { display: none; }
+    .payment-card {
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+        padding: 20px; border: 2px solid #eee; border-radius: var(--radius-md); cursor: pointer; transition: 0.3s;
+    }
+    .payment-card i { font-size: 30px; color: var(--text-muted); }
+    .payment-card span { font-weight: bold; color: var(--text-dark); }
+    .payment-method input:checked + .payment-card { border-color: var(--secondary); background: #fffcf5; }
+    .payment-method input:checked + .payment-card i { color: var(--secondary); }
+
+    /* زر ال{% if session.get('lang','ar') == 'en' %}Submit{% else %}إرسال{% endif %} */
+    .btn-donate {
+        background: linear-gradient(135deg, var(--brand) 0%, #1e6b61 100%);
+        color: white; width: 100%; padding: 18px; border: none; border-radius: var(--radius-md);
+        font-size: 20px; font-weight: 800; cursor: pointer; transition: 0.3s; font-family: 'Tajawal';
+        display: flex; justify-content: center; align-items: center; gap: 10px;
+    }
+    .btn-donate:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(46, 139, 129, 0.3); }
+</style>
+
+<div class="dashboard-layout">
+    <!-- {% if session.get('lang','ar') == 'en' %}Menu{% else %}القائمة{% endif %} الجانبية -->
+    <aside class="sidebar">
+        <div class="sidebar-title">
+            <i class="fa-solid fa-bars"></i> {% if session.get('lang','ar') == 'en' %}Menu{% else %}القائمة{% endif %} {% if session.get('lang','ar') == 'en' %}Home{% else %}الرئيسية{% endif %}
+        </div>
+<ul class="nav-links">
+            <li class="{% if request.endpoint == 'donor_home' %}active{% endif %}">
+                <a href="{{ url_for('donor_home') }}"><i class="fa-solid fa-chart-pie"></i> {% if session.get('lang','ar') == 'en' %}Donations Dashboard{% else %}لوحة التبرعات{% endif %}</a>
+            </li>
+            
+            <!-- هذا هو الرابط الجديد الذي تم إضافته -->
+            <li class="{% if request.endpoint == 'donor_my_donations' %}active{% endif %}">
+                <a href="{{ url_for('donor_my_donations') }}"><i class="fa-solid fa-hand-holding-heart"></i> {% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %} {% if session.get('lang','ar') == 'en' %}My Donations{% else %}تبرعاتي{% endif %}</a>
+            </li>
+            
+            <li class="{% if request.endpoint == 'donor_donate' %}active{% endif %}">
+                <a href="{{ url_for('donor_donate') }}"><i class="fa-solid fa-hand-holding-dollar"></i> {% if session.get('lang','ar') == 'en' %}New Donation{% else %}{% if session.get('lang','ar') == 'en' %}New Donation{% else %}تبرع جديد{% endif %}{% endif %}</a>
+            </li>
+
+            <li class="{% if request.endpoint == 'donor_settings' %}active{% endif %}">
+                <a href="{{ url_for('donor_settings') }}"><i class="fa-solid fa-gear"></i> {% if session.get('lang','ar') == 'en' %}Settings{% else %}الإعدادات{% endif %}</a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-header" style="margin-bottom: 20px;">
+            <div class="logo-area">
+                <span class="icon-star"><i class="fa-solid fa-wallet"></i></span>
+                <h1>بوابة التوجيه والمساهمة</h1>
+            </div>
+            <div class="user-profile">
+                <a href="{{ url_for('logout') }}" class="user-btn"><i class="fa-solid fa-user"></i> حساب الم{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %} ({{ username }})</a>
+            </div>
+        </header>
+
+        <div class="donate-type-wrap">
+    <!-- Tabs: تبرع مالي / تبرع عيني -->
+    <div class="donate-tabs">
+        <button class="dtab active" onclick="switchTab('financial', this)">
+            <i class="fa-solid fa-money-bill-wave"></i>
+            {% if session.get('lang','ar') == 'en' %}Financial Donation{% else %}تبرع مالي{% endif %}
+        </button>
+        <button class="dtab" onclick="switchTab('inkind', this)">
+            <i class="fa-solid fa-box-open"></i>
+            {% if session.get('lang','ar') == 'en' %}In-Kind Donation{% else %}تبرع عيني{% endif %}
+        </button>
+    </div>
+</div>
+
+<!-- Tab 1: التبرع المالي -->
+<div id="tab-financial" class="dtab-content active">
+<div class="donate-container">
+            <div class="donate-header">
+                <h2><i class="fa-solid fa-heart-circle-check"></i> ساهم في صناعة الأثر</h2>
+                <p>اختر {% if session.get('lang','ar') == 'en' %}Status{% else %}الحالة{% endif %} التي تود دعمها، وسنقوم نحن بدورنا بتوصيل مساهمتك لمستحقيها مباشرة.</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('donor_donate') }}">
+                
+                <!-- الخطوة 1: اختيار الحملة -->
+                <div class="form-section">
+                    <h3>1. إلى أين تود توجيه مساهمتك؟</h3>
+                    <select name="campaign" class="campaign-select" required>
+                        <option value="" disabled selected>-- اختر {% if session.get('lang','ar') == 'en' %}Status{% else %}الحالة{% endif %} أو الحملة --</option>
+                        {% if campaigns_db %}{% for c in campaigns_db %}
+                            <option value="{{ c.charity_name }} - {{ c.title }}">{{ c.charity_name }} · {{ c.title }}{% if c.goal_amount and c.goal_amount > 0 %} (الهدف: {{ "{:,.0f}".format(c.goal_amount|float) }} {% if session.get('lang','ar') == 'en' %}EGP{% else %}ج.م{% endif %}){% endif %}</option>
+                        {% endfor %}{% else %}<option value="صدقة جارية">صدقة جارية (عامة)</option>{% endif %}
+                    </select>
+                </div>
+
+                <!-- الخطوة 2: تحديد {% if session.get('lang','ar') == 'en' %}Amount{% else %}المبلغ{% endif %} -->
+                <div class="form-section">
+                    <h3>2. حدد مبلغ المساهمة (بالجنيه المصري)</h3>
+                    <div class="amount-grid">
+                        <label class="amount-option">
+                            <input type="radio" name="amount" value="100" required>
+                            <div class="amount-label">100 {% if session.get('lang','ar') == 'en' %}EGP{% else %}ج.م{% endif %}</div>
+                        </label>
+                        <label class="amount-option">
+                            <input type="radio" name="amount" value="500">
+                            <div class="amount-label">500 {% if session.get('lang','ar') == 'en' %}EGP{% else %}ج.م{% endif %}</div>
+                        </label>
+                        <label class="amount-option">
+                            <input type="radio" name="amount" value="1000">
+                            <div class="amount-label">1,000 {% if session.get('lang','ar') == 'en' %}EGP{% else %}ج.م{% endif %}</div>
+                        </label>
+                        <label class="amount-option">
+                            <input type="radio" name="amount" value="5000">
+                            <div class="amount-label">5,000 {% if session.get('lang','ar') == 'en' %}EGP{% else %}ج.م{% endif %}</div>
+                        </label>
+                    </div>
+                    <input type="number" name="custom_amount" class="custom-amount" placeholder="أو اكتب مبلغاً مخصصاً هنا (اختياري)..." min="10">
+                </div>
+
+                <!-- الخطوة 3: طريقة الدفع -->
+                <div class="form-section">
+                    <h3>3. اختر وسيلة التوجيه (الدفع)</h3>
+                    <div class="payment-grid">
+                        <label class="payment-method">
+                            <input type="radio" name="payment_method" value="credit_card" required>
+                            <div class="payment-card">
+                                <i class="fa-brands fa-cc-visa"></i>
+                                <span>بطاقة بنكية</span>
+                            </div>
+                        </label>
+                        <label class="payment-method">
+                            <input type="radio" name="payment_method" value="fawry">
+                            <div class="payment-card">
+                                <i class="fa-solid fa-money-bill-transfer"></i>
+                                <span>فوري (Fawry)</span>
+                            </div>
+                        </label>
+                        <label class="payment-method">
+                            <input type="radio" name="payment_method" value="wallet">
+                            <div class="payment-card">
+                                <i class="fa-solid fa-mobile-screen-button"></i>
+                                <span>محفظة إلكترونية</span>
+                            </div>
+                        </label>
+                        <label class="payment-method">
+                            <input type="radio" name="payment_method" value="instapay">
+                            <div class="payment-card">
+                                <i class="fa-solid fa-building-columns"></i>
+                                <span>إنستا باي (InstaPay)</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-donate"><i class="fa-solid fa-paper-plane"></i> تأكيد توجيه المساهمة</button>
+            </form>
+        </div><!-- end donate-container -->
+    </main>
+</div>
+
+<script>
+    // سكريبت بسيط: إذا كتب المستخدم مبلغاً مخصصاً، نلغي تحديد الأزرار الجاهزة
+    const customAmountInput = document.querySelector('.custom-amount');
+    const radioAmounts = document.querySelectorAll('input[name="amount"]');
+    
+    customAmountInput.addEventListener('input', function() {
+        if(this.value.length > 0) {
+            radioAmounts.forEach(radio => radio.checked = false);
+            radioAmounts.forEach(radio => radio.removeAttribute('required'));
+        } else {
+            radioAmounts[0].setAttribute('required', 'required');
+        }
+    });
+    
+    radioAmounts.forEach(radio => {
+        radio.addEventListener('change', function() {
+            customAmountInput.value = '';
+        });
+    });
+
+    // Tab switcher
+    function switchTab(tab, btn) {
+        document.querySelectorAll('.dtab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.dtab').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + tab).classList.add('active');
+        btn.classList.add('active');
+    }
+</script>
+
+</div><!-- end tab-financial -->
+
+<!-- Tab 2: التبرع العيني -->
+<div id="tab-inkind" class="dtab-content">
+<div class="inkind-card">
+
+    <!-- أيقونة -->
+    <div class="inkind-icon-wrap">
+        <i class="fa-solid fa-box-open" style="color:#2f8f7a;"></i>
+    </div>
+
+    <!-- العنوان والوصف -->
+    <h2>{% if session.get('lang','ar') == 'en' %}In-Kind Donation{% else %}تبرع عيني{% endif %}</h2>
+    <p>
+        {% if session.get('lang','ar') == 'en' %}
+            Want to donate clothes, food, furniture, or any goods?
+            Contact us directly via WhatsApp or Facebook and our team will coordinate with you.
+        {% else %}
+            هل تريد التبرع بملابس أو طعام أو أثاث أو أي بضائع؟
+            تواصل معنا مباشرة عبر واتساب أو فيسبوك وسيتواصل معك فريقنا لتنسيق التبرع.
+        {% endif %}
+    </p>
+
+    <!-- أزرار التواصل -->
+    <div class="contact-grid">
+
+        <!-- واتساب -->
+        <a href="https://wa.me/201000000000?text={% if session.get('lang','ar') == 'en' %}Hello, I want to make an in-kind donation{% else %}مرحباً، أريد التبرع بتبرع عيني{% endif %}"
+           target="_blank" rel="noopener" class="contact-btn whatsapp">
+            <i class="fa-brands fa-whatsapp"></i>
+            {% if session.get('lang','ar') == 'en' %}WhatsApp{% else %}واتساب{% endif %}
+        </a>
+
+        <!-- فيسبوك -->
+        <a href="https://facebook.com/ataagiving"
+           target="_blank" rel="noopener" class="contact-btn facebook">
+            <i class="fa-brands fa-facebook-f"></i>
+            {% if session.get('lang','ar') == 'en' %}Facebook{% else %}فيسبوك{% endif %}
+        </a>
+
+    </div>
+
+    <!-- ملاحظة -->
+    <div class="inkind-note">
+        <i class="fa-solid fa-circle-info"></i>
+        <span>
+            {% if session.get('lang','ar') == 'en' %}
+                Our team will contact you to arrange collection or delivery of your donation. All donations go directly to verified families in need.
+            {% else %}
+                سيتواصل معك فريقنا لترتيب استلام تبرعك أو توصيله. جميع التبرعات تذهب مباشرة للأسر المحتاجة الموثقة.
+            {% endif %}
+        </span>
+    </div>
+
+</div>
+</div><!-- end tab-inkind -->
+
+{% endblock %}

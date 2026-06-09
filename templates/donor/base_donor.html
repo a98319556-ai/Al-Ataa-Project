@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+{% set _theme = session.get('theme','light') %}
+{% set _lang  = session.get('lang','ar') %}
+<html lang="{% if _lang == 'en' %}en{% else %}ar{% endif %}" dir="{% if _lang == 'en' %}ltr{% else %}rtl{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* ══ TOGGLE BAR ══ */
+        .toggle-bar{
+            position:fixed;bottom:1.2rem;left:1.2rem;z-index:9000;
+            display:flex;align-items:center;gap:0.45rem;
+            background:rgba(255,255,255,0.92);
+            border:1px solid #e2e8f0;
+            border-radius:50px;
+            padding:0.3rem 0.55rem;
+            box-shadow:0 4px 20px rgba(0,0,0,0.12);
+            backdrop-filter:blur(12px);
+        }
+        .tgl-btn{
+            display:inline-flex;align-items:center;gap:0.28rem;
+            background:none;border:none;cursor:pointer;
+            font-family:'Tajawal',sans-serif;font-size:0.82rem;font-weight:700;
+            color:#64748b;
+            padding:0.3rem 0.55rem;border-radius:40px;
+            transition:background 0.18s,color 0.18s;
+        }
+        .tgl-btn:hover{background:#f0f3f8;}
+        .tgl-active{color:#1565C0;font-weight:900;}
+        .tgl-dim{color:#94a3b8;}
+        .tgl-sep{color:#e2e8f0;font-size:0.75rem;margin:0 0.05rem;}
+        .tgl-theme i{font-size:0.95rem;}
+        /* Dark mode base */
+        body.dark-mode{background:#0f172a !important;color:#e2e8f0 !important;}
+        body.dark-mode .toggle-bar{background:rgba(30,41,59,0.95);border-color:#334155;}
+        body.dark-mode .tgl-btn{color:#e2e8f0;}
+        body.dark-mode .tgl-btn:hover{background:#334155;}
+    </style>
+</head>
+<body class="{% if _theme == 'dark' %}dark-mode{% endif %}">
+<div class="flash-messages">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+{% block content %}{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,128 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}تأكيد التسليم — {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+.confirm-wrap{max-width:600px;margin:2rem auto;}
+.confirm-card{background:white;border-radius:18px;border:1.5px solid #e5edf5;box-shadow:0 4px 20px rgba(15,42,74,0.08);overflow:hidden;}
+.confirm-header{background:linear-gradient(135deg,#1b4f8a,#2a7de1);padding:1.5rem 1.8rem;color:white;display:flex;align-items:center;gap:1rem;}
+.confirm-header-icon{width:52px;height:52px;background:rgba(255,255,255,0.2);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
+.confirm-header h2{font-size:1.1rem;font-weight:800;margin:0;}
+.confirm-header p{font-size:0.85rem;opacity:0.85;margin:3px 0 0;}
+.confirm-body{padding:1.5rem 1.8rem;}
+
+/* item info */
+.item-info-row{display:flex;align-items:center;gap:1rem;padding:1rem;background:#f8fafc;border-radius:12px;border:1.5px solid #e5edf5;margin-bottom:1.2rem;}
+.item-img-thumb{width:72px;height:72px;border-radius:10px;object-fit:cover;border:1.5px solid #e5edf5;flex-shrink:0;}
+.item-img-ph{width:72px;height:72px;border-radius:10px;background:#f1f6fb;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.item-details strong{font-size:1rem;font-weight:800;color:#0f2a4a;display:block;margin-bottom:0.3rem;}
+.item-details .item-meta-row{display:flex;flex-wrap:wrap;gap:0.4rem;font-size:0.82rem;color:#6b7f95;}
+.badge-cat{background:#dbeafe;color:#1b4f8a;padding:2px 9px;border-radius:8px;font-weight:700;}
+.badge-code{background:#f1f6fb;color:#4f7e95;padding:2px 9px;border-radius:8px;font-family:monospace;font-size:0.78rem;}
+
+/* beneficiary card */
+.bene-card{background:#fffbe6;border:1.5px solid #ffe58f;border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.2rem;}
+.bene-card-title{font-size:0.83rem;font-weight:800;color:#7d5800;margin-bottom:0.7rem;display:flex;align-items:center;gap:0.4rem;}
+.bene-row{display:flex;align-items:center;gap:0.5rem;font-size:0.88rem;color:#3d3000;margin-bottom:0.4rem;}
+.bene-row:last-child{margin-bottom:0;}
+.bene-row i{color:#c87800;width:16px;flex-shrink:0;}
+.bene-row strong{color:#5a3800;min-width:60px;}
+.no-bene{background:#f8fafc;border:1.5px dashed #d1e2ef;border-radius:12px;padding:1rem;text-align:center;color:#6b7f95;font-size:0.88rem;margin-bottom:1.2rem;}
+
+/* action buttons */
+.action-row{display:flex;gap:0.8rem;align-items:center;}
+.btn-confirm{background:#28a745;color:white;border:none;border-radius:10px;padding:0.7rem 1.8rem;font-size:0.95rem;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:0.5rem;font-family:inherit;}
+.btn-confirm:hover{background:#218838;}
+.btn-back{background:#e5edf5;color:#4f7e95;border:none;border-radius:10px;padding:0.7rem 1.4rem;font-size:0.9rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:0.4rem;font-family:inherit;}
+.btn-back:hover{background:#d1e2ef;}
+
+.breadcrumb{display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;color:#6b7f95;margin-bottom:1.2rem;}
+.breadcrumb a{color:var(--brand);text-decoration:none;}
+.breadcrumb span{color:#aaa;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confirm-wrap">
+
+    <div class="breadcrumb">
+        <a href="{{ url_for('admin_inventory') }}"><i class="fa-solid fa-warehouse"></i> المخزن</a>
+        <span>›</span>
+        <span>تأكيد التسليم</span>
+    </div>
+
+    <div class="confirm-card">
+        <div class="confirm-header">
+            <div class="confirm-header-icon"><i class="fa-solid fa-truck"></i></div>
+            <div>
+                <h2>تأكيد تسليم الصنف</h2>
+                <p>مراجعة بيانات الصنف والمستفيد قبل تأكيد التسليم</p>
+            </div>
+        </div>
+        <div class="confirm-body">
+
+            <!-- بيانات الصنف -->
+            <div class="item-info-row">
+                {% if item.image %}
+                <img src="{{ url_for('static', filename='uploads/' + item.image) }}"
+                     alt="{{ item.item_name }}" class="item-img-thumb"
+                     onerror="this.style.display='none'">
+                {% else %}
+                <div class="item-img-ph"><i class="fa-solid fa-box-open" style="color:#c7d7f5;font-size:1.4rem;"></i></div>
+                {% endif %}
+                <div class="item-details">
+                    <strong>{{ item.item_name }}</strong>
+                    <div class="item-meta-row">
+                        <span class="badge-cat">{{ item.category }}</span>
+                        {% if item.subcategory %}<span class="badge-cat" style="background:#f0fdf4;color:#166534;">{{ item.subcategory }}</span>{% endif %}
+                        <span class="badge-code"><i class="fa-solid fa-barcode"></i> {{ item.unique_code[:16] if item.unique_code else '—' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- بيانات المستفيد -->
+            {% if beneficiary %}
+            <div class="bene-card">
+                <div class="bene-card-title">
+                    <i class="fa-solid fa-user-check"></i>
+                    المستفيد المرتبط بهذا الصنف
+                </div>
+                <div class="bene-row">
+                    <i class="fa-solid fa-user"></i>
+                    <strong>الاسم:</strong>
+                    <span>{{ beneficiary.applicant_name }}</span>
+                </div>
+                <div class="bene-row">
+                    <i class="fa-solid fa-phone"></i>
+                    <strong>الهاتف:</strong>
+                    <span style="font-family:monospace;font-weight:700;">{{ beneficiary.phone }}</span>
+                </div>
+                <div class="bene-row">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <strong>العنوان:</strong>
+                    <span>{{ beneficiary.address }}</span>
+                </div>
+            </div>
+            {% else %}
+            <div class="no-bene">
+                <i class="fa-solid fa-circle-info" style="color:#b0c4d8;margin-left:0.4rem;"></i>
+                لم يتم تخصيص هذا الصنف لمستفيد بعينه
+            </div>
+            {% endif %}
+
+            <!-- أزرار التأكيد -->
+            <div class="action-row">
+                <form method="post" action="{{ url_for('admin_deliver', item_id=item.id) }}">
+                    <button type="submit" class="btn-confirm">
+                        <i class="fa-solid fa-check"></i> تأكيد التسليم
+                    </button>
+                </form>
+                <a href="{{ url_for('admin_inventory') }}" class="btn-back">
+                    <i class="fa-solid fa-xmark"></i> إلغاء والرجوع
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

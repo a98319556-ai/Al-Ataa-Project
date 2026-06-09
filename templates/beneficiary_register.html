@@ -1,0 +1,542 @@
+{% set _theme = session.get('theme','light') %}
+{% set _lang  = session.get('lang','ar') %}
+<!DOCTYPE html>
+<html lang="{% if _lang == 'en' %}en{% else %}ar{% endif %}" dir="{% if _lang == 'en' %}ltr{% else %}rtl{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %} طلب مساعدة — منصة عطاء</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Tajawal',sans-serif;}
+        :root{
+            --blue:#1565C0;
+            --blue-dark:#0D47A1;
+            --white:#ffffff;
+            --gray:#f5f7fa;
+            --text:#1e293b;
+            --text-light:#64748b;
+            --border:#e2e8f0;
+            --r:14px;
+        }
+        html{scroll-behavior:smooth;}
+        body{background:var(--white);color:var(--text);min-height:100vh;}
+
+        /* ══ NAVBAR ══ */
+        nav{background:var(--white);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(0,0,0,0.06);}
+        .nav-brand{display:flex;align-items:center;gap:0.6rem;text-decoration:none;flex-shrink:0;}
+        .nav-logo{width:40px;height:40px;border-radius:10px;object-fit:cover;}
+        .nav-logo-fallback{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;font-weight:900;}
+        .nav-brand-name{font-size:1.3rem;font-weight:900;color:var(--blue-dark);display:flex;align-items:center;gap:0.35rem;margin:0;padding:0;}
+        .nav-center{display:flex;gap:0.3rem;align-items:center;}
+        .nav-link{padding:0.45rem 1rem;border-radius:25px;font-size:0.87rem;font-weight:600;text-decoration:none;color:#555;transition:all 0.2s;}
+        .nav-link:hover,.nav-link.active{color:var(--blue);background:#EEF4FF;}
+        .nav-actions{display:flex;gap:0.6rem;align-items:center;}
+        .btn-ctrl{padding:0.42rem 0.9rem;border-radius:25px;border:1.5px solid var(--border);font-size:0.83rem;font-weight:700;color:#555;background:#fff;cursor:pointer;display:flex;align-items:center;gap:0.4rem;transition:all 0.2s;font-family:'Tajawal',sans-serif;}
+        .btn-ctrl:hover{border-color:var(--blue);color:var(--blue);}
+        .btn-icon{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;transition:all 0.2s;color:#555;}
+        .btn-icon:hover{border-color:var(--blue);color:var(--blue);}
+        .btn-login{padding:0.48rem 1.2rem;border-radius:25px;border:2px solid var(--blue);color:var(--blue);font-weight:700;font-size:0.87rem;text-decoration:none;background:#fff;transition:all 0.2s;display:inline-flex;align-items:center;gap:0.4rem;}
+        .btn-login:hover{background:#EEF4FF;}
+        .btn-register{padding:0.48rem 1.3rem;border-radius:25px;background:var(--blue);color:#fff;font-weight:700;font-size:0.87rem;text-decoration:none;border:2px solid var(--blue);transition:all 0.2s;display:inline-flex;align-items:center;gap:0.4rem;}
+        .btn-register:hover{background:var(--blue-dark);transform:translateY(-1px);}
+        .user-menu{position:relative;}
+        .user-btn{display:flex;align-items:center;gap:0.5rem;padding:0.4rem 1rem;background:#EEF4FF;border:2px solid var(--blue);border-radius:25px;color:var(--blue);font-weight:700;font-size:0.85rem;cursor:pointer;text-decoration:none;transition:all 0.2s;}
+        .user-btn:hover{background:var(--blue);color:#fff;}
+        .u-av{width:28px;height:28px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;}
+        .user-btn:hover .u-av{background:#fff;color:var(--blue);}
+        .u-drop{position:absolute;top:calc(100% + 8px);left:0;background:#fff;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.12);min-width:190px;padding:0.5rem;border:1px solid var(--border);display:none;z-index:600;}
+        .user-menu:hover .u-drop{display:block;}
+        .u-drop a{display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.8rem;border-radius:10px;color:var(--text);text-decoration:none;font-size:0.85rem;font-weight:600;transition:background 0.15s;}
+        .u-drop a:hover{background:#EEF4FF;color:var(--blue);}
+        .u-drop a.logout{color:#dc3545;}
+        .u-drop a.logout:hover{background:#fde8e8;}
+        .u-divider{height:1px;background:var(--border);margin:0.3rem 0;}
+
+        /* ══ PAGE LAYOUT ══ */
+        .page-body{max-width:760px;margin:0 auto;padding:2.5rem 2rem 6rem;}
+
+        /* Back link */
+        .back-row{display:flex;justify-content:flex-start;margin-bottom:2rem;}
+        .back-link{display:inline-flex;align-items:center;gap:0.45rem;color:var(--text-light);font-size:0.9rem;font-weight:700;text-decoration:none;transition:color 0.2s;}
+        .back-link:hover{color:var(--blue);}
+
+        /* flash */
+        .flash{padding:0.85rem 1.2rem;border-radius:10px;margin-bottom:1.2rem;font-weight:600;font-size:0.9rem;}
+        .flash-danger{background:#fde8e8;color:#dc3545;border-right:3px solid #dc3545;}
+        .flash-success{background:#d4edda;color:#145a32;border-right:3px solid #28a745;}
+
+        /* ══ FORM CARD ══ */
+        .form-card{
+            background:#fff;
+            border:1.5px solid var(--border);
+            border-radius:20px;
+            padding:2.8rem 2.5rem;
+            box-shadow:0 4px 24px rgba(0,0,0,0.06);
+        }
+        .form-title{
+            font-size:2rem;font-weight:900;
+            color:var(--text);text-align:right;
+            margin-bottom:0.5rem;
+        }
+        .form-sub{
+            font-size:0.92rem;color:var(--text-light);
+            text-align:right;margin-bottom:2.4rem;line-height:1.6;
+        }
+
+        /* ══ FIELD GROUP ══ */
+        .field-group{margin-bottom:1.8rem;}
+        .field-label{
+            display:flex;align-items:center;justify-content:flex-end;
+            gap:0.45rem;
+            font-size:0.95rem;font-weight:800;color:var(--text);
+            margin-bottom:0.65rem;
+        }
+        .field-label i{color:var(--text-light);font-size:1rem;}
+        .req-star{color:#dc3545;font-size:1rem;margin-right:2px;}
+        .field-hint{
+            font-size:0.8rem;color:var(--text-light);
+            text-align:right;margin-top:0.4rem;
+            display:flex;align-items:center;justify-content:flex-end;gap:0.3rem;
+        }
+
+        /* inputs */
+        .f-input{
+            width:100%;
+            padding:0.88rem 1.1rem;
+            border:1.5px solid var(--border);
+            border-radius:12px;
+            font-family:'Tajawal',sans-serif;
+            font-size:0.97rem;color:var(--text);
+            background:#fff;outline:none;
+            transition:border-color 0.2s,box-shadow 0.2s;
+            text-align:right;
+        }
+        .f-input::placeholder{color:#94a3b8;}
+        .f-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,0.1);}
+        .f-input[type="tel"]{direction:ltr;text-align:right;}
+
+        textarea.f-input{resize:vertical;min-height:130px;line-height:1.6;}
+
+        select.f-input{appearance:none;cursor:pointer;}
+
+        /* phone hint */
+        .phone-hint{
+            font-size:0.8rem;color:var(--text-light);
+            text-align:right;margin-top:0.4rem;
+        }
+
+        /* ══ NEED TYPE GRID ══ */
+        .need-grid{
+            display:grid;
+            grid-template-columns:repeat(3,1fr);
+            gap:0.9rem;
+        }
+        .need-opt{
+            border:1.5px solid var(--border);
+            border-radius:14px;
+            padding:1.2rem 0.8rem 1rem;
+            text-align:center;
+            cursor:pointer;
+            transition:all 0.2s;
+            background:#fff;
+            display:flex;flex-direction:column;align-items:center;gap:0.5rem;
+            user-select:none;
+        }
+        .need-opt:hover{border-color:var(--blue);background:#EEF4FF;}
+        .need-opt.selected{border-color:var(--blue);background:#EEF4FF;box-shadow:0 0 0 2px rgba(21,101,192,0.15);}
+        .need-opt input[type=radio]{display:none;}
+
+        /* الحالة الطبية العاجلة */
+        .need-opt-urgent {
+            border-color: #e53e3e !important;
+            background: #fff5f5;
+            position: relative;
+            grid-column: 1 / -1; /* تأخذ عرض كامل */
+        }
+        .need-opt-urgent:hover { border-color: #c53030 !important; background: #fed7d7; }
+        .need-opt-urgent.selected { background: #fed7d7 !important; border-color: #c53030 !important; box-shadow: 0 0 0 3px rgba(197,48,48,0.2) !important; }
+        .urgent-badge {
+            position: absolute;
+            top: -8px; left: 10px;
+            background: #e53e3e;
+            color: white;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        .need-opt-urgent .need-emoji { font-size: 1.5rem; }
+        .need-opt-urgent .need-lbl { color: #c53030; font-weight: 800; font-size: 1rem; }
+        .need-emoji{font-size:1.9rem;line-height:1;}
+        .need-lbl{font-size:0.84rem;font-weight:800;color:var(--text);}
+
+        /* ══ CONSENT BOX ══ */
+        .consent-box{
+            background:var(--gray);
+            border:1.5px solid var(--border);
+            border-radius:12px;
+            padding:1rem 1.3rem;
+            font-size:0.85rem;color:var(--text-light);
+            text-align:right;line-height:1.6;
+            margin-bottom:1.5rem;
+        }
+
+        /* ══ SUBMIT BUTTON ══ */
+        .submit-btn{
+            width:100%;
+            padding:1.05rem;
+            background:linear-gradient(90deg, var(--blue-dark) 0%, var(--blue) 60%, #94a3b8 100%);
+            color:#fff;
+            border:none;border-radius:14px;
+            font-family:'Tajawal',sans-serif;
+            font-size:1.05rem;font-weight:900;
+            cursor:pointer;
+            transition:all 0.2s;
+            letter-spacing:0.5px;
+        }
+        .submit-btn:hover{opacity:0.92;transform:translateY(-1px);box-shadow:0 6px 20px rgba(21,101,192,0.25);}
+
+        /* divider */
+        .form-divider{
+            height:1px;background:var(--border);
+            margin:2rem 0;
+        }
+
+        /* doc zone */
+        .doc-zone{
+            border:2px dashed var(--border);border-radius:14px;
+            padding:1.5rem;text-align:center;cursor:pointer;
+            transition:all 0.2s;background:var(--gray);
+        }
+        .doc-zone:hover{border-color:var(--blue);background:#EEF4FF;}
+        .doc-zone input{display:none;}
+        .doc-list{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.8rem;}
+        .doc-chip{display:inline-flex;align-items:center;gap:0.4rem;background:#EEF4FF;border:1px solid #c7d7f5;border-radius:8px;padding:0.3rem 0.7rem;font-size:0.8rem;color:var(--blue);}
+
+        /* ══ FOOTER ══ */
+        footer{background:#0D2B55;padding:2.5rem 2rem;margin-top:4rem;}
+        .footer-inner{max-width:1160px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;}
+        .footer-brand{display:flex;align-items:center;gap:0.7rem;}
+        .footer-brand img{width:36px;height:36px;border-radius:9px;object-fit:cover;}
+        .footer-brand-text{color:#fff;font-size:1rem;font-weight:900;}
+        .footer-links{display:flex;gap:0.5rem 1.5rem;flex-wrap:wrap;}
+        .footer-links a{color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.83rem;font-weight:600;transition:color 0.2s;}
+        .footer-links a:hover{color:#fff;}
+        .footer-copy{color:rgba(255,255,255,0.3);font-size:0.78rem;}
+
+        /* ══ RESPONSIVE ══ */
+        @media(max-width:768px){.nav-center{display:none;}}
+        @media(max-width:600px){
+            nav{padding:0 1rem;}
+            .page-body{padding:1.8rem 1rem 5rem;}
+            .form-card{padding:1.8rem 1.2rem;}
+            .form-title{font-size:1.6rem;}
+            .need-grid{grid-template-columns:repeat(2,1fr);}
+            .footer-inner{flex-direction:column;text-align:center;}
+        }
+    </style>
+    <style>
+        /* ══ TOGGLE BAR ══ */
+        .toggle-bar{position:fixed;bottom:1.2rem;left:1.2rem;z-index:9000;display:flex;align-items:center;gap:0.45rem;background:rgba(255,255,255,0.92);border:1px solid #e2e8f0;border-radius:50px;padding:0.3rem 0.55rem;box-shadow:0 4px 20px rgba(0,0,0,0.12);backdrop-filter:blur(12px);}
+        .tgl-btn{display:inline-flex;align-items:center;gap:0.28rem;background:none;border:none;cursor:pointer;font-family:inherit;font-size:0.82rem;font-weight:700;color:#64748b;padding:0.3rem 0.55rem;border-radius:40px;transition:background 0.18s,color 0.18s;}
+        .tgl-btn:hover{background:#f0f3f8;}
+        .tgl-active{color:#1565C0;font-weight:900;}
+        .tgl-dim{color:#94a3b8;}
+        .tgl-sep{color:#e2e8f0;font-size:0.75rem;margin:0 0.05rem;}
+        body.dark-mode{background:#0f172a !important;color:#e2e8f0 !important;}
+        body.dark-mode .toggle-bar{background:rgba(30,41,59,0.95) !important;border-color:#334155 !important;}
+        body.dark-mode .tgl-btn{color:#e2e8f0;}
+        body.dark-mode .tgl-btn:hover{background:#334155;}
+
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{% if _theme == 'dark' %}dark-mode{% endif %}">
+
+<!-- ══ NAVBAR ══ -->
+<nav>
+    <a href="{{ url_for('landing') }}" class="nav-brand">
+        <img src="{{ url_for('static', filename='uploads/logo.jpeg') }}" alt="عطاء" class="nav-logo"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div class="nav-logo-fallback" style="display:none;">ع</div>
+        <h3 class="nav-brand-name">
+{% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}
+        </div>
+    </a>
+    <div class="nav-center">
+        <a href="{{ url_for('public_charities') }}" class="nav-link">{% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %}</a>
+        <a href="{{ url_for('beneficiary_landing') }}" class="nav-link active">الاحتياجات</a>
+        <a href="{{ url_for('how_it_works') }}" class="nav-link">{% if session.get('lang','ar') == 'en' %}How It Works{% else %}كيف يعمل{% endif %}</a>
+    </div>
+    <div class="nav-actions">
+        {% if current_user.is_authenticated %}
+        <div class="user-menu">
+            <a href="{{ url_for('donor_home') }}" class="user-btn">
+                <div class="u-av">{{ current_user.username[0]|upper }}</div>
+                {{ current_user.username }}
+                <i class="fa-solid fa-chevron-down" style="font-size:0.65rem;opacity:0.6;"></i>
+            </a>
+            <div class="u-drop">
+                <a href="{{ url_for('donor_home') }}"><i class="fa-solid fa-gauge"></i> {% if session.get('lang','ar') == 'en' %}My Dashboard{% else %}لوحتي{% endif %}</a>
+                <a href="{{ url_for('donor_donate') }}"><i class="fa-solid fa-hand-holding-dollar"></i> {% if session.get('lang','ar') == 'en' %}New Donation{% else %}{% if session.get('lang','ar') == 'en' %}New Donation{% else %}تبرع جديد{% endif %}{% endif %}</a>
+                <a href="{{ url_for('donor_my_donations') }}"><i class="fa-solid fa-list"></i> {% if session.get('lang','ar') == 'en' %}My Donations{% else %}تبرعاتي{% endif %}</a>
+                <div class="u-divider"></div>
+                <a href="{{ url_for('logout') }}" class="logout"><i class="fa-solid fa-right-from-bracket"></i> {% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %} ال{% if session.get('lang','ar') == 'en' %}Logout{% else %}خروج{% endif %}</a>
+            </div>
+        </div>
+        {% elif 'admin' in session %}
+        <div class="user-menu">
+            <a href="{{ url_for('admin_dashboard') }}" class="user-btn">
+                <div class="u-av">م</div>
+                {{ session.get('admin','المشرف') }}
+            </a>
+            <div class="u-drop">
+                <a href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-gauge"></i> {% if session.get('lang','ar') == 'en' %}Dashboard{% else %}لوحة التحكم{% endif %}</a>
+                <div class="u-divider"></div>
+                <a href="{{ url_for('logout') }}" class="logout"><i class="fa-solid fa-right-from-bracket"></i> {% if session.get('lang','ar') == 'en' %}Logout{% else %}خروج{% endif %}</a>
+            </div>
+        </div>
+        {% else %}
+        <button class="btn-icon"><i class="fa-regular fa-moon"></i></button>
+        <button class="btn-ctrl"><i class="fa-solid fa-earth-americas"></i> EN</button>
+        <a href="{{ url_for('unified_login') }}" class="btn-login">{% if session.get('lang','ar') == 'en' %}Login{% else %}{% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %} ال{% if session.get('lang','ar') == 'en' %}Sign In{% else %}دخول{% endif %}{% endif %}</a>
+        <a href="{{ url_for('signup') }}" class="btn-register">{% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %} الآن</a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- ══ PAGE BODY ══ -->
+<div class="page-body">
+
+    <!-- Back -->
+    <div class="back-row">
+        <a href="{{ url_for('beneficiary_landing') }}" class="back-link">
+            العودة <i class="fa-solid fa-arrow-left"></i>
+        </a>
+    </div>
+
+    <!-- Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for cat,msg in messages %}
+        <div class="flash flash-{{ cat }}">{{ msg }}</div>
+        {% endfor %}{% endif %}
+    {% endwith %}
+
+    <!-- ══ FORM CARD ══ -->
+    <div class="form-card">
+        <div class="form-title">{% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %} طلب مساعدة جديد</div>
+        <div class="form-sub">يرجى ملء البيانات التالية بدقة وسيتم التواصل معك قريباً</div>
+
+        <form method="POST" enctype="multipart/form-data" id="mainForm">
+
+            <!-- ── {% if session.get('lang','ar') == 'en' %}Full Name{% else %}الاسم الكامل{% endif %} ── -->
+            <div class="field-group">
+                <div class="field-label">
+                    <span class="req-star">*</span>
+                    {% if session.get('lang','ar') == 'en' %}Full Name{% else %}الاسم الكامل{% endif %}
+                    <i class="fa-regular fa-user"></i>
+                </div>
+                <input type="text" name="applicant_name" class="f-input"
+                       placeholder="أدخل اسمك الكامل" required
+                       value="{{ request.form.get('applicant_name','') }}">
+            </div>
+
+            <!-- ── رقم الهاتف ── -->
+            <div class="field-group">
+                <div class="field-label">
+                    <span class="req-star">*</span>
+                    رقم الهاتف
+                    <i class="fa-solid fa-phone"></i>
+                </div>
+                <input type="tel" name="phone" class="f-input"
+                       placeholder="01XXXXXXXXX" required
+                       value="{{ request.form.get('phone','') }}">
+                <div class="phone-hint">سيتم استخدام هذا الرقم للتواصل معك ومتابعة الطلب</div>
+            </div>
+
+            <!-- ── عدد أفراد الأسرة ── -->
+            <div class="field-group">
+                <div class="field-label">
+                    <span class="req-star">*</span>
+                    عدد أفراد الأسرة
+                    <i class="fa-solid fa-people-group"></i>
+                </div>
+                <input type="number" name="family_members" class="f-input"
+                       placeholder="أدخل عدد الأفراد" min="1" required
+                       value="{{ request.form.get('family_members','') }}">
+            </div>
+
+            <!-- ── العنوان ── -->
+            <div class="field-group">
+                <div class="field-label">
+                    <span class="req-star">*</span>
+                    العنوان بالتفصيل
+                    <i class="fa-solid fa-location-dot"></i>
+                </div>
+                <input type="text" name="address" class="f-input"
+                       placeholder="المحافظة، المدينة، الشارع" required
+                       value="{{ request.form.get('address','') }}">
+            </div>
+
+            <!-- ── {% if session.get('lang','ar') == 'en' %}Status{% else %}الحالة{% endif %} الاجتماعية ── -->
+            <div class="field-group">
+                <div class="field-label">
+                    {% if session.get('lang','ar') == 'en' %}Status{% else %}الحالة{% endif %} الاجتماعية
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+                <select name="social_status" class="f-input">
+                    <option value="">اختر...</option>
+                    <option {% if request.form.get('social_status')=='متزوج/ة' %}selected{% endif %}>متزوج/ة</option>
+                    <option {% if request.form.get('social_status')=='أرمل/ة' %}selected{% endif %}>أرمل/ة</option>
+                    <option {% if request.form.get('social_status')=='مطلق/ة' %}selected{% endif %}>مطلق/ة</option>
+                    <option {% if request.form.get('social_status')=='أعزب/عزباء' %}selected{% endif %}>أعزب/عزباء</option>
+                </select>
+            </div>
+
+            <div class="form-divider"></div>
+
+            <!-- ── نوع الاحتياج ── -->
+            <div class="field-group">
+                <div class="field-label">
+                    <span class="req-star">*</span>
+                    نوع الاحتياج
+                    <i class="fa-solid fa-cube"></i>
+                </div>
+                <div class="need-grid" id="needGrid">
+                    <!-- حالة طبية عاجلة — مميزة بلون أحمر -->
+                    <label class="need-opt need-opt-urgent" onclick="pickNeed(this,'حالة طبية عاجلة')" id="urgentOpt">
+                        <input type="radio" name="_need_type" value="حالة طبية عاجلة">
+                        <span class="need-emoji">🚨</span>
+                        <span class="need-lbl">حالة طبية عاجلة</span>
+                        <span class="urgent-badge">أولوية</span>
+                    </label>
+                    <label class="need-opt" onclick="pickNeed(this,'تجهيز عروسة')">
+                        <input type="radio" name="_need_type" value="تجهيز عروسة">
+                        <span class="need-emoji">💍</span>
+                        <span class="need-lbl">تجهيز عروسة</span>
+                    </label>
+                    <label class="need-opt" onclick="pickNeed(this,'طلب أثاث')">
+                        <input type="radio" name="_need_type" value="طلب أثاث">
+                        <span class="need-emoji">🧳</span>
+                        <span class="need-lbl">طلب أثاث</span>
+                    </label>
+                    <label class="need-opt" onclick="pickNeed(this,'مساعدة طبية')">
+                        <input type="radio" name="_need_type" value="مساعدة طبية">
+                        <span class="need-emoji">💊</span>
+                        <span class="need-lbl">مساعدة طبية</span>
+                    </label>
+                    <label class="need-opt" onclick="pickNeed(this,'مساعدة تعليمية')">
+                        <input type="radio" name="_need_type" value="مساعدة تعليمية">
+                        <span class="need-emoji">📚</span>
+                        <span class="need-lbl">مساعدة تعليمية</span>
+                    </label>
+                    <label class="need-opt" onclick="pickNeed(this,'مساعدة غذائية')">
+                        <input type="radio" name="_need_type" value="مساعدة غذائية">
+                        <span class="need-emoji">🍽️</span>
+                        <span class="need-lbl">مساعدة غذائية</span>
+                    </label>
+                    <label class="need-opt" onclick="pickNeed(this,'إصلاح منزل')">
+                        <input type="radio" name="_need_type" value="إصلاح منزل">
+                        <span class="need-emoji">🏠</span>
+                        <span class="need-lbl">إصلاح منزل</span>
+                    </label>
+                    <label class="need-opt" onclick="pickNeed(this,'أخرى')">
+                        <input type="radio" name="_need_type" value="أخرى">
+                        <span class="need-emoji">📋</span>
+                        <span class="need-lbl">أخرى</span>
+                    </label>
+                </div>
+                <input type="hidden" name="item_requested" id="itemHidden">
+                <input type="hidden" name="is_urgent" id="isUrgentHidden" value="0">
+            </div>
+
+            <!-- ── سبب الحاجة ── -->
+            <div class="field-group">
+                <div class="field-label">
+                    <span class="req-star">*</span>
+                    سبب الحاجة
+                    <i class="fa-solid fa-file-lines"></i>
+                </div>
+                <textarea name="description" class="f-input"
+                          placeholder="يرجى شرح سبب احتياجك للمساعدة بالتفصيل"
+                          required>{{ request.form.get('description','') }}</textarea>
+            </div>
+
+            <!-- ── المستندات ── -->
+            <div class="field-group">
+                <div class="field-label">
+                    المستندات المطلوبة
+                    <i class="fa-solid fa-paperclip"></i>
+                </div>
+                <div class="doc-zone" onclick="document.getElementById('docInput').click()">
+                    <i class="fa-solid fa-cloud-arrow-up" style="font-size:1.8rem;color:var(--blue);margin-bottom:0.5rem;display:block;"></i>
+                    <div style="font-weight:700;color:var(--text);margin-bottom:0.25rem;font-size:0.9rem;">انقر لرفع المستندات</div>
+                    <div style="font-size:0.8rem;color:var(--text-light);">صور أو PDF — حتى 5MB لكل ملف</div>
+                    <input type="file" id="docInput" name="documents" multiple accept="image/*,.pdf" onchange="showDocs(this)">
+                </div>
+                <div class="doc-list" id="docList"></div>
+            </div>
+
+            <!-- ── Consent ── -->
+            <div class="consent-box">
+                بتقديم هذا الطلب، أنت توافق على مراجعة بياناتك والتواصل معك من قبل فريق العمل
+            </div>
+
+            <!-- ── Submit ── -->
+            <button type="submit" class="submit-btn">{% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %} الطلب</button>
+
+        </form>
+    </div><!-- /form-card -->
+</div><!-- /page-body -->
+
+<!-- ══ FOOTER ══ -->
+<footer>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <img src="{{ url_for('static', filename='uploads/logo.jpeg') }}" alt="عطاء"
+                 onerror="this.style.display='none';">
+            <span class="footer-brand-text">منصة عطاء</span>
+        </div>
+        <div class="footer-links">
+            <a href="{{ url_for('landing') }}">{% if session.get('lang','ar') == 'en' %}Home{% else %}الرئيسية{% endif %}</a>
+            <a href="{{ url_for('platform_campaigns_public') }}">حملات المنصة</a>
+            <a href="{{ url_for('public_charities') }}">{% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %}</a>
+            <a href="{{ url_for('unified_login') }}">{% if session.get('lang','ar') == 'en' %}Login{% else %}{% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %} ال{% if session.get('lang','ar') == 'en' %}Sign In{% else %}دخول{% endif %}{% endif %}</a>
+            <a href="{{ url_for('beneficiary_track') }}">تتبع الطلب</a>
+        </div>
+        <div class="footer-copy">منصة عطاء © 2024</div>
+    </div>
+</footer>
+
+<script>
+function pickNeed(el, val) {
+    document.querySelectorAll('.need-opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('itemHidden').value = val;
+    document.getElementById('isUrgentHidden').value = (val === 'حالة طبية عاجلة') ? '1' : '0';
+}
+
+function showDocs(input) {
+    const list = document.getElementById('docList');
+    list.innerHTML = '';
+    Array.from(input.files).forEach(f => {
+        const chip = document.createElement('span');
+        chip.className = 'doc-chip';
+        chip.innerHTML = '<i class="fa-solid fa-file"></i>' + f.name;
+        list.appendChild(chip);
+    });
+}
+
+document.getElementById('mainForm').addEventListener('submit', function(e) {
+    const val = document.getElementById('itemHidden').value;
+    if (!val) {
+        e.preventDefault();
+        alert('يرجى اختيار نوع الاحتياج');
+        document.getElementById('needGrid').scrollIntoView({behavior:'smooth', block:'center'});
+    }
+});
+</script>
+</body>
+</html>

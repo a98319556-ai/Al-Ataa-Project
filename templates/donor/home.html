@@ -1,0 +1,148 @@
+{% extends "donor/base_donor.html" %}
+{% block title %}{% if session.get('lang','ar') == 'en' %}Donations Dashboard{% else %}لوحة التبرعات{% endif %} - {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+    
+    <!-- {% if session.get('lang','ar') == 'en' %}Menu{% else %}القائمة{% endif %} الجانبية (يمين) -->
+    <aside class="sidebar">
+        <div class="sidebar-title">
+            <i class="fa-solid fa-bars"></i> {% if session.get('lang','ar') == 'en' %}Menu{% else %}القائمة{% endif %} {% if session.get('lang','ar') == 'en' %}Home{% else %}الرئيسية{% endif %}
+        </div>
+   <ul class="nav-links">
+            <li class="{% if request.endpoint == 'donor_home' %}active{% endif %}">
+                <a href="{{ url_for('donor_home') }}"><i class="fa-solid fa-chart-pie"></i> {% if session.get('lang','ar') == 'en' %}Donations Dashboard{% else %}لوحة التبرعات{% endif %}</a>
+            </li>
+            
+            <!-- هذا هو الرابط الجديد الذي تم إضافته -->
+            <li class="{% if request.endpoint == 'donor_my_donations' %}active{% endif %}">
+                <a href="{{ url_for('donor_my_donations') }}"><i class="fa-solid fa-hand-holding-heart"></i> {% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %} {% if session.get('lang','ar') == 'en' %}My Donations{% else %}تبرعاتي{% endif %}</a>
+            </li>
+            
+            <li class="{% if request.endpoint == 'donor_donate' %}active{% endif %}">
+                <a href="{{ url_for('donor_donate') }}"><i class="fa-solid fa-hand-holding-dollar"></i> {% if session.get('lang','ar') == 'en' %}New Donation{% else %}تبرع جديد{% endif %}</a>
+            </li>
+                        <!-- الرابط الجديد -->
+            <li class="{% if request.endpoint == 'charities' %}active{% endif %}">
+                      
+            
+            <li class="{% if request.endpoint == 'donor_settings' %}active{% endif %}">
+                <a href="{{ url_for('donor_settings') }}"><i class="fa-solid fa-gear"></i> {% if session.get('lang','ar') == 'en' %}Settings{% else %}الإعدادات{% endif %}</a>
+            </li>
+               
+        </ul>
+    </aside>
+
+    <!-- المحتوى الرئيسي (يسار) -->
+    <main class="main-content">
+        <!-- الهيدر العلوي -->
+        <header class="top-header">
+            <div class="logo-area">
+                <img src="/static/uploads/logo.jpeg" alt="{% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}" style="width:38px;height:38px;border-radius:10px;object-fit:cover;">
+                <h1>{% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}</h1>
+
+            </div>
+            <div class="user-profile" style="display:flex;align-items:center;gap:0.6rem;">
+                <!-- زرار اللغة -->
+                {% set _theme = session.get('theme','light') %}
+                {% set _lang  = session.get('lang','ar') %}
+                <form method="POST" action="/set_lang" style="display:inline;">
+                    <button type="submit" style="display:inline-flex;align-items:center;gap:0.25rem;background:var(--bg,#f8fafc);border:1px solid #e2e8f0;border-radius:40px;padding:0.3rem 0.75rem;font-family:inherit;font-size:0.82rem;font-weight:700;color:#1565C0;cursor:pointer;">
+                        {% if _lang == 'ar' %}<span style="font-weight:900;color:#1565C0;">عر</span><span style="color:#cbd5e1;margin:0 2px;">|</span><span style="color:#94a3b8;">EN</span>{% else %}<span style="color:#94a3b8;">عر</span><span style="color:#cbd5e1;margin:0 2px;">|</span><span style="font-weight:900;color:#1565C0;">EN</span>{% endif %}
+                    </button>
+                </form>
+                <!-- زرار الثيم -->
+                <form method="POST" action="/set_theme" style="display:inline;">
+                    <button type="submit" style="display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;background:var(--bg,#f8fafc);border:1px solid #e2e8f0;border-radius:50%;font-size:0.9rem;color:#1565C0;cursor:pointer;">
+                        {% if _theme == 'dark' %}<i class="fa-solid fa-sun"></i>{% else %}<i class="fa-regular fa-moon"></i>{% endif %}
+                    </button>
+                </form>
+                <span class="app-name" style="display:none;">{% if session.get('lang','ar') == 'en' %}Welcome 🤝{% else %}{% if session.get('lang','ar') == 'en' %}Welcome{% else %}مرحباً بك{% endif %} 🤝{% endif %}</span>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                    <span style="background:#f1f1f1;padding:7px 14px;border-radius:20px;color:#555;font-size:0.85rem;font-weight:600;display:inline-flex;align-items:center;gap:6px;">
+                        <i class="fa-solid fa-user" style="color:#1565C0;"></i> {{ username }}
+                    </span>
+                    <a href="{{ url_for('logout') }}" style="background:#fee2e2;padding:7px 14px;border-radius:20px;color:#dc2626;font-size:0.85rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:6px;border:1px solid #fecaca;transition:all 0.2s;" onmouseover="this.style.background='#dc2626';this.style.color='#fff';" onmouseout="this.style.background='#fee2e2';this.style.color='#dc2626';">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        {% if session.get('lang','ar') == 'en' %}Logout{% else %}تسجيل الخروج{% endif %}
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- الكروت الإحصائية -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title"><i class="fa-solid fa-sack-dollar"></i> {% if session.get('lang','ar') == 'en' %}My Total Donations{% else %}إجمالي تبرعاتي{% endif %}</div>
+                    <div class="stat-value">{{ "{:,.0f}".format(total_donations) }} <span class="currency">{% if session.get('lang','ar') == 'en' %}EGP{% else %}ج.م{% endif %}</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title"><i class="fa-solid fa-flag"></i> {% if session.get('lang','ar') == 'en' %}Campaigns Donated To{% else %}{% if session.get('lang','ar') == 'en' %}Campaigns Donated To{% else %}عدد الحملات التي تبرعت لها{% endif %}{% endif %}</div>
+                    <div class="stat-value">{{ campaigns_count }}</div>
+                </div>
+            </div>
+
+            <!-- قسم الجدول -->
+            <div class="table-section">
+                <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;"><i class="fa-solid fa-list-ul"></i> {% if session.get('lang','ar') == 'en' %}Latest Case Updates{% else %}أحدث التوجيهات للحالات{% endif %}</h2>
+                    <!-- تم تفعيل رابط زر ال{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %} هنا -->
+                    <a href="{{ url_for('donor_donate') }}" class="btn btn-new-donation" style="background: var(--brand); color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold;">
+                        
+                    </a>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="donations-table" style="width: 100%; text-align: right; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid #eee;">
+                                <th style="padding: 15px;">#</th>
+                                <th style="padding: 15px;">{% if session.get('lang','ar') == 'en' %}Campaign / Status{% else %}الحالة / الحملة{% endif %}</th>
+                                <th style="padding: 15px;">{% if session.get('lang','ar') == 'en' %}Amount{% else %}المبلغ{% endif %}</th>
+                                <th style="padding: 15px;">{% if session.get('lang','ar') == 'en' %}Status{% else %}الحالة{% endif %}</th>
+                                <th style="padding: 15px;">{% if session.get('lang','ar') == 'en' %}Action{% else %}الإجراء{% endif %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for donation in donations %}
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 15px;">{{ donation.id }}</td>
+                                <td style="padding: 15px;"><i class="fa-solid fa-tag tag-icon" style="color: #4f7e95;"></i> {{ donation.campaign }}</td>
+                                <td style="padding: 15px; font-weight: bold;">{{ donation.amount }}</td>
+                                <td style="padding: 15px;">
+<span class="status-badge status-{{ donation.status_class }}">
+    <i class="fa-solid fa-check"></i> {{ donation.status }}
+</span>
+                                  
+                                </td>
+                                <td style="padding: 15px;">
+                                    <button class="btn-view" style="background: var(--brand); color: white; border: none; padding: 5px 15px; border-radius: 15px; cursor: pointer;">
+                                        <i class="fa-regular fa-eye"></i> {% if session.get('lang','ar') == 'en' %}View{% else %}عرض{% endif %}
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- {% if session.get('lang','ar') == 'en' %}Quick Actions{% else %}إجراءات سريعة{% endif %} -->
+            <div class="quick-actions-section" style="margin-top: 30px;">
+                <h2 style="margin-bottom: 15px;"><i class="fa-solid fa-bolt"></i> {% if session.get('lang','ar') == 'en' %}Quick Actions{% else %}إجراءات سريعة{% endif %}</h2>
+                <div class="quick-actions-grid" style="display: flex; gap: 15px;">
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+
+
+
+
+
+
+{% endblock %}

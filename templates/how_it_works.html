@@ -1,0 +1,645 @@
+{% set _theme = session.get('theme','light') %}
+{% set _lang  = session.get('lang','ar') %}
+<!DOCTYPE html>
+<html lang="{% if _lang == 'en' %}en{% else %}ar{% endif %}" dir="{% if _lang == 'en' %}ltr{% else %}rtl{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if session.get('lang','ar') == 'en' %}How It Works{% else %}كيف يعمل{% endif %} عطاء؟ — منصة عطاء</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Tajawal',sans-serif;}
+        :root{
+            --blue:#1565C0;
+            --blue-dark:#0D47A1;
+            --blue-light:#1976D2;
+            --white:#ffffff;
+            --gray:#f5f7fa;
+            --text:#1e293b;
+            --text-light:#64748b;
+            --border:#e2e8f0;
+            --r:14px;
+        }
+        html{scroll-behavior:smooth;}
+        body{background:var(--white);color:var(--text);}
+
+        /* ══ NAVBAR (same as landing) ══ */
+        nav{
+            background:var(--white);height:64px;
+            display:flex;align-items:center;justify-content:space-between;
+            padding:0 2.5rem;
+            border-bottom:1px solid var(--border);
+            position:sticky;top:0;z-index:100;
+            box-shadow:0 1px 8px rgba(0,0,0,0.06);
+        }
+        .nav-brand{display:flex;align-items:center;gap:0.6rem;text-decoration:none;flex-shrink:0;}
+        .nav-logo{width:40px;height:40px;border-radius:10px;object-fit:cover;}
+        .nav-logo-fallback{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;font-weight:900;}
+        .nav-brand-name{font-size:1.3rem;font-weight:900;color:var(--blue-dark);display:flex;align-items:center;gap:0.35rem;margin:0;padding:0;}
+        .nav-center{display:flex;gap:0.3rem;align-items:center;}
+        .nav-link{padding:0.45rem 1rem;border-radius:25px;font-size:0.87rem;font-weight:600;text-decoration:none;color:#555;transition:all 0.2s;}
+        .nav-link:hover,.nav-link.active{color:var(--blue);background:#EEF4FF;}
+        .nav-actions{display:flex;gap:0.6rem;align-items:center;}
+        .btn-ctrl{padding:0.42rem 0.9rem;border-radius:25px;border:1.5px solid var(--border);font-size:0.83rem;font-weight:700;color:#555;background:#fff;cursor:pointer;display:flex;align-items:center;gap:0.4rem;transition:all 0.2s;font-family:'Tajawal',sans-serif;}
+        .btn-ctrl:hover{border-color:var(--blue);color:var(--blue);}
+        .btn-icon{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;transition:all 0.2s;color:#555;}
+        .btn-icon:hover{border-color:var(--blue);color:var(--blue);}
+        .btn-login{padding:0.48rem 1.2rem;border-radius:25px;border:2px solid var(--blue);color:var(--blue);font-weight:700;font-size:0.87rem;text-decoration:none;background:#fff;transition:all 0.2s;display:inline-flex;align-items:center;gap:0.4rem;}
+        .btn-login:hover{background:#EEF4FF;}
+        .btn-register{padding:0.48rem 1.3rem;border-radius:25px;background:var(--blue);color:#fff;font-weight:700;font-size:0.87rem;text-decoration:none;border:2px solid var(--blue);transition:all 0.2s;display:inline-flex;align-items:center;gap:0.4rem;}
+        .btn-register:hover{background:var(--blue-dark);border-color:var(--blue-dark);transform:translateY(-1px);}
+        .user-menu{position:relative;}
+        .user-btn{display:flex;align-items:center;gap:0.5rem;padding:0.4rem 1rem;background:#EEF4FF;border:2px solid var(--blue);border-radius:25px;color:var(--blue);font-weight:700;font-size:0.85rem;cursor:pointer;text-decoration:none;transition:all 0.2s;}
+        .user-btn:hover{background:var(--blue);color:#fff;}
+        .u-av{width:28px;height:28px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;}
+        .user-btn:hover .u-av{background:#fff;color:var(--blue);}
+        .u-drop{position:absolute;top:calc(100% + 8px);left:0;background:#fff;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.12);min-width:190px;padding:0.5rem;border:1px solid var(--border);display:none;z-index:600;}
+        .user-menu:hover .u-drop{display:block;}
+        .u-drop a{display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.8rem;border-radius:10px;color:var(--text);text-decoration:none;font-size:0.85rem;font-weight:600;transition:background 0.15s;}
+        .u-drop a:hover{background:#EEF4FF;color:var(--blue);}
+        .u-drop a.logout{color:#dc3545;}
+        .u-drop a.logout:hover{background:#fde8e8;}
+        .u-divider{height:1px;background:var(--border);margin:0.3rem 0;}
+
+        /* ══ PAGE HEADER ══ */
+        .page-hero{
+            background:var(--gray);
+            padding:4rem 2.5rem 3.5rem;
+            text-align:center;
+            border-bottom:2px solid var(--border);
+        }
+        .page-hero h1{
+            font-size:2.6rem;font-weight:900;
+            color:var(--text);margin-bottom:0.7rem;
+        }
+        .page-hero p{
+            font-size:1rem;color:var(--text-light);
+            line-height:1.7;max-width:480px;margin:0 auto;
+        }
+
+        /* ══ HOW IT WORKS — STEPS ══ */
+        .steps-sec{
+            background:var(--white);
+            padding:5rem 2.5rem;
+        }
+        .steps-inner{max-width:1100px;margin:0 auto;}
+
+        /* connector line behind steps */
+        .steps-row{
+            display:grid;
+            grid-template-columns:repeat(4,1fr);
+            gap:2rem;
+            position:relative;
+        }
+        .steps-row::before{
+            content:'';
+            position:absolute;
+            top:60px; /* center of icon circle */
+            right:12.5%;left:12.5%;
+            height:2px;
+            background:linear-gradient(to left, #c7d7f5, var(--blue), #c7d7f5);
+            z-index:0;
+        }
+
+        .step{
+            display:flex;flex-direction:column;align-items:center;
+            text-align:center;gap:0;
+            position:relative;z-index:1;
+            animation:fadeUp 0.5s ease both;
+        }
+        .step:nth-child(1){animation-delay:0.05s;}
+        .step:nth-child(2){animation-delay:0.15s;}
+        .step:nth-child(3){animation-delay:0.25s;}
+        .step:nth-child(4){animation-delay:0.35s;}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+        /* outer ring */
+        .step-ring{
+            width:120px;height:120px;
+            border-radius:50%;
+            border:2.5px solid var(--blue);
+            background:#fff;
+            display:flex;align-items:center;justify-content:center;
+            margin-bottom:0;
+            position:relative;
+            transition:transform 0.3s,box-shadow 0.3s;
+            box-shadow:0 0 0 0 rgba(21,101,192,0);
+        }
+        .step:hover .step-ring{
+            transform:translateY(-6px);
+            box-shadow:0 12px 32px rgba(21,101,192,0.18);
+        }
+
+        /* emoji / icon inside ring */
+        .step-emoji{
+            font-size:2.6rem;
+            line-height:1;
+            filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        /* numbered badge */
+        .step-badge{
+            width:34px;height:34px;border-radius:50%;
+            background:var(--blue);color:#fff;
+            font-size:0.95rem;font-weight:900;
+            display:flex;align-items:center;justify-content:center;
+            margin-top:-17px;
+            position:relative;z-index:2;
+            box-shadow:0 3px 10px rgba(21,101,192,0.35);
+            border:2px solid #fff;
+        }
+
+        .step-title{
+            font-size:1.05rem;font-weight:900;
+            color:var(--text);
+            margin-top:1rem;margin-bottom:0.4rem;
+        }
+        .step-desc{
+            font-size:0.85rem;color:var(--text-light);
+            line-height:1.65;max-width:180px;
+        }
+
+        /* ══ DONOR vs BENEFICIARY TABS ══ */
+        .tabs-sec{
+            background:var(--gray);
+            padding:5rem 2.5rem;
+        }
+        .tabs-inner{max-width:900px;margin:0 auto;}
+        .sec-hd{text-align:center;margin-bottom:2.8rem;}
+        .sec-tag{display:inline-flex;align-items:center;gap:0.4rem;background:#EEF4FF;color:var(--blue);padding:0.35rem 1rem;border-radius:25px;font-size:0.78rem;font-weight:800;margin-bottom:0.8rem;border:1px solid #c7d7f5;}
+        .sec-hd h2{font-size:1.9rem;font-weight:900;color:var(--text);margin-bottom:0.5rem;}
+        .sec-hd p{font-size:0.93rem;color:var(--text-light);max-width:520px;margin:0 auto;line-height:1.7;}
+
+        .tab-btns{display:flex;justify-content:center;gap:0.5rem;margin-bottom:2.5rem;}
+        .tab-btn{
+            padding:0.65rem 2rem;border-radius:35px;
+            font-family:'Tajawal',sans-serif;font-size:0.92rem;font-weight:800;
+            cursor:pointer;border:2px solid var(--border);
+            background:#fff;color:var(--text-light);
+            transition:all 0.2s;
+        }
+        .tab-btn.active,.tab-btn:hover{
+            background:var(--blue);color:#fff;
+            border-color:var(--blue);
+        }
+
+        .tab-panel{display:none;}
+        .tab-panel.active{display:block;}
+
+        .mini-steps{display:flex;flex-direction:column;gap:1.2rem;}
+        .mini-step{
+            display:flex;align-items:flex-start;gap:1.2rem;
+            background:#fff;border-radius:var(--r);
+            padding:1.4rem 1.6rem;
+            border:1.5px solid var(--border);
+            transition:all 0.25s;
+        }
+        .mini-step:hover{border-color:var(--blue);box-shadow:0 6px 20px rgba(21,101,192,0.09);transform:translateX(-3px);}
+        .mini-num{
+            width:40px;height:40px;flex-shrink:0;
+            background:var(--blue);color:#fff;
+            border-radius:50%;display:flex;align-items:center;justify-content:center;
+            font-size:1rem;font-weight:900;
+        }
+        .mini-content{}
+        .mini-title{font-size:0.97rem;font-weight:800;color:var(--text);margin-bottom:0.3rem;}
+        .mini-desc{font-size:0.84rem;color:var(--text-light);line-height:1.6;}
+
+        /* ══ FAQ ══ */
+        .faq-sec{
+            background:var(--white);
+            padding:5rem 2.5rem;
+        }
+        .faq-inner{max-width:760px;margin:0 auto;}
+        .faq-list{display:flex;flex-direction:column;gap:0.8rem;margin-top:2.5rem;}
+        .faq-item{
+            border:1.5px solid var(--border);
+            border-radius:var(--r);overflow:hidden;
+        }
+        .faq-q{
+            width:100%;background:#fff;
+            padding:1.1rem 1.4rem;
+            display:flex;align-items:center;justify-content:space-between;
+            cursor:pointer;font-family:'Tajawal',sans-serif;
+            font-size:0.95rem;font-weight:700;color:var(--text);
+            border:none;text-align:right;
+            transition:background 0.2s;
+        }
+        .faq-q:hover{background:#EEF4FF;color:var(--blue);}
+        .faq-q.open{background:#EEF4FF;color:var(--blue);}
+        .faq-q .chev{transition:transform 0.25s;font-size:0.8rem;color:var(--text-light);}
+        .faq-q.open .chev{transform:rotate(180deg);color:var(--blue);}
+        .faq-a{
+            max-height:0;overflow:hidden;
+            transition:max-height 0.3s ease,padding 0.3s;
+            font-size:0.88rem;color:var(--text-light);
+            line-height:1.7;padding:0 1.4rem;background:#fff;
+        }
+        .faq-a.open{max-height:200px;padding:0 1.4rem 1.1rem;}
+
+        /* ══ CTA ══ */
+        .cta-sec{
+            background:linear-gradient(135deg,var(--blue) 0%,var(--blue-dark) 100%);
+            padding:5rem 2.5rem;
+            position:relative;overflow:hidden;
+        }
+        .cta-sec::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 50%,rgba(255,255,255,0.08),transparent 60%);}
+        .cta-inner{max-width:680px;margin:0 auto;text-align:center;position:relative;z-index:1;}
+        .cta-inner h2{color:#fff;font-size:2rem;font-weight:900;margin-bottom:0.8rem;}
+        .cta-inner p{color:rgba(255,255,255,0.78);font-size:0.95rem;line-height:1.7;margin-bottom:2rem;}
+        .cta-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+        .cta-btn-w{background:#fff;color:var(--blue-dark);padding:0.88rem 2rem;border-radius:35px;font-weight:800;text-decoration:none;font-size:0.92rem;transition:all 0.2s;display:inline-flex;align-items:center;gap:0.5rem;}
+        .cta-btn-w:hover{background:#f0f7ff;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.15);}
+        .cta-btn-o{background:transparent;color:#fff;padding:0.88rem 2rem;border-radius:35px;font-weight:800;text-decoration:none;font-size:0.92rem;border:2px solid rgba(255,255,255,0.4);transition:all 0.2s;display:inline-flex;align-items:center;gap:0.5rem;}
+        .cta-btn-o:hover{background:rgba(255,255,255,0.1);transform:translateY(-2px);}
+
+        /* ══ FOOTER ══ */
+        footer{background:#0D2B55;padding:2.5rem 2rem;}
+        .footer-inner{max-width:1160px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;}
+        .footer-brand{display:flex;align-items:center;gap:0.7rem;}
+        .footer-brand img{width:36px;height:36px;border-radius:9px;object-fit:cover;}
+        .footer-brand-text{color:#fff;font-size:1rem;font-weight:900;}
+        .footer-links{display:flex;gap:0.5rem 1.5rem;flex-wrap:wrap;}
+        .footer-links a{color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.83rem;font-weight:600;transition:color 0.2s;}
+        .footer-links a:hover{color:#fff;}
+        .footer-copy{color:rgba(255,255,255,0.3);font-size:0.78rem;}
+
+        /* ══ RESPONSIVE ══ */
+        @media(max-width:900px){
+            .steps-row{grid-template-columns:1fr 1fr;gap:2.5rem;}
+            .steps-row::before{display:none;}
+        }
+        @media(max-width:768px){.nav-center{display:none;}}
+        @media(max-width:600px){
+            nav{padding:0 1rem;}
+            .page-hero h1{font-size:1.9rem;}
+            .steps-row{grid-template-columns:1fr 1fr;}
+            .step-ring{width:100px;height:100px;}
+            .step-emoji{font-size:2.2rem;}
+            section,.steps-sec,.tabs-sec,.faq-sec,.cta-sec{padding:3rem 1.5rem;}
+            .footer-inner{flex-direction:column;text-align:center;}
+        }
+    </style>
+    <style>
+        /* ══ TOGGLE BAR ══ */
+        .toggle-bar{position:fixed;bottom:1.2rem;left:1.2rem;z-index:9000;display:flex;align-items:center;gap:0.45rem;background:rgba(255,255,255,0.92);border:1px solid #e2e8f0;border-radius:50px;padding:0.3rem 0.55rem;box-shadow:0 4px 20px rgba(0,0,0,0.12);backdrop-filter:blur(12px);}
+        .tgl-btn{display:inline-flex;align-items:center;gap:0.28rem;background:none;border:none;cursor:pointer;font-family:inherit;font-size:0.82rem;font-weight:700;color:#64748b;padding:0.3rem 0.55rem;border-radius:40px;transition:background 0.18s,color 0.18s;}
+        .tgl-btn:hover{background:#f0f3f8;}
+        .tgl-active{color:#1565C0;font-weight:900;}
+        .tgl-dim{color:#94a3b8;}
+        .tgl-sep{color:#e2e8f0;font-size:0.75rem;margin:0 0.05rem;}
+        body.dark-mode{background:#0f172a !important;color:#e2e8f0 !important;}
+        body.dark-mode .toggle-bar{background:rgba(30,41,59,0.95) !important;border-color:#334155 !important;}
+        body.dark-mode .tgl-btn{color:#e2e8f0;}
+        body.dark-mode .tgl-btn:hover{background:#334155;}
+
+    
+        /* ══ DARK MODE ══ */
+        body.dark-mode .steps-sec,
+        body.dark-mode .tabs-sec,
+        body.dark-mode .faq-sec,
+        body.dark-mode .cta-sec    { background: #080d18 !important; }
+        body.dark-mode .step-card  { background: #1e293b !important; border-color: #334155 !important; }
+        body.dark-mode .step-num   { background: #1d4ed8 !important; color: #fff !important; }
+        body.dark-mode .step-title { color: #f1f5f9 !important; }
+        body.dark-mode .step-desc  { color: #94a3b8 !important; }
+        body.dark-mode .steps-sec h2,
+        body.dark-mode .tabs-sec h2,
+        body.dark-mode .faq-sec h2 { color: #f1f5f9 !important; }
+        body.dark-mode .tabs-sec p,
+        body.dark-mode .faq-sec p  { color: #94a3b8 !important; }
+        /* tabs */
+        body.dark-mode .tab-panel  { background: #1e293b !important; border-color: #334155 !important; }
+        body.dark-mode .mini-card  { background: #263348 !important; border-color: #334155 !important; }
+        body.dark-mode .mini-title { color: #e2e8f0 !important; }
+        body.dark-mode .mini-desc  { color: #94a3b8 !important; }
+        body.dark-mode .tab-btn    { background: #1e293b !important; border-color: #334155 !important; color: #94a3b8 !important; }
+        body.dark-mode .tab-btn.active { background: #1d4ed8 !important; color: #fff !important; }
+        /* FAQ */
+        body.dark-mode .faq-item   { background: #1e293b !important; border-color: #334155 !important; }
+        body.dark-mode .faq-q      { background: #1e293b !important; color: #e2e8f0 !important; }
+        body.dark-mode .faq-q:hover,
+        body.dark-mode .faq-q.open { background: #263348 !important; color: #60a5fa !important; }
+        body.dark-mode .faq-a      { background: #1e293b !important; color: #94a3b8 !important; border-color: #334155 !important; }
+        body.dark-mode .faq-q .chev{ color: #64748b !important; }
+        /* CTA */
+        body.dark-mode .cta-sec    { background: linear-gradient(135deg,#0d1b2e,#0d2a4a) !important; }
+
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{% if _theme == 'dark' %}dark-mode{% endif %}">
+
+<!-- ══ NAVBAR ══ -->
+<nav>
+    <a href="{{ url_for('landing') }}" class="nav-brand">
+        <img src="{{ url_for('static', filename='uploads/logo.jpeg') }}" alt="عطاء" class="nav-logo"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div class="nav-logo-fallback" style="display:none;">ع</div>
+        <h3 class="nav-brand-name">
+{% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}
+        </div>
+    </a>
+
+    <div class="nav-center">
+        <a href="{{ url_for('public_charities') }}" class="nav-link">{% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %}</a>
+        <a href="{{ url_for('beneficiary_landing') }}" class="nav-link">الاحتياجات</a>
+        <a href="{{ url_for('how_it_works') }}" class="nav-link active">{% if session.get('lang','ar') == 'en' %}How It Works{% else %}كيف يعمل{% endif %}</a>
+    </div>
+
+    <div class="nav-actions">
+        {% if current_user.is_authenticated %}
+        <div class="user-menu">
+            <a href="{{ url_for('donor_home') }}" class="user-btn">
+                <div class="u-av">{{ current_user.username[0]|upper }}</div>
+                {{ current_user.username }}
+                <i class="fa-solid fa-chevron-down" style="font-size:0.65rem;opacity:0.6;"></i>
+            </a>
+            <div class="u-drop">
+                <a href="{{ url_for('donor_home') }}"><i class="fa-solid fa-gauge"></i> {% if session.get('lang','ar') == 'en' %}My Dashboard{% else %}لوحتي{% endif %}</a>
+                <a href="{{ url_for('donor_donate') }}"><i class="fa-solid fa-hand-holding-dollar"></i> {% if session.get('lang','ar') == 'en' %}New Donation{% else %}{% if session.get('lang','ar') == 'en' %}New Donation{% else %}تبرع جديد{% endif %}{% endif %}</a>
+                <a href="{{ url_for('donor_my_donations') }}"><i class="fa-solid fa-list"></i> {% if session.get('lang','ar') == 'en' %}My Donations{% else %}تبرعاتي{% endif %}</a>
+                <a href="{{ url_for('donor_settings') }}"><i class="fa-solid fa-gear"></i> {% if session.get('lang','ar') == 'en' %}Settings{% else %}الإعدادات{% endif %}</a>
+                <div class="u-divider"></div>
+                <a href="{{ url_for('logout') }}" class="logout"><i class="fa-solid fa-right-from-bracket"></i> {% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %} ال{% if session.get('lang','ar') == 'en' %}Logout{% else %}خروج{% endif %}</a>
+            </div>
+        </div>
+        {% elif 'admin' in session %}
+        <div class="user-menu">
+            <a href="{{ url_for('admin_dashboard') }}" class="user-btn">
+                <div class="u-av">م</div>
+                {{ session.get('admin','المشرف') }}
+            </a>
+            <div class="u-drop">
+                <a href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-gauge"></i> {% if session.get('lang','ar') == 'en' %}Dashboard{% else %}لوحة التحكم{% endif %}</a>
+                <div class="u-divider"></div>
+                <a href="{{ url_for('logout') }}" class="logout"><i class="fa-solid fa-right-from-bracket"></i> {% if session.get('lang','ar') == 'en' %}Logout{% else %}خروج{% endif %}</a>
+            </div>
+        </div>
+        {% else %}
+        <button class="btn-ctrl"><i class="fa-solid fa-earth-americas"></i> EN</button>
+        <button class="btn-icon"><i class="fa-regular fa-moon"></i></button>
+        <a href="{{ url_for('unified_login') }}" class="btn-login">{% if session.get('lang','ar') == 'en' %}Login{% else %}{% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %} ال{% if session.get('lang','ar') == 'en' %}Sign In{% else %}دخول{% endif %}{% endif %}</a>
+        <a href="{{ url_for('signup') }}" class="btn-register">{% if session.get('lang','ar') == 'en' %}Record{% else %}سجل{% endif %} الآن</a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- ══ PAGE HEADER ══ -->
+<div class="page-hero">
+    <h1>{% if session.get('lang','ar') == 'en' %}How It Works{% else %}كيف يعمل{% endif %} عطاء؟</h1>
+    <p>4 خطوات بسيطة توصّل تبرعك لمستحقيه</p>
+</div>
+
+<!-- ══ STEPS ══ -->
+<section class="steps-sec">
+    <div class="steps-inner">
+        <div class="steps-row">
+
+            <!-- Step 1 -->
+            <div class="step">
+                <div class="step-ring">
+                    <span class="step-emoji">👤</span>
+                </div>
+                <div class="step-badge">1</div>
+                <div class="step-title">سجّل حسابك</div>
+                <div class="step-desc">أنشئ حساب جديد كمتبرع في دقائق</div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step">
+                <div class="step-ring">
+                    <span class="step-emoji">🔍</span>
+                </div>
+                <div class="step-badge">2</div>
+                <div class="step-title">اختر احتياج</div>
+                <div class="step-desc">تصفح الاحتياجات واختر ما تريد التبرع به</div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step">
+                <div class="step-ring">
+                    <span class="step-emoji">🎁</span>
+                </div>
+                <div class="step-badge">3</div>
+                <div class="step-title">تبرّع</div>
+                <div class="step-desc">سلّم تبرعك للمحتاج مباشرة أو عبر الجمعية</div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="step">
+                <div class="step-ring">
+                    <span class="step-emoji">📊</span>
+                </div>
+                <div class="step-badge">4</div>
+                <div class="step-title">تابع أثرك</div>
+                <div class="step-desc">شاهد تأثير تبرعاتك على حياة الناس</div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ══ TABS: Donor vs Beneficiary ══ -->
+<section class="tabs-sec">
+    <div class="tabs-inner">
+        <div class="sec-hd">
+            <div class="sec-tag"><i class="fa-solid fa-users"></i> للجميع</div>
+            <h2>{% if session.get('lang','ar') == 'en' %}Whether You're a Donor or in Need{% else %}سواء كنت متبرعاً أو محتاجاً{% endif %}</h2>
+            <p>منصة عطاء مصممة لتخدم الطرفين بأبسط الخطوات</p>
+        </div>
+
+        <div class="tab-btns">
+            <button class="tab-btn active" onclick="switchTab('donor',this)">
+                <i class="fa-solid fa-hand-holding-heart"></i> {% if session.get('lang','ar') == 'en' %}I'm a Donor{% else %}أنا متبرع{% endif %}
+            </button>
+            <button class="tab-btn" onclick="switchTab('bene',this)">
+                <i class="fa-solid fa-hand-holding-medical"></i> أنا محتاج مساعدة
+            </button>
+        </div>
+
+        <!-- Donor steps -->
+        <div class="tab-panel active" id="panel-donor">
+            <div class="mini-steps">
+                <div class="mini-step">
+                    <div class="mini-num">1</div>
+                    <div class="mini-content">
+                        <div class="mini-title">{% if session.get('lang','ar') == 'en' %}Create Account{% else %}إنشاء حساب{% endif %} مجاني</div>
+                        <div class="mini-desc">سجّل بإيميلك وكلمة مرور — العملية لا تأخذ أكثر من دقيقتين</div>
+                    </div>
+                </div>
+                <div class="mini-step">
+                    <div class="mini-num">2</div>
+                    <div class="mini-content">
+                        <div class="mini-title">تصفح {% if session.get('lang','ar') == 'en' %}Campaigns{% else %}الحملات{% endif %} والاحتياجات</div>
+                        <div class="mini-desc">است{% if session.get('lang','ar') == 'en' %}View{% else %}عرض{% endif %} حملات المنصة أو جمعياتنا الشريكة أو الاحتياجات المباشرة</div>
+                    </div>
+                </div>
+                <div class="mini-step">
+                    <div class="mini-num">3</div>
+                    <div class="mini-content">
+                        <div class="mini-title">{% if session.get('lang','ar') == 'en' %}Choose & Donate{% else %}اختر وتبرع{% endif %}</div>
+                        <div class="mini-desc">حدد ما تريد التبرع به — نقداً أو عيناً — وأتمّ العملية بأمان</div>
+                    </div>
+                </div>
+                <div class="mini-step">
+                    <div class="mini-num">4</div>
+                    <div class="mini-content">
+                        <div class="mini-title">تابع أثر تبرعك</div>
+                        <div class="mini-desc">{% if session.get('lang','ar') == 'en' %}Dashboard{% else %}لوحة التحكم{% endif %} الخاصة بك تريك كل تبرعاتك وأثرها الحقيقي على المستحقين</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Beneficiary steps -->
+        <div class="tab-panel" id="panel-bene">
+            <div class="mini-steps">
+                <div class="mini-step">
+                    <div class="mini-num">1</div>
+                    <div class="mini-content">
+                        <div class="mini-title">قدّم طلب مساعدة</div>
+                        <div class="mini-desc">املأ استمارة بسيطة بالاحتياج المطلوب — ثلاجة، غسالة، تجهيز منزل، وغيره</div>
+                    </div>
+                </div>
+                <div class="mini-step">
+                    <div class="mini-num">2</div>
+                    <div class="mini-content">
+                        <div class="mini-title">مراجعة الطلب</div>
+                        <div class="mini-desc">فريق المنصة يراجع طلبك ويتواصل معك للتحقق والتأكيد</div>
+                    </div>
+                </div>
+                <div class="mini-step">
+                    <div class="mini-num">3</div>
+                    <div class="mini-content">
+                        <div class="mini-title">{% if session.get('lang','ar') == 'en' %}Matching You with the Right Donor{% else %}ربطك بمتبرع مناسب{% endif %}</div>
+                        <div class="mini-desc">{% if session.get('lang','ar') == 'en' %}The platform matches you with a donor who has{% else %}المنصة تربطك بمتبرع يمتلك{% endif %} ما تحتاجه أو بجمعية شريكة تساعدك</div>
+                    </div>
+                </div>
+                <div class="mini-step">
+                    <div class="mini-num">4</div>
+                    <div class="mini-content">
+                        <div class="mini-title">تتبع حالة طلبك</div>
+                        <div class="mini-desc">ادخل رقم طلبك في أي وقت لتعرف آخر تحديثات طلبك بشفافية كاملة</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══ FAQ ══ -->
+<section class="faq-sec">
+    <div class="faq-inner">
+        <div class="sec-hd" style="text-align:center;margin-bottom:0;">
+            <div class="sec-tag"><i class="fa-solid fa-circle-question"></i> أسئلة شائعة</div>
+            <h2 style="font-size:1.9rem;font-weight:900;color:var(--text);margin-bottom:0.5rem;">عندك سؤال؟</h2>
+            <p style="font-size:0.93rem;color:var(--text-light);max-width:420px;margin:0 auto;line-height:1.7;">إجابات على أكثر الأسئلة الشائعة عن منصة عطاء</p>
+        </div>
+        <div class="faq-list">
+
+            <div class="faq-item">
+                <button class="faq-q" onclick="toggleFaq(this)">
+                    {% if session.get('lang','ar') == 'en' %}Is donating via Ataa safe and trusted?{% else %}هل التبرع عبر عطاء آمن وموثوق؟{% endif %}
+                    <i class="fa-solid fa-chevron-down chev"></i>
+                </button>
+                <div class="faq-a">نعم، جميع {% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %} الشريكة معنا موثقة ومعتمدة قانونياً. المنصة تضمن الشفافية الكاملة في مسار كل تبرع من لحظة استلامه حتى وصوله للمستحق.</div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-q" onclick="toggleFaq(this)">
+                    {% if session.get('lang','ar') == 'en' %}Can I donate in-kind items like appliances?{% else %}هل يمكنني التبرع بأشياء عينية مثل الأجهزة؟{% endif %}
+                    <i class="fa-solid fa-chevron-down chev"></i>
+                </button>
+                <div class="faq-a">بالطبع! المنصة تدعم التبرعات العينية كالأجهزة المنزلية والملابس والأثاث. {% if session.get('lang','ar') == 'en' %}You can register the donation{% else %}يمكنك تسجيل التبرع{% endif %} والمنصة تتولى الربط بالمستحق المناسب.</div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-q" onclick="toggleFaq(this)">
+                    {% if session.get('lang','ar') == 'en' %}How do I know my donation really arrived?{% else %}كيف أعرف أن تبرعي وصل فعلاً؟{% endif %}
+                    <i class="fa-solid fa-chevron-down chev"></i>
+                </button>
+                <div class="faq-a">{% if session.get('lang','ar') == 'en' %}After registering, your dashboard shows the status of every donation from delivery to confirmation. You receive real-time updates.{% else %}بعد تسجيل حساب، لوحة التحكم الخاصة بك تعرض حالة كل تبرع من حيث التسليم والتأكيد. تلقى تحديثات فورية عن مسار تبرعاتك.{% endif %}</div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-q" onclick="toggleFaq(this)">
+                    هل الخدمة مجانية للمستفيدين؟
+                    <i class="fa-solid fa-chevron-down chev"></i>
+                </button>
+                <div class="faq-a">نعم، الخدمة مجانية تماماً للمستفيدين. المنصة لا تحتسب أي رسوم على طلبات المساعدة وتعمل على إيصال التبرعات بالكامل.</div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-q" onclick="toggleFaq(this)">
+                    في أي محافظات تعمل المنصة؟
+                    <i class="fa-solid fa-chevron-down chev"></i>
+                </button>
+                <div class="faq-a">المنصة تغطي معظم محافظات مصر من خلال شبكة {% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %} الشريكة. يمكنك ال{% if session.get('lang','ar') == 'en' %}Search{% else %}بحث{% endif %} عن جمعيات في محافظتك من صفحة {% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %} الشريكة.</div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ══ CTA ══ -->
+<section class="cta-sec">
+    <div class="cta-inner">
+        <h2>ابدأ رحلة العطاء النهاردة</h2>
+        <p>سواء كنت تريد ال{% if session.get('lang','ar') == 'en' %}Donate{% else %}تبرع{% endif %} أو تحتاج مساعدة، نحن هنا لمساعدتك</p>
+        <div class="cta-btns">
+            <a href="{{ url_for('signup') }}" class="cta-btn-w">
+                <i class="fa-solid fa-hand-holding-heart"></i> سجّل و{% if session.get('lang','ar') == 'en' %}Donate Now{% else %}تبرع الآن{% endif %}
+            </a>
+            <a href="{{ url_for('beneficiary_register') }}" class="cta-btn-o">
+                <i class="fa-solid fa-paper-plane"></i> قدّم طلب مساعدة
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <img src="{{ url_for('static', filename='uploads/logo.jpeg') }}" alt="عطاء"
+                 onerror="this.style.display='none';">
+            <span class="footer-brand-text">منصة عطاء</span>
+        </div>
+        <div class="footer-links">
+            <a href="{{ url_for('landing') }}">{% if session.get('lang','ar') == 'en' %}Home{% else %}الرئيسية{% endif %}</a>
+            <a href="{{ url_for('platform_campaigns_public') }}">حملات المنصة</a>
+            <a href="{{ url_for('public_charities') }}">{% if session.get('lang','ar') == 'en' %}Charities{% else %}الجمعيات{% endif %}</a>
+            <a href="{{ url_for('unified_login') }}">{% if session.get('lang','ar') == 'en' %}Login{% else %}{% if session.get('lang','ar') == 'en' %}Register{% else %}تسجيل{% endif %} ال{% if session.get('lang','ar') == 'en' %}Sign In{% else %}دخول{% endif %}{% endif %}</a>
+            <a href="{{ url_for('signup') }}">{% if session.get('lang','ar') == 'en' %}Create Account{% else %}إنشاء حساب{% endif %}</a>
+            <a href="{{ url_for('beneficiary_landing') }}">خدمات المستفيد</a>
+        </div>
+        <div class="footer-copy">منصة عطاء © 2024</div>
+    </div>
+</footer>
+
+<script>
+function switchTab(id, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    btn.classList.add('active');
+}
+
+function toggleFaq(btn) {
+    const answer = btn.nextElementSibling;
+    const isOpen = btn.classList.contains('open');
+    // close all
+    document.querySelectorAll('.faq-q').forEach(q => {
+        q.classList.remove('open');
+        q.nextElementSibling.classList.remove('open');
+    });
+    if (!isOpen) {
+        btn.classList.add('open');
+        answer.classList.add('open');
+    }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{% if session.get('lang','ar') == 'en' %}Add Item{% else %}إضافة صنف{% endif %} - {% if session.get('lang','ar') == 'en' %}Ataa Platform{% else %}منصة العطاء{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="fa-solid fa-plus-circle"></i> {% if session.get('lang','ar') == 'en' %}Add Item{% else %}إضافة صنف{% endif %} جديد</h1>
+        <p class="page-sub">أضف صنفاً جديداً للمخزن الخيري</p>
+    </div>
+    <a href="{{ url_for('admin_inventory') }}" class="btn btn-dark">
+        <i class="fa-solid fa-arrow-right"></i> العودة للمخزن
+    </a>
+</div>
+
+<div class="card" style="max-width:700px;">
+    <form method="post" enctype="multipart/form-data">
+        <div class="form-grid">
+            <div class="form-group" style="grid-column:1/-1;">
+                <label>اسم الصنف *</label>
+                <input type="text" name="item_name" class="form-control" placeholder="مثال: سرير مزدوج، بوتجاز 5 شعلة..." required>
+            </div>
+            <div class="form-group">
+                <label>الفئة *</label>
+                <select name="category_id" class="form-control" id="cat-select" required>
+                    <option value="">اختر الفئة</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>الفئة الفرعية</label>
+                <select name="subcategory_id" class="form-control" id="sub-select">
+                    <option value="">بدون فئة فرعية</option>
+                    {% for sub in subcategories %}
+                    <option value="{{ sub.id }}" data-cat="{{ sub.category_id }}">{{ sub.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>الكمية</label>
+                <input type="number" name="quantity" class="form-control" value="1" min="0">
+            </div>
+            <div class="form-group">
+                <label>صورة الصنف</label>
+                <input type="file" name="image" class="form-control" accept="image/*">
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+                <label>الوصف</label>
+                <textarea name="description" class="form-control" placeholder="وصف مختصر للصنف..."></textarea>
+            </div>
+        </div>
+        <div style="margin-top:1.5rem;display:flex;gap:1rem;">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-save"></i> حفظ الصنف
+            </button>
+            <a href="{{ url_for('admin_inventory') }}" class="btn btn-dark">إلغاء</a>
+        </div>
+    </form>
+</div>
+
+<script>
+const catSel = document.getElementById('cat-select');
+const subSel = document.getElementById('sub-select');
+const allSubs = [...subSel.options];
+
+function filterSubs() {
+    const catId = catSel.value;
+    [...subSel.options].forEach((opt, i) => {
+        if (i === 0) return;
+        opt.style.display = (!catId || opt.dataset.cat === catId) ? '' : 'none';
+    });
+    subSel.value = '';
+}
+catSel.addEventListener('change', filterSubs);
+filterSubs();
+</script>
+{% endblock %}
